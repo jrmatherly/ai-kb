@@ -28,7 +28,6 @@ export const TENANT_MEMBER_AUDIT_ACTIONS = [
   'rbac.invitation_revoked',
   'rbac.invitation_expired',
   'auth.login_succeeded',
-  'auth.login_failed',
   'auth.logout',
   'tenant_api_key.created',
   'tenant_api_key.updated',
@@ -54,6 +53,11 @@ export const SYSTEM_GLOBAL_AUDIT_ACTIONS = [
   'system.queue_task_run_now',
   'system.queue_task_cancelled',
   'system.queue_archived_purged',
+  // Rows without a workspace: failed logins carry no tenant, and an OIDC
+  // login or logout without an active workspace lands here too.
+  'auth.login_succeeded',
+  'auth.login_failed',
+  'auth.logout',
 ] as const
 
 /** Knowledge-base activity feed (KB settings → activity). */

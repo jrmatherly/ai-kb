@@ -257,6 +257,8 @@ function auditActionTheme(
     case 'system.queue_task_retried':
     case 'system.queue_task_run_now':
       return 'warning'
+    case 'auth.login_failed':
+      return 'danger'
     case 'system.user_password_reset':
     case 'system.queue_task_deleted':
     case 'system.queue_task_cancelled':

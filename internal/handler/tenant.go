@@ -155,15 +155,16 @@ type tenantAPIKeyUpdateRequest struct {
 	ExpiresAt        *int64   `json:"expires_at_unix"`
 }
 
-// tenantAPIKeyFieldNames lists the settings a create or update request carried,
-// for the audit row: the scope fields are always present (full_access and the
-// knowledge base list are one setting), expires_at only when the request set it.
-func tenantAPIKeyFieldNames(req tenantAPIKeyUpdateRequest) []string {
-	names := []string{"name", "capabilities", "knowledge_base_ids"}
+// tenantAPIKeyDetails is the audit payload of a create or update request: the
+// field names it carried (expires_at only when set) and whether the key is a
+// full-access key, since minting one is the escalation an auditor looks for.
+func tenantAPIKeyDetails(op string, req tenantAPIKeyUpdateRequest) types.JSON {
+	fields := []string{"name", "capabilities", "knowledge_base_ids"}
 	if req.ExpiresAt != nil {
-		names = append(names, "expires_at")
+		fields = append(fields, "expires_at")
 	}
-	return names
+	raw, _ := json.Marshal(map[string]any{"op": op, "fields": fields, "full_access": req.FullAccess})
+	return types.JSON(raw)
 }
 
 type tenantAPIKeyResponse struct {
@@ -732,7 +733,7 @@ func (h *TenantHandler) CreateAPIKey(c *gin.Context) {
 	emitAudit(ctx, h.auditSvc, &types.AuditLog{
 		TenantID: id, Action: types.AuditActionTenantAPIKeyCreated, TargetType: "tenant_api_key",
 		TargetID: strconv.FormatUint(result.APIKey.ID, 10),
-		Details:  changeDetails("created", tenantAPIKeyFieldNames(tenantAPIKeyUpdateRequest(req))...),
+		Details:  tenantAPIKeyDetails("created", tenantAPIKeyUpdateRequest(req)),
 	})
 	c.JSON(http.StatusCreated, gin.H{
 		"success": true,
@@ -780,7 +781,7 @@ func (h *TenantHandler) UpdateAPIKey(c *gin.Context) {
 	emitAudit(ctx, h.auditSvc, &types.AuditLog{
 		TenantID: tenantID, Action: types.AuditActionTenantAPIKeyUpdated, TargetType: "tenant_api_key",
 		TargetID: strconv.FormatUint(keyID, 10),
-		Details:  changeDetails("updated", tenantAPIKeyFieldNames(req)...),
+		Details:  tenantAPIKeyDetails("updated", req),
 	})
 	c.JSON(http.StatusOK, gin.H{"success": true, "data": tenantAPIKeyForResponse(updated)})
 }

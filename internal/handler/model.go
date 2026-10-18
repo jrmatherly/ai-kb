@@ -797,10 +797,10 @@ func (h *ModelHandler) UpdateModel(c *gin.Context) {
 	}
 	model.Description = req.Description
 
-	// The existing provider is checked too, so a disabled deployment cannot
-	// keep a pre-existing weknoracloud model alive through updates.
-	if weKnoraCloudProviderDisabled(req.Parameters.Provider) ||
-		weKnoraCloudProviderDisabled(model.Parameters.Provider) {
+	// The request's parameters replace the stored ones, so gating the request
+	// provider refuses to keep a weknoracloud model while still allowing a
+	// disabled deployment to move such a model to another provider.
+	if weKnoraCloudProviderDisabled(req.Parameters.Provider) {
 		_ = c.Error(errWeKnoraCloudDisabled())
 		return
 	}

@@ -4772,7 +4772,10 @@ export default {
           'system.queue_task_deleted': 'Failed task record cleared',
           'system.queue_task_run_now': 'Queue task run now',
           'system.queue_task_cancelled': 'Queue task cancelled',
-          'system.queue_archived_purged': 'All failed tasks cleared'
+          'system.queue_archived_purged': 'All failed tasks cleared',
+          'auth.login_succeeded': 'Login',
+          'auth.login_failed': 'Login failed',
+          'auth.logout': 'Logout'
         },
         outcome: {
           success: 'Success',
@@ -7552,7 +7555,6 @@ export default {
         'rbac.invitation_revoked': 'Invitation revoked',
         'rbac.invitation_expired': 'Invitation expired',
         'auth.login_succeeded': 'Login',
-        'auth.login_failed': 'Login failed',
         'auth.logout': 'Logout',
         'tenant_api_key.created': 'API key created',
         'tenant_api_key.updated': 'API key updated',

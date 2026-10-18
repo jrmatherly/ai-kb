@@ -25,9 +25,10 @@ model's context window; raise it when you will filter the passages yourself.
 ## Output
 
 `data` is an array of chunk objects, `meta.count` is how many came back, and
-`meta.has_more` is true when the server returned more than `--limit` and the CLI trimmed the list. An empty
-result carries `meta.hint` when the CLI suspects the knowledge base has no
-embedding model bound.
+`meta.has_more` is true when the server returned more than `--limit` and the CLI trimmed the list. Every empty
+result carries `meta.hint`: it reminds you that zero results can mean no
+match or no indexed chunks, and points at `kb status` (`chunk_count`) and
+`doc list` (`parse_status`; documents in `draft` are not indexed).
 
 Fields on each chunk, from `aikb search chunks --help`:
 

@@ -77,7 +77,9 @@ func (s existingModelService) GetModelByID(context.Context, string) (*types.Mode
 	return s.model, nil
 }
 
-func TestUpdateModelRefusesExistingWeKnoraCloudModelWhenDisabled(t *testing.T) {
+func (existingModelService) UpdateModel(context.Context, *types.Model) error { return nil }
+
+func TestUpdateModelMovesWeKnoraCloudModelToAnotherProviderWhenDisabled(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	t.Setenv(docparser.WeKnoraCloudEnabledEnv, "")
 	existing := &types.Model{
@@ -90,10 +92,18 @@ func TestUpdateModelRefusesExistingWeKnoraCloudModelWhenDisabled(t *testing.T) {
 		c.Set(types.TenantIDContextKey.String(), uint64(7))
 		h.UpdateModel(c)
 	})
-	req := httptest.NewRequest(http.MethodPut, "/models/m1", bytes.NewBufferString(`{"name":"chat","parameters":{}}`))
-	req.Header.Set("Content-Type", "application/json")
-	rec := httptest.NewRecorder()
-	r.ServeHTTP(rec, req)
-	require.Equal(t, http.StatusBadRequest, rec.Code, rec.Body.String())
-	require.Contains(t, rec.Body.String(), docparser.WeKnoraCloudEnabledEnv)
+	put := func(body string) *httptest.ResponseRecorder {
+		req := httptest.NewRequest(http.MethodPut, "/models/m1", bytes.NewBufferString(body))
+		req.Header.Set("Content-Type", "application/json")
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
+		return rec
+	}
+	kept := put(`{"name":"chat","parameters":{"provider":"weknoracloud"}}`)
+	require.Equal(t, http.StatusBadRequest, kept.Code, kept.Body.String())
+	require.Contains(t, kept.Body.String(), docparser.WeKnoraCloudEnabledEnv)
+
+	moved := put(`{"name":"chat","parameters":{"provider":"openai","base_url":"https://api.openai.com/v1"}}`)
+	require.NotEqual(t, http.StatusBadRequest, moved.Code, moved.Body.String())
+	require.NotContains(t, moved.Body.String(), docparser.WeKnoraCloudEnabledEnv)
 }

@@ -604,8 +604,9 @@ func (h *AuthHandler) Logout(c *gin.Context) {
 
 // emitLoginSucceeded records a completed login as the user it created a
 // session for; the tenant is the workspace the token is scoped to and the
-// role is the user's membership role there ("user" when no membership row
-// names it, such as the viewer fallback of a partial DI graph).
+// role is the user's membership role there, or "user" when no membership row
+// exists for it (a new OIDC user without a workspace, a cross-workspace
+// superuser landing on a workspace they are not a member of).
 func (h *AuthHandler) emitLoginSucceeded(
 	ctx context.Context, c *gin.Context, method string, user *types.User, tenant *types.Tenant,
 	memberships []types.Membership,

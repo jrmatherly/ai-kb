@@ -109,8 +109,10 @@ safeguard between an agent and an irreversible delete.
 
 ## Preview with --dry-run before any write
 
-Every command that changes server or local state accepts `--dry-run`, with one
-exception: `auth login`. A dry run resolves arguments, prints
+Every create, update, delete, upload, reparse, link and config command accepts
+`--dry-run`. The commands that have no flag are `auth login`, `chat`,
+`session ask` (both create a session and a message) and `doc download`
+(writes a file). A dry run resolves arguments, prints
 `meta.dry_run:true` and `meta.plan:{action, args}`, performs no network call or
 file write, and exits 0. Use it to show the user a bulk upload or a delete
 before it happens, and to catch a malformed invocation while it is still free.

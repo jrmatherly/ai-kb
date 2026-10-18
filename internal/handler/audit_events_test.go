@@ -236,3 +236,12 @@ func TestCreateAgentEmitsChangedRow(t *testing.T) {
 	require.Equal(t, "agent-1", row.TargetID)
 	require.Contains(t, string(row.Details), `"op":"created"`)
 }
+
+func TestTenantAPIKeyDetailsRecordsFullAccess(t *testing.T) {
+	expires := int64(1760000000)
+	got := string(tenantAPIKeyDetails("created", tenantAPIKeyUpdateRequest{FullAccess: true, ExpiresAt: &expires}))
+	require.JSONEq(t,
+		`{"op":"created","fields":["name","capabilities","knowledge_base_ids","expires_at"],"full_access":true}`, got)
+	got = string(tenantAPIKeyDetails("updated", tenantAPIKeyUpdateRequest{}))
+	require.JSONEq(t, `{"op":"updated","fields":["name","capabilities","knowledge_base_ids"],"full_access":false}`, got)
+}

@@ -1030,7 +1030,6 @@ function auditActionTheme(
 ): 'success' | 'warning' | 'danger' | 'primary' | 'default' {
   switch (action) {
     case 'rbac.access_denied':
-    case 'auth.login_failed':
       return 'danger'
     case 'rbac.member_added':
       return 'success'
