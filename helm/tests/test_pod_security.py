@@ -20,7 +20,7 @@ def pods(values=None):
 class PodSecurityTests(unittest.TestCase):
     def test_every_pod_is_restricted_and_read_only(self):
         seen = []
-        for name, spec in pods({"ingress": {"enabled": False}, "redis": {"enabled": False}, "neo4j": {"enabled": True}}):
+        for name, spec in pods({"ingress": {"enabled": False}, "redis": {"enabled": False}, "externalRedis": {"addr": "cache:6379"}, "neo4j": {"enabled": True}}):
             seen.append(name)
             pod = spec.get("securityContext") or {}
             self.assertTrue(pod.get("runAsNonRoot"), f"{name}: pod runAsNonRoot")

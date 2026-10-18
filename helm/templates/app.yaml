@@ -5,6 +5,16 @@ SPDX-License-Identifier: MIT
 AI KB Backend API Server Deployment and Service.
 */}}
 {{- if .Values.app.enabled }}
+{{- $dbHost := include "ai-kb.serviceName" (dict "component" "postgresql" "context" .) }}
+{{- $dbPort := 5432 }}
+{{- if not .Values.postgresql.enabled }}
+{{- $dbHost = required "externalDatabase.host is required when postgresql.enabled is false" .Values.externalDatabase.host }}
+{{- $dbPort = .Values.externalDatabase.port | default $dbPort }}
+{{- end }}
+{{- $redisAddr := printf "%s:6379" (include "ai-kb.serviceName" (dict "component" "redis" "context" .)) }}
+{{- if not .Values.redis.enabled }}
+{{- $redisAddr = required "externalRedis.addr is required when redis.enabled is false" .Values.externalRedis.addr }}
+{{- end }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -19,7 +29,9 @@ spec:
       {{- include "ai-kb.componentSelectorLabels" (dict "component" "app" "context" .) | nindent 6 }}
   strategy:
     {{- $strategy := .Values.app.strategy | default dict }}
-    {{- $strategyType := $strategy.type | default "RollingUpdate" }}
+    {{- /* A surge Pod on another node hangs on attach unless the data-files volume is ReadWriteMany. */}}
+    {{- $sharedVolume := or (not .Values.dataFiles.persistence.enabled) (eq .Values.dataFiles.persistence.accessMode "ReadWriteMany") }}
+    {{- $strategyType := $strategy.type | default (ternary "RollingUpdate" "Recreate" $sharedVolume) }}
     {{- if not (has $strategyType (list "RollingUpdate" "Recreate")) }}
     {{- fail "app.strategy.type must be RollingUpdate or Recreate" }}
     {{- end }}
@@ -30,6 +42,8 @@ spec:
     {{- end }}
   template:
     metadata:
+      annotations:
+        checksum/secret: {{ list .Values.secrets .Values.neo4j.username .Values.neo4j.password | toYaml | sha256sum }}
       labels:
         {{- include "ai-kb.componentSelectorLabels" (dict "component" "app" "context" .) | nindent 8 }}
     spec:
@@ -63,9 +77,9 @@ spec:
             - name: DB_DRIVER
               value: "postgres"
             - name: DB_HOST
-              value: {{ include "ai-kb.serviceName" (dict "component" "postgresql" "context" .) | quote }}
+              value: {{ $dbHost | quote }}
             - name: DB_PORT
-              value: "5432"
+              value: {{ $dbPort | quote }}
             - name: DB_USER
               valueFrom:
                 secretKeyRef:
@@ -83,7 +97,7 @@ spec:
                   key: DB_NAME
             # Redis configuration
             - name: REDIS_ADDR
-              value: {{ printf "%s:6379" (include "ai-kb.serviceName" (dict "component" "redis" "context" .)) | quote }}
+              value: {{ $redisAddr | quote }}
             - name: REDIS_USERNAME
               valueFrom:
                 secretKeyRef:
@@ -161,6 +175,9 @@ spec:
             # The root filesystem is read-only; downloads, imports and DuckDB spill files land here.
             - name: tmp
               mountPath: /tmp
+            {{- with .Values.app.extraVolumeMounts }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
           resources:
             {{- toYaml .Values.app.resources | nindent 12 }}
           {{- with .Values.app.livenessProbe }}
@@ -181,6 +198,9 @@ spec:
           {{- end }}
         - name: tmp
           emptyDir: {}
+        {{- with .Values.app.extraVolumes }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
       {{- with .Values.app.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

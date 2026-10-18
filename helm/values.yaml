@@ -58,9 +58,11 @@ app:
   # -- Number of replicas
   replicaCount: 1
 
-  # -- App update strategy. Use Recreate for single-replica, single-node-attach storage.
+  # -- App update strategy
   strategy:
-    type: RollingUpdate
+    # -- RollingUpdate or Recreate. Empty picks RollingUpdate when the data-files volume is
+    # ReadWriteMany or persistence is off, Recreate otherwise (a single-node-attach volume).
+    type: ""
     # -- Only used with RollingUpdate; integers and percentages are supported.
     rollingUpdate:
       maxSurge: 1
@@ -126,6 +128,19 @@ app:
   extraEnv: []
   # - name: OLLAMA_BASE_URL
   #   value: "http://ollama:11434"
+
+  # -- Additional volumes for the app pod
+  extraVolumes: []
+  # - name: builtin-models
+  #   configMap:
+  #     name: ai-kb-builtin-models
+
+  # -- Additional volume mounts for the app container (pair with BUILTIN_MODELS_CONFIG in extraEnv)
+  extraVolumeMounts: []
+  # - name: builtin-models
+  #   mountPath: /config/builtin_models.yaml
+  #   subPath: builtin_models.yaml
+  #   readOnly: true
 
   # -- Service configuration
   service:
@@ -451,6 +466,21 @@ redis:
   affinity: {}
 
 # -----------------------------------------------------------------------------
+# External PostgreSQL and Redis
+# -----------------------------------------------------------------------------
+# -- Required when postgresql.enabled is false
+externalDatabase:
+  # -- Database host
+  host: ""
+  # -- Database port
+  port: 5432
+
+# -- Required when redis.enabled is false
+externalRedis:
+  # -- Redis address as host:port
+  addr: ""
+
+# -----------------------------------------------------------------------------
 # Data Files Storage
 # -----------------------------------------------------------------------------
 dataFiles:
@@ -459,6 +489,9 @@ dataFiles:
     enabled: true
     # -- Size of the PVC
     size: 10Gi
+    # -- Access mode of the PVC. Also describes an existingClaim: ReadWriteMany lets the app roll
+    # across nodes, anything else defaults app.strategy to Recreate.
+    accessMode: ReadWriteOnce
     # -- Use existing PVC (leave empty to create new)
     existingClaim: ""
 

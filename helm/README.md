@@ -164,9 +164,12 @@ helm install ai-kb ./helm \
 
 The chart-created data-files PVC uses `ReadWriteOnce` (RWO). RWO allows several
 Pods to mount the volume on the same node; it does not provide shared writable
-access across nodes. With a single-node-attach volume, the default rolling update
+access across nodes. With a single-node-attach volume, a rolling update
 (`maxSurge: 1`, `maxUnavailable: 0`) can leave a replacement Pod waiting for the
-old Pod's attachment to be released. `Recreate` terminates the old Pods before
+old Pod's attachment to be released, so when `app.strategy.type` is empty the
+chart picks `Recreate` unless `dataFiles.persistence.accessMode` is
+`ReadWriteMany` or persistence is off. The example above sets `Recreate`
+explicitly. `Recreate` terminates the old Pods before
 starting replacements during an upgrade, so **App upgrades have downtime**;
 volume detach/attach can still take time. This strategy does not make RWO storage
 suitable for multiple App replicas across nodes. See Kubernetes documentation on
@@ -182,11 +185,12 @@ Apply the following override together with `values-production.yaml`:
 app:
   replicaCount: 3
   strategy:
-    type: RollingUpdate
+    type: RollingUpdate  # values-production.yaml pins Recreate; RWX storage rolls safely
 
 dataFiles:
   persistence:
     enabled: true
+    accessMode: ReadWriteMany
     existingClaim: ai-kb-shared-files  # Pre-provisioned, verified RWX PVC
 ```
 
@@ -206,6 +210,28 @@ storage. This override addresses App file storage only, not high availability
 for the chart's database or other components. Object storage is another option
 only after configuring the provider and checking that all paths needed by your
 deployment are accessible to every replica.
+
+### External Database and Redis
+
+Disable the bundled PostgreSQL or Redis and point the App at your own:
+
+```bash
+helm install ai-kb ./helm \
+  --namespace ai-kb \
+  --create-namespace \
+  --set postgresql.enabled=false \
+  --set externalDatabase.host=db.example.internal \
+  --set externalDatabase.port=5432 \
+  --set redis.enabled=false \
+  --set externalRedis.addr=cache.example.internal:6379 \
+  --set secrets.dbPassword=secure-password \
+  --set secrets.redisPassword=secure-password \
+  --set secrets.jwtSecret=$(openssl rand -base64 32)
+```
+
+The credentials still come from the chart Secret (`secrets.dbUser`, `secrets.dbPassword`,
+`secrets.dbName`, `secrets.redisPassword`) or from `secrets.existingSecret`. The render
+fails when a bundled component is off and its external address is missing.
 
 ## Configuration
 
@@ -273,7 +299,7 @@ pre-existing Service name does not automatically transfer its ownership to Helm.
 | ----------- | ------------- | --------- |
 | `app.enabled` | Enable backend | `true` |
 | `app.replicaCount` | Number of replicas | `1` |
-| `app.strategy.type` | App update strategy: `RollingUpdate` or `Recreate` | `RollingUpdate` |
+| `app.strategy.type` | App update strategy: `RollingUpdate` or `Recreate`. Empty picks `RollingUpdate` when `dataFiles.persistence.accessMode` is `ReadWriteMany` or persistence is off, `Recreate` otherwise | `""` |
 | `app.strategy.rollingUpdate.maxSurge` | Extra Pods during rolling updates (integer or percentage); ignored with `Recreate` | `1` |
 | `app.strategy.rollingUpdate.maxUnavailable` | Unavailable Pods during rolling updates (integer or percentage); ignored with `Recreate` | `0` |
 | `app.image.repository` | Image repository | `ghcr.io/jrmatherly/ai-kb-app` |
@@ -281,6 +307,8 @@ pre-existing Service name does not automatically transfer its ownership to Helm.
 | `app.resources` | Resource limits | See values.yaml |
 | `app.env` | Environment variables | See values.yaml |
 | `app.extraEnv` | Additional env vars | `[]` |
+| `app.extraVolumes` | Additional pod volumes | `[]` |
+| `app.extraVolumeMounts` | Additional App container volume mounts | `[]` |
 
 ### Frontend
 
@@ -334,6 +362,14 @@ frontend, so the docs share the application's host (`https://<ingress.host>/docs
 | `redis.persistence.enabled` | Enable persistence | `true` |
 | `redis.persistence.size` | PVC size | `1Gi` |
 
+### External Database and Redis
+
+| Parameter | Description | Default |
+| ----------- | ------------- | --------- |
+| `externalDatabase.host` | Database host, required when `postgresql.enabled` is false | `""` |
+| `externalDatabase.port` | Database port, read when `postgresql.enabled` is false | `5432` |
+| `externalRedis.addr` | Redis `host:port`, required when `redis.enabled` is false | `""` |
+
 ### Ingress
 
 | Parameter | Description | Default |
@@ -366,12 +402,17 @@ An `existingSecret` must contain `DB_USER`, `DB_PASSWORD`, `DB_NAME`,
 `REDIS_USERNAME`, `REDIS_PASSWORD`, `JWT_SECRET` and `SYSTEM_AES_KEY`, plus
 `NEO4J_USERNAME` and `NEO4J_PASSWORD` when `neo4j.enabled` is true.
 
+The App Pod carries a `checksum/secret` annotation hashed from the `secrets` and Neo4j
+credential values, so changing one restarts the App on upgrade. The chart cannot see an
+`existingSecret`'s contents, so restarting the App after rotating it is up to you.
+
 ### Data Files
 
 | Parameter | Description | Default |
 | ----------- | ------------- | --------- |
 | `dataFiles.persistence.enabled` | Persist uploaded files at `/data/files` | `true` |
 | `dataFiles.persistence.size` | PVC size | `10Gi` |
+| `dataFiles.persistence.accessMode` | Access mode of the chart PVC; also describes an `existingClaim` for the strategy default | `ReadWriteOnce` |
 | `dataFiles.persistence.existingClaim` | Use an existing PVC | `""` |
 
 ### Neo4j (GraphRAG)
@@ -449,6 +490,13 @@ helm upgrade ai-kb ./helm \
 ```
 
 The chart's PostgreSQL moved from `v0.18.9-pg17` to `v0.26.1-pg18`, a PostgreSQL major version. PostgreSQL 18 does not start on a PostgreSQL 17 data directory, so `pg_dumpall` from the old pod first and restore into the new one on an empty PVC. `--reuse-values` keeps a previously set `postgresql.image.tag`; pass `--set postgresql.image.tag=v0.26.1-pg18` or drop the override to pick up the new default.
+
+Chart 0.4.0: `postgresql.enabled=false` now requires `externalDatabase.host` and
+`redis.enabled=false` requires `externalRedis.addr` (the App used to connect to the
+disabled component's Service name). An unset `app.strategy.type` now defaults to
+`Recreate` unless `dataFiles.persistence.accessMode` is `ReadWriteMany`, so App upgrades
+on the default install have a short downtime instead of a possible attach hang. The new
+`checksum/secret` annotation restarts the App once on the upgrade that introduces it.
 
 ## Uninstalling
 
