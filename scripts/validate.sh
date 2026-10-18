@@ -115,6 +115,10 @@ area_go() {
 area_cli() {
   go -C cli mod tidy -diff
   go -C cli build ./...
+  # The release workflow cross-compiles the CLI with cgo off for these six targets.
+  for target in darwin/amd64 darwin/arm64 linux/amd64 linux/arm64 windows/amd64 windows/arm64; do
+    CGO_ENABLED=0 GOOS="${target%/*}" GOARCH="${target#*/}" go -C cli build -o /dev/null .
+  done
   go -C cli vet ./...
   if go_tests; then go -C cli test -race -count=1 ./...; fi
   if need golangci-lint; then run_golangci_if_available "$base" cli; fi
