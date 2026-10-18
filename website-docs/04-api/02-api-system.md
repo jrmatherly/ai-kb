@@ -16,7 +16,7 @@ Viewer+; any API key can read it. Returns `{code:0,data:{edition,capabilities}}`
 curl "$BASE/api/v1/system/capabilities" -H "Authorization: Bearer $TOKEN"
 ```
 
-`settings.sandbox.host` in `capabilities` says whether this deployment can use the local operating-system sandbox. Today it is only supported in the native macOS desktop application (other platforms report `platform_unsupported`). `settings.sandbox.docker` is read live, so a System Settings toggle shows up without a restart.
+`settings.sandbox.host` in `capabilities` says whether this deployment can use the local operating-system sandbox. Today it is only supported in the native macOS desktop application (other platforms report `platform_unsupported`). `settings.sandbox.docker` is read live, so a System Settings toggle shows up without a restart. `settings.weknoracloud` says whether the deployment opted in to WeKnoraCloud through `AIKB_WEKNORACLOUD_ENABLED`; when off it reports `supported: false` with reason `disabled_by_deployment`, and the frontend hides the AI KB Cloud settings section.
 
 ### POST /api/v1/system/host-project-dir
 

@@ -170,6 +170,9 @@ func (e *weKnoraCloudEngine) FileTypes(_ bool) []string {
 }
 
 func (e *weKnoraCloudEngine) CheckAvailable(_ bool, overrides map[string]string) (bool, string) {
+	if !WeKnoraCloudEnabled() {
+		return false, WeKnoraCloudDisabledReason
+	}
 	if overrides["weknoracloud_app_id"] != "" {
 		return true, ""
 	}
@@ -179,6 +182,9 @@ func (e *weKnoraCloudEngine) CheckAvailable(_ bool, overrides map[string]string)
 func (e *weKnoraCloudEngine) NewReader(
 	ctx context.Context, deps ReaderDeps,
 ) (interfaces.DocReader, error) {
+	if !WeKnoraCloudEnabled() {
+		return nil, errEngineUnavailable(WeKnoraCloudEngineName, WeKnoraCloudDisabledReason)
+	}
 	if deps.WeKnoraCloudCredentials == nil {
 		return nil, errEngineUnavailable(WeKnoraCloudEngineName, "no credential resolver configured")
 	}

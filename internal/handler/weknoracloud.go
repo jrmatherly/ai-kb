@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	apperrors "github.com/jrmatherly/ai-kb/internal/errors"
+	"github.com/jrmatherly/ai-kb/internal/infrastructure/docparser"
 	"github.com/jrmatherly/ai-kb/internal/types/interfaces"
 )
 
@@ -40,6 +41,10 @@ type weKnoraCloudCredentialsRequest struct {
 // @Security     ApiKeyAuth
 // @Router       /weknoracloud/credentials [post]
 func (h *WeKnoraCloudHandler) SaveCredentials(c *gin.Context) {
+	if !docparser.WeKnoraCloudEnabled() {
+		_ = c.Error(apperrors.NewBadRequestError(docparser.WeKnoraCloudDisabledReason))
+		return
+	}
 	var req weKnoraCloudCredentialsRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		_ = c.Error(apperrors.NewBadRequestError(err.Error()))
@@ -69,6 +74,10 @@ func (h *WeKnoraCloudHandler) SaveCredentials(c *gin.Context) {
 // @Security     ApiKeyAuth
 // @Router       /models/weknoracloud/status [get]
 func (h *WeKnoraCloudHandler) Status(c *gin.Context) {
+	if !docparser.WeKnoraCloudEnabled() {
+		_ = c.Error(apperrors.NewBadRequestError(docparser.WeKnoraCloudDisabledReason))
+		return
+	}
 	result, err := h.svc.CheckStatus(c.Request.Context())
 	if err != nil {
 		_ = c.Error(apperrors.NewInternalServerError(err.Error()))

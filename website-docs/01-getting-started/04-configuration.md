@@ -275,6 +275,7 @@ These variables are only used when building the frontend image with `docker comp
 | Name | Default | Description |
 | --- | --- | --- |
 | `DOCREADER_ADDR` / `DOCREADER_TRANSPORT` | docreader:50051 / grpc | Address and transport (`grpc`/`http`) the app connects with |
+| `AIKB_WEKNORACLOUD_ENABLED` | false | Opt in to AI KB Cloud (upstream WeKnoraCloud), a hosted third-party parser and model provider. While off, the `weknoracloud` parser engine reports "disabled by this deployment", the Settings entry and the model provider are hidden, and its credential routes answer 400. Read at call time, no restart needed |
 | `DOCREADER_GRPC_MAX_WORKERS` / `DOCREADER_GRPC_PORT` / `DOCREADER_GRPC_MAX_FILE_SIZE_MB` | 4 / 50051 / follows MAX_FILE_SIZE_MB | gRPC server parameters |
 | `GRPC_TLS_ENABLED/CERT/KEY/CA/SERVER_NAME`, `GRPC_MTLS_REQUIRE_CLIENT_CERT`, `GRPC_AUTH_TOKEN` | false / empty | TLS/mTLS and token authentication on the app to docreader link |
 | `DOCREADER_PDF_RENDER_DPI` / `DOCREADER_PDF_JPEG_QUALITY` / `DOCREADER_PDF_RENDER_MAX_EDGE` | 200 / 85 / 2000 | PDF rendering |
@@ -298,7 +299,7 @@ These variables are only used when building the frontend image with `docker comp
 | `AIKB_MINERU_TIMEOUT` | 1000s | Timeout of one self-hosted MinerU parse (the whole parse task with the V1 API, the `/file_parse` request on older versions); same format and default rules as above; very large PDFs also need headroom in the outer timeouts |
 | `AIKB_MINERU_CLOUD_TIMEOUT` | 600s | Maximum time to poll MinerU cloud (mineru.net) for a parse result; same format and default rules as above |
 | `AIKB_PADDLEOCR_VL_CLOUD_TIMEOUT` | 600s | Maximum time to poll PaddleOCR-VL cloud (AI Studio) for a parse result; same format and default rules as above |
-| `AIKB_WEKNORACLOUD_TIMEOUT` | 20m | Maximum time to poll the WeKnoraCloud managed docreader for a task result; same format and default rules as above; should be shorter than `AIKB_DOCREADER_CALL_TIMEOUT` |
+| `AIKB_WEKNORACLOUD_TIMEOUT` | 20m | Maximum time to poll the WeKnoraCloud managed docreader for a task result; same format and default rules as above; should be shorter than `AIKB_DOCREADER_CALL_TIMEOUT`; used only when `AIKB_WEKNORACLOUD_ENABLED=true` |
 
 Sandbox backends, network policy, script switches and personal environment variables are managed through workspace configuration and the API; see [Skills and sandbox](../03-features/22-skills-sandbox.md). Long-term memory and auto-tagging are both off by default and use the workspace memory_config and the knowledge base auto_tag_config respectively; no global environment variable replaces the per-workspace configuration.
 

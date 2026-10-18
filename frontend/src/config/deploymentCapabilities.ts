@@ -13,6 +13,7 @@ export const DEPLOYMENT_CAPABILITY_KEYS = [
   'settings.sandbox.docker',
   'settings.sandbox.host',
   'settings.sandbox.remote',
+  'settings.weknoracloud',
 ] as const
 
 export type DeploymentCapabilityKey = typeof DEPLOYMENT_CAPABILITY_KEYS[number]
@@ -68,6 +69,7 @@ export const SETTINGS_SECTION_CAPABILITY: Partial<Record<string, DeploymentCapab
   // nowhere to inject them, so the page would only ever show its empty state.
   envvars: 'settings.sandbox',
   mcp: 'settings.mcp',
+  weknoracloud: 'settings.weknoracloud',
 }
 
 /**

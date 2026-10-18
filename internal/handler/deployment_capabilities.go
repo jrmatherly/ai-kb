@@ -25,6 +25,7 @@ var DeploymentCapabilityKeys = []string{
 	"settings.sandbox.docker",
 	"settings.sandbox.host",
 	"settings.sandbox.remote",
+	"settings.weknoracloud",
 }
 
 // DeploymentCapability describes whether a deployment exposes a feature route.
@@ -55,6 +56,7 @@ type DeploymentFeatureAvailability struct {
 	SandboxDocker bool
 	SandboxHost   bool
 	SandboxRemote bool
+	WeKnoraCloud  bool
 }
 
 func supportedDeploymentCapability(supported bool) DeploymentCapability {
@@ -101,6 +103,11 @@ func BuildDeploymentCapabilities(
 		sandboxRemote.Reason = "route_not_registered"
 	}
 
+	weKnoraCloud := DeploymentCapability{Supported: available.WeKnoraCloud}
+	if !available.WeKnoraCloud {
+		weKnoraCloud.Reason = "disabled_by_deployment"
+	}
+
 	return DeploymentCapabilitiesData{
 		Edition: edition,
 		Capabilities: map[string]DeploymentCapability{
@@ -118,6 +125,7 @@ func BuildDeploymentCapabilities(
 			"settings.sandbox.docker": sandboxDocker,
 			"settings.sandbox.host":   sandboxHost,
 			"settings.sandbox.remote": sandboxRemote,
+			"settings.weknoracloud":   weKnoraCloud,
 		},
 	}
 }

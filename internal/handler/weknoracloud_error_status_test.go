@@ -9,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	apperrors "github.com/jrmatherly/ai-kb/internal/errors"
+	"github.com/jrmatherly/ai-kb/internal/infrastructure/docparser"
 	"github.com/jrmatherly/ai-kb/internal/middleware"
 	"github.com/jrmatherly/ai-kb/internal/types/interfaces"
 )
@@ -29,6 +30,7 @@ func (weKnoraCloudSaveStub) SaveCredentials(_ context.Context, appID, _ string) 
 
 func TestWeKnoraCloudSaveCredentialsErrorStatus(t *testing.T) {
 	gin.SetMode(gin.TestMode)
+	t.Setenv(docparser.WeKnoraCloudEnabledEnv, "true")
 	r := gin.New()
 	r.Use(middleware.ErrorHandler())
 	r.POST("/weknoracloud/credentials", NewWeKnoraCloudHandler(weKnoraCloudSaveStub{}).SaveCredentials)

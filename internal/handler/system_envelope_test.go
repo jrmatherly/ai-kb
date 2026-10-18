@@ -10,6 +10,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/jrmatherly/ai-kb/internal/application/service"
+	"github.com/jrmatherly/ai-kb/internal/infrastructure/docparser"
 	"github.com/jrmatherly/ai-kb/internal/middleware"
 	"github.com/jrmatherly/ai-kb/internal/types"
 	"github.com/jrmatherly/ai-kb/internal/types/interfaces"
@@ -30,6 +31,7 @@ func (missingMCPEndpointService) Get(context.Context, uint64, string) (*types.MC
 
 func TestSystemAreaHandlersReturnErrorEnvelope(t *testing.T) {
 	gin.SetMode(gin.TestMode)
+	t.Setenv(docparser.WeKnoraCloudEnabledEnv, "true")
 	r := gin.New()
 	r.Use(middleware.ErrorHandler())
 	r.GET("/models/weknoracloud/status", NewWeKnoraCloudHandler(failingWeKnoraCloudService{}).Status)

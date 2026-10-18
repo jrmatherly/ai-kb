@@ -9,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jrmatherly/ai-kb/internal/errors"
 	"github.com/jrmatherly/ai-kb/internal/handler/dto"
+	"github.com/jrmatherly/ai-kb/internal/infrastructure/docparser"
 	"github.com/jrmatherly/ai-kb/internal/logger"
 	"github.com/jrmatherly/ai-kb/internal/models"
 	"github.com/jrmatherly/ai-kb/internal/models/api"
@@ -224,6 +225,9 @@ func (h *ModelHandler) ListModelProviders(c *gin.Context) {
 	includeURLs := dto.CanViewIntegrationSecrets(ctx)
 	result := make([]ModelProviderDTO, 0, len(vendors))
 	for _, v := range vendors {
+		if weKnoraCloudProviderDisabled(v.ID) {
+			continue
+		}
 		p := providerDTO(v, backendType, true)
 		if !includeURLs {
 			p.DefaultURLs = nil
@@ -232,6 +236,20 @@ func (h *ModelHandler) ListModelProviders(c *gin.Context) {
 	}
 	logger.Infof(ctx, "Retrieved %d providers", len(result))
 	c.JSON(http.StatusOK, gin.H{"success": true, "data": result})
+}
+
+// weKnoraCloudProviderDisabled reports whether provider is the hosted
+// WeKnoraCloud vendor while the deployment has not opted in. The catalog, the
+// create and update handlers and the credential routes all gate on it so a
+// direct API call cannot reach the provider the UI no longer lists.
+func weKnoraCloudProviderDisabled(provider string) bool {
+	return provider == providers.WeKnoraCloudID && !docparser.WeKnoraCloudEnabled()
+}
+
+func errWeKnoraCloudDisabled() error {
+	return errors.NewBadRequestError(
+		"provider " + providers.WeKnoraCloudID + " is " + docparser.WeKnoraCloudDisabledReason,
+	)
 }
 
 // ResolveModelCatalog godoc

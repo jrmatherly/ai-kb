@@ -346,6 +346,8 @@ services:
       - AIKB_MINERU_TIMEOUT=${AIKB_MINERU_TIMEOUT:-}
       # Maximum time to poll MinerU cloud for parse results (Go duration, default 600s)
       - AIKB_MINERU_CLOUD_TIMEOUT=${AIKB_MINERU_CLOUD_TIMEOUT:-}
+      # AI KB Cloud (upstream WeKnoraCloud) is a hosted third-party parser and model provider; off unless you hold its credentials.
+      - AIKB_WEKNORACLOUD_ENABLED=${AIKB_WEKNORACLOUD_ENABLED:-false}
       # Maximum time to poll PaddleOCR-VL cloud for parse results (Go duration, default 600s)
       - AIKB_PADDLEOCR_VL_CLOUD_TIMEOUT=${AIKB_PADDLEOCR_VL_CLOUD_TIMEOUT:-}
       # Maximum time to poll the WeKnoraCloud managed docreader for task results (Go duration, default 20m, should be less than the DocReader RPC timeout)

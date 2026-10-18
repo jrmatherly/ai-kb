@@ -430,6 +430,17 @@ The chart has no MinIO or Qdrant components. Run them separately and configure
 the app through `app.env` / `app.extraEnv` (`STORAGE_TYPE`, `RETRIEVE_DRIVER` and
 the provider's variables).
 
+Deployment gates that are not chart values also ride `app.extraEnv`, for example
+`AIKB_WEKNORACLOUD_ENABLED` (default off; set `true` only with WeKnoraCloud
+credentials):
+
+```yaml
+app:
+  extraEnv:
+    - name: AIKB_WEKNORACLOUD_ENABLED
+      value: "true"
+```
+
 ### Ingress annotations
 
 `ingress.annotations` defaults to ingress-nginx timeouts and

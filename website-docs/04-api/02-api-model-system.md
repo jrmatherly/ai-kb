@@ -1,6 +1,6 @@
 # API reference: models and initialization
 
-Manage models, test connections, initialize knowledge bases and start evaluation tasks. The WeKnoraCloud endpoints connect that cloud service.
+Manage models, test connections, initialize knowledge bases and start evaluation tasks. The WeKnoraCloud endpoints connect that cloud service and are enabled per deployment (`AIKB_WEKNORACLOUD_ENABLED`).
 
 System information and system administration (`/system`, `/system/admin`) are in [System and platform administration](./02-api-system.md).
 
@@ -10,7 +10,7 @@ API key: `manage_models` or full-access.
 
 ### GET /api/v1/models/providers
 
-Purpose: the provider catalog. The frontend renders the provider dropdown, icons, extra fields and model picker from it. Permission: Viewer+. Query parameter: `model_type` (optional: `chat/embedding/rerank/vllm/asr`; backend values such as `KnowledgeQA` are accepted too; an unknown value returns 400). When set, only providers that support that type are returned, with that type's models. Handler: `internal/handler/model_catalog.go`. The provider list itself is described in [Model management](../03-features/06-models.md#built-in-providers).
+Purpose: the provider catalog. The frontend renders the provider dropdown, icons, extra fields and model picker from it. Permission: Viewer+. Query parameter: `model_type` (optional: `chat/embedding/rerank/vllm/asr`; backend values such as `KnowledgeQA` are accepted too; an unknown value returns 400). When set, only providers that support that type are returned, with that type's models. The `weknoracloud` provider is omitted unless the deployment sets `AIKB_WEKNORACLOUD_ENABLED=true`. Handler: `internal/handler/model_catalog.go`. The provider list itself is described in [Model management](../03-features/06-models.md#built-in-providers).
 
 Response: 200 `{"success":true,"data":[ModelProviderDTO]}`, each item:
 
@@ -55,7 +55,7 @@ Purpose: create a model. Permission: Admin+.
 | `description` | string | No | Description |
 | `parameters` | object | Yes (`binding:"required"`) | Connection parameters (`base_url`, `provider`, `extra_config`, `spec`, `context_window` and others; fields in [Model management](../03-features/06-models.md#model-configuration-fields)). `api_key` / `app_secret` can be sent on create and are changed afterwards through the credentials sub-resource |
 
-`parameters` is validated against the model catalog (an unknown protocol, a wrong compat key or an invalid thinking level returns 400), and `base_url` goes through SSRF validation.
+`parameters` is validated against the model catalog (an unknown protocol, a wrong compat key or an invalid thinking level returns 400), and `base_url` goes through SSRF validation. A model whose `parameters.provider` is `weknoracloud` returns 400 while `AIKB_WEKNORACLOUD_ENABLED` is off; PUT on such a model returns the same 400.
 
 Self-hosted `generic` / `Qwen3-VL-Embedding` models submit independent inputs as a batch through a two-dimensional `messages` array by default (verified with vLLM 0.29.0); a single input keeps the one-dimensional conversation format. Text is still batched by `BATCH_EMBED_SIZE`; image batch calls default to at most 5 images, a conservative client-side batch size adjustable through `parameters.spec.compat.max_image_batch_size`. Upload parsing still schedules tasks per image and never merges images across tasks. If an older server does not support two-dimensional `messages`, set `parameters.spec.compat.batch_messages=false` to go back to one request per input; other models use conversation batching only when that capability is enabled explicitly.
 
@@ -190,13 +190,13 @@ curl -X DELETE $BASE/api/v1/models/m-1/credentials/api_key -H "Authorization: Be
 
 ## WeKnoraCloud
 
-Handler: `internal/handler/weknoracloud.go`. API key: `manage_models`/full.
+Handler: `internal/handler/weknoracloud.go`. API key: `manage_models`/full. Both endpoints are available only when the deployment sets `AIKB_WEKNORACLOUD_ENABLED=true` (default off, read per request); while it is off they return 400.
 
 ### POST /api/v1/weknoracloud/credentials
 
 Purpose: save the WeKnoraCloud SaaS credentials. Permission: Admin+. Body: `{"app_id":"...","app_secret":"..."}` (both `binding:"required"`).
 
-Response: 200 `{"success":true,"message":"Credentials saved"}`. Credentials the WeKnoraCloud check rejects (HTTP 401 or 403) return 400; an unreachable or failing WeKnoraCloud returns 502 (code 1011) with the cause in the message.
+Response: 200 `{"success":true,"message":"Credentials saved"}`. Credentials the WeKnoraCloud check rejects (HTTP 401 or 403) return 400; an unreachable or failing WeKnoraCloud returns 502 (code 1011) with the cause in the message; 400 also when the deployment gate is off.
 
 ```bash
 curl -X POST $BASE/api/v1/weknoracloud/credentials -H "Authorization: Bearer $TOKEN" \
@@ -207,7 +207,7 @@ curl -X POST $BASE/api/v1/weknoracloud/credentials -H "Authorization: Bearer $TO
 
 Purpose: WeKnoraCloud readiness probe. Permission: Viewer+.
 
-Response: 200, the service status object.
+Response: 200, the service status object; 400 when the deployment gate is off.
 
 ```bash
 curl $BASE/api/v1/models/weknoracloud/status -H "Authorization: Bearer $TOKEN"

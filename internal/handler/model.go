@@ -89,6 +89,10 @@ func (h *ModelHandler) CreateModel(c *gin.Context) {
 	logger.Infof(ctx, "Creating model, Tenant ID: %d, Model name: %s, Model type: %s",
 		tenantID, secutils.SanitizeForLog(req.Name), secutils.SanitizeForLog(string(req.Type)))
 
+	if weKnoraCloudProviderDisabled(req.Parameters.Provider) {
+		_ = c.Error(errWeKnoraCloudDisabled())
+		return
+	}
 	// SSRF validation for model BaseURL
 	if req.Parameters.BaseURL != "" {
 		if err := secutils.ValidateURLForSSRF(req.Parameters.BaseURL); err != nil {
@@ -788,6 +792,10 @@ func (h *ModelHandler) UpdateModel(c *gin.Context) {
 	}
 	model.Description = req.Description
 
+	if weKnoraCloudProviderDisabled(req.Parameters.Provider) {
+		_ = c.Error(errWeKnoraCloudDisabled())
+		return
+	}
 	// SSRF validation for updated model BaseURL
 	if req.Parameters.BaseURL != "" {
 		if err := secutils.ValidateURLForSSRF(req.Parameters.BaseURL); err != nil {

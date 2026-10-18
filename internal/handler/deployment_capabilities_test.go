@@ -128,3 +128,12 @@ func TestRemoteSandboxCapabilityIsOffOnLiteDesktop(t *testing.T) {
 	none := BuildDeploymentCapabilities("standard", DeploymentFeatureAvailability{})
 	require.Equal(t, "route_not_registered", none.Capabilities["settings.sandbox.remote"].Reason)
 }
+
+func TestWeKnoraCloudCapabilityIsOffUnlessEnabled(t *testing.T) {
+	off := BuildDeploymentCapabilities("standard", DeploymentFeatureAvailability{})
+	require.False(t, off.Capabilities["settings.weknoracloud"].Supported)
+	require.Equal(t, "disabled_by_deployment", off.Capabilities["settings.weknoracloud"].Reason)
+
+	on := BuildDeploymentCapabilities("standard", DeploymentFeatureAvailability{WeKnoraCloud: true})
+	require.True(t, on.Capabilities["settings.weknoracloud"].Supported)
+}

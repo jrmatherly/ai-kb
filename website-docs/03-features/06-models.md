@@ -243,12 +243,12 @@ Only rerank models whose catalog `input` includes `image` (`jina-reranker-m0` an
 
 ## Built-in providers
 
-Find out which provider to choose for each model type. There are 30 built-in providers, and Ollama connects local models on top of that. The model types each provider supports (✓ means supported):
+Find out which provider to choose for each model type. There are 30 built-in providers (WeKnoraCloud is listed only when the deployment enables it), and Ollama connects local models on top of that. The model types each provider supports (✓ means supported):
 
 | Provider | ID | Chat | Embedding | Rerank | Vision | Speech |
 | --- | --- | :-: | :-: | :-: | :-: | :-: |
 | Custom (OpenAI-compatible) | `generic` | ✓ | ✓ | ✓ | ✓ | ✓ |
-| WeKnoraCloud | `weknoracloud` | ✓ | ✓ | ✓ | ✓ | |
+| WeKnoraCloud (only with `AIKB_WEKNORACLOUD_ENABLED=true`) | `weknoracloud` | ✓ | ✓ | ✓ | ✓ | |
 | Alibaba Cloud DashScope | `aliyun` | ✓ | ✓ | ✓ | ✓ | ✓ |
 | Zhipu BigModel | `zhipu` | ✓ | ✓ | ✓ | ✓ | ✓ |
 | Volcengine | `volcengine` | ✓ | ✓ | ✓ | ✓ | |
@@ -278,7 +278,7 @@ Find out which provider to choose for each model type. There are 30 built-in pro
 | Pinecone | `pinecone` | | | ✓ | | |
 | Cohere | `cohere` | | | ✓ | | |
 
-"Vision" in the table means the provider can be chosen under the vision model type; whether a chat model itself accepts images is decided by the model catalog and the "Supports vision / multimodal" switch. WeKnoraCloud needs its credentials saved in Settings first; the model name is one of `chat`, `embedding`, `rerank`, `vlm`.
+"Vision" in the table means the provider can be chosen under the vision model type; whether a chat model itself accepts images is decided by the model catalog and the "Supports vision / multimodal" switch. WeKnoraCloud needs its credentials saved in Settings first; the model name is one of `chat`, `embedding`, `rerank`, `vlm`. The provider is listed only when the deployment sets `AIKB_WEKNORACLOUD_ENABLED=true`; otherwise the catalog omits it and creating a model with it returns 400.
 
 The provider list, default endpoints and model catalog are served by the backend (`GET /api/v1/models/providers`); operators can change or add providers through the [deployment overlay](#deployment-overlay-config-models-json).
 
@@ -421,7 +421,7 @@ A provider declares extra fields in its definition, the editor renders them dyna
 | `POST /models` / `GET /models` / `GET /models/:id` / `PUT /models/:id` / `DELETE /models/:id` | Model CRUD |
 | `PUT /models/:id/credentials`, `DELETE /models/:id/credentials/:field` | Credential sub-resource; an `api_key` in the `PUT /models/:id` body is ignored with a warning |
 | `POST /models/:id/debug` | Model debugging (below) |
-| `GET /models/weknoracloud/status` | WeKnoraCloud credential status |
+| `GET /models/weknoracloud/status` | WeKnoraCloud credential status (400 unless `AIKB_WEKNORACLOUD_ENABLED=true`) |
 
 Full requests and responses: [API reference: models and initialization](../04-api/02-api-model-system.md).
 

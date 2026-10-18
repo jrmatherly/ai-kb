@@ -398,7 +398,7 @@ These variables apply to the Go main service, not the docreader container:
 | `AIKB_MINERU_TIMEOUT` | Go duration | `1000s` | Timeout of one self-hosted MinerU parse (the V1 API covers the whole job from upload to download, the legacy API covers the `/file_parse` request); empty, invalid or non-positive values use the default |
 | `AIKB_MINERU_CLOUD_TIMEOUT` | Go duration | `600s` | Longest time MinerU cloud (mineru.net) results are polled; empty, invalid or non-positive values use the default |
 | `AIKB_PADDLEOCR_VL_CLOUD_TIMEOUT` | Go duration | `600s` | Longest time PaddleOCR-VL cloud (AI Studio) results are polled; empty, invalid or non-positive values use the default |
-| `AIKB_WEKNORACLOUD_TIMEOUT` | Go duration | `20m` | Longest time the WeKnoraCloud managed docreader is polled for a task result; should be shorter than `AIKB_DOCREADER_CALL_TIMEOUT`; empty, invalid or non-positive values use the default |
+| `AIKB_WEKNORACLOUD_TIMEOUT` | Go duration | `20m` | Longest time the WeKnoraCloud managed docreader is polled for a task result; should be shorter than `AIKB_DOCREADER_CALL_TIMEOUT`; empty, invalid or non-positive values use the default; used only when `AIKB_WEKNORACLOUD_ENABLED=true` |
 
 For large files, leave headroom from the inside out, for example PaddleOCR-VL or MinerU `90m`, docreader `100m`, document processing `2h`.
 

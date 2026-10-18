@@ -2,6 +2,7 @@ package router
 
 import (
 	"github.com/jrmatherly/ai-kb/internal/handler"
+	"github.com/jrmatherly/ai-kb/internal/infrastructure/docparser"
 	"github.com/jrmatherly/ai-kb/internal/sandbox"
 )
 
@@ -27,5 +28,6 @@ func deploymentCapabilitiesFromRouter(params RouterParams) handler.DeploymentCap
 		SandboxDocker: sandbox.DockerBackendEnabled(),
 		SandboxHost:   params.HostSandbox.Manager != nil,
 		SandboxRemote: params.SandboxConfigHandler != nil && !params.HostSandbox.Desktop,
+		WeKnoraCloud:  docparser.WeKnoraCloudEnabled(),
 	})
 }
