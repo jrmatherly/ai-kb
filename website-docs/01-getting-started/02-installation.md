@@ -199,7 +199,7 @@ PLAYWRIGHT_WEBKIT_DOWNLOAD_HOST=https://your-playwright-mirror.example.com \
 
 `helm/Chart.yaml`: apiVersion v2, chart name `ai-kb`, appVersion follows the release tag (for example v2026.10.13), requires Kubernetes >= 1.25.0.
 
-The chart contains six components: `app` (`ghcr.io/jrmatherly/ai-kb-app`), `frontend` (`ghcr.io/jrmatherly/ai-kb-ui`), `website` (`ghcr.io/jrmatherly/ai-kb-website`, the documentation, reached at `/docs/` on the Ingress host; `website.enabled: false` drops it), `docreader`, `postgresql` (ParadeDB image; the chart default is `paradedb/paradedb:v0.26.1-pg18`, the same as Compose) and `redis` (`redis:8.10.2-alpine`), plus optional `minio` and `neo4j`.
+The chart contains six components: `app` (`ghcr.io/jrmatherly/ai-kb-app`), `frontend` (`ghcr.io/jrmatherly/ai-kb-ui`), `website` (`ghcr.io/jrmatherly/ai-kb-website`, the documentation, reached at `/docs/` on the Ingress host; `website.enabled: false` drops it), `docreader`, `postgresql` (ParadeDB image; the chart default is `paradedb/paradedb:v0.26.1-pg18`, the same as Compose) and `redis` (`redis:8.10.2-alpine`), plus the optional `neo4j`. Every workload runs under the Kubernetes `restricted` Pod Security Standard (non-root, read-only root filesystem, no capabilities); the chart README lists each component's user and writable paths. Object storage other than `local` is an external service named through `app.extraEnv`.
 
 Key settings in `helm/values.yaml`:
 
@@ -228,7 +228,7 @@ secrets:                            # required, or reference an existing Secret 
   systemAesKey: ""                  # 32-byte AES-256 master key
 ```
 
-`global.maxFileSizeMB` means the same as `MAX_FILE_SIZE_MB` in Compose. The chart writes it into frontend (Nginx request body limit), app (upload limit) and docreader (gRPC message limit). The optional MinIO image is the community build `pgsty/minio`.
+`global.maxFileSizeMB` means the same as `MAX_FILE_SIZE_MB` in Compose. The chart writes it into frontend (Nginx request body limit), app (upload limit) and docreader (gRPC message limit).
 
 ```bash
 helm install ai-kb ./helm -n ai-kb --create-namespace \
@@ -305,6 +305,7 @@ flowchart TB
     subgraph k8s["Kubernetes (Helm)"]
         direction LR
         ING["Ingress"] --> FE2["frontend Deployment"] --> A2["app Deployment"]
+        ING --> W2["website Deployment (/docs)"]
         A2 --> PVC1[("PVC: postgres 10Gi / redis 1Gi / data-files 10Gi")]
         A2 --> D2["docreader Deployment"]
     end

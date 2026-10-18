@@ -19,7 +19,7 @@ Validate
 
 Release
 
-- `make bump-version [VERSION=YYYY.M.D[.MICRO]]`, `make bump-lib LIB=dsh-ai-kb|mcp-server|helm-chart PART=patch|minor|major`, `make check-version`.
+- `make bump-version [VERSION=YYYY.M.D[.MICRO]]` (also raises the Helm chart patch version, so each product release publishes a chart pinning its image tag), `make bump-lib LIB=dsh-ai-kb|extension|mcp-server|helm-chart PART=patch|minor|major`, `make check-version`.
 
 Upstream and English-only
 

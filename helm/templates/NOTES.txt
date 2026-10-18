@@ -91,7 +91,7 @@ To use a local Ollama, point the app at it:
 Supported LLM backends:
   - Ollama (local)
   - OpenAI API compatible endpoints
-  - Qwen, DeepSeek, and other Chinese LLMs
+  - Qwen, DeepSeek and other hosted providers
 
 {{- if .Values.neo4j.enabled }}
 

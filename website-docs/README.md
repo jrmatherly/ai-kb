@@ -100,7 +100,7 @@ You can also copy just the `website-docs/` directory and run `docker build -t ai
 
 The domain root `/` serves the homepage and `/docs/` serves the documentation, so the reverse proxy must cover the whole site and keep the request path.
 
-After building, you can run the following check on a machine with Node.js 24 and Docker; it needs no npm dependencies. It starts temporary containers, cleans them up, and checks routing for both parts of the site, static assets, 404 pages, compression and response headers:
+After building, you can run the following check on a machine with Node.js 24 and Docker; it needs no npm dependencies. It starts temporary containers on a read-only root filesystem with no capabilities (the same constraints as the Helm chart), cleans them up, and checks routing for both parts of the site, static assets, 404 pages, compression and response headers:
 
 ```bash
 cd website-docs

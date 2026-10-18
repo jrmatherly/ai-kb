@@ -435,7 +435,7 @@ filesystem, with emptyDirs for the paths each image writes:
 | docreader | 1000 | 50051 | `/tmp` |
 | postgresql | 999 | 5432 | the data volume, `/var/run/postgresql`, `/tmp` |
 | redis | 999 | 6379 | the data volume |
-| neo4j (optional) | 7474 | 7474, 7687 | the data volume, `/tmp`, `/logs`, `/var/lib/neo4j/{conf,plugins,import}` |
+| neo4j (optional) | 7474 | 7474, 7687 | the data volume, `/tmp`, `/logs`, `/var/lib/neo4j/{conf,plugins,import}`; the `copy-conf` initContainer seeds `conf` from the image, without it neo4j runs with CYPHER_5 and no JVM flags |
 
 Override any of this through
 `<component>.podSecurityContext` and `<component>.securityContext`.

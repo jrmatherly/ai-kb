@@ -10,5 +10,6 @@
   - `frontend/` Vue 3 + Vite + TS, `frontend/src/i18n/locales/en-US.ts`, the only message bundle (key-usage audit `localeKeyAudit.test.ts`). Details: `mem:frontend/core`.
   - `docreader/` Python gRPC document parser (port 50051), `uv`-managed. Details: `mem:docreader/core`.
   - `migrations/{mysql,paradedb,sqlite,versioned}`, `config/*.yaml` (builtin agents, agent type presets, models overlay), `helm/`, `docker/`, `docker-compose*.yml`, `website-docs/` docs site, `docs/` swagger output + poc.
+- Helm chart: semver separate from the product CalVer, published to `oci://ghcr.io/jrmatherly/ai-kb/charts/ai-kb` by `helm.yml` when a chart version lands on main (`make bump-version` raises the patch too). Every workload fits the `restricted` Pod Security Standard; `helm/tests/test_pod_security.py` pins it, including neo4j's conf-seeding initContainer. Upstream remote name and review flow: `mem:upstream`.
 - Generated and committed (regenerate, never hand-merge): `docs/docs.go`, `docs/swagger.{json,yaml}` (`make docs`), model catalog (`make model-catalog-generate`), docreader proto stubs (`make -C docreader proto`).
 - Build/test/lint stack: `mem:tech_stack`. Commands: `mem:suggested_commands`. Style and layering: `mem:conventions`. Done criteria: `mem:task_completion`.
