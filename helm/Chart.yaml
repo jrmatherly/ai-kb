@@ -4,7 +4,7 @@ description: |
   AI KB - AI-powered Knowledge RAG Platform for building intelligent knowledge bases
   with document parsing, vector search, and LLM integration.
 type: application
-version: 0.3.0
+version: 0.4.0
 appVersion: "v2026.10.17.1"
 kubeVersion: ">=1.25.0-0"
 home: https://github.com/jrmatherly/ai-kb

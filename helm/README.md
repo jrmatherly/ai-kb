@@ -25,7 +25,7 @@ AI KB is an intelligent knowledge base platform that combines:
 The chart is published to GHCR on every chart version bump:
 
 ```bash
-helm install ai-kb oci://ghcr.io/jrmatherly/ai-kb/charts/ai-kb --version 0.3.0 \
+helm install ai-kb oci://ghcr.io/jrmatherly/ai-kb/charts/ai-kb --version 0.4.0 \
   --set secrets.dbPassword=<secure-password> \
   --set secrets.redisPassword=<secure-password> \
   --set secrets.jwtSecret=<secure-random-string>
