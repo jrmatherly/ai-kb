@@ -428,12 +428,11 @@ jobs:
     permissions:
       contents: write
     steps:
-      # Keeps credentials: the last step pushes the formula commit to main.
       - name: 📥 Checkout main
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: main
-          persist-credentials: true
+          persist-credentials: false
 
       - name: 🛑 Wait for release assets to be available
         run: sleep 15
@@ -441,14 +440,21 @@ jobs:
       - name: 🍺 Update formula
         run: ./scripts/update-homebrew-formula.sh "$TAG"
 
-      - name: 🚀 Commit and push
+      # main requires verified signatures, which a git push from the runner cannot give.
+      # A contents-API commit made as the Actions app with no custom author is signed by GitHub.
+      - name: 🚀 Commit through the API
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add Formula/ai-kb-lite.rb
-          if git diff --cached --quiet; then
+          if git diff --quiet -- Formula/ai-kb-lite.rb; then
             echo "No changes to Formula"
-          else
-            git commit -m "chore(formula): update ai-kb-lite to ${TAG}"
-            git push origin main
+            exit 0
           fi
+          sha=$(gh api "repos/${GH_REPO}/contents/Formula/ai-kb-lite.rb?ref=main" --jq .sha)
+          gh api --method PUT "repos/${GH_REPO}/contents/Formula/ai-kb-lite.rb" \
+            -f message="chore(formula): update ai-kb-lite to ${TAG}" \
+            -f branch=main \
+            -f sha="$sha" \
+            -f content="$(base64 -w0 Formula/ai-kb-lite.rb)" \
+            --jq '"Committed \(.commit.sha) verified=\(.commit.verification.verified)"'
