@@ -20,14 +20,14 @@ The retrieval engine (where vector and keyword indexes are stored) is decoupled 
 
 ```text
 migrations/
-├── versioned/     # PostgreSQL/ParadeDB versioned migrations: 000000-000115, 116 versions (232 .up/.down.sql files)
-├── sqlite/        # SQLite migrations: 000000_init (flattened full schema) + incremental versions 000001-000034
+├── versioned/     # PostgreSQL/ParadeDB versioned migrations: 000000-000117, 118 versions (236 .up/.down.sql files)
+├── sqlite/        # SQLite migrations: 000000_init (flattened full schema) + incremental versions 000001-000036
 ├── paradedb/      # ParadeDB extra scripts: 00-init-db.sql, 01-migrate-to-paradedb.sql (switching an existing database)
 └── mysql/         # 00-init-db.sql, a legacy one-off MySQL table script (not wired into the code)
 ```
 
-- PostgreSQL's `versioned/` runs from `000000_init` to `000115_pg_search_02511`.
-- `sqlite/` uses `000000_init` as a flattened full initialization (dialect differences such as JSONB→TEXT and SERIAL→AUTOINCREMENT already adapted), followed by incremental versions (currently up to `000034_mcp_metadata`), also applied in order by golang-migrate.
+- PostgreSQL's `versioned/` runs from `000000_init` to `000117_tenant_api_key_hint`.
+- `sqlite/` uses `000000_init` as a flattened full initialization (dialect differences such as JSONB→TEXT and SERIAL→AUTOINCREMENT already adapted), followed by incremental versions (currently up to `000036_tenant_api_key_hint`), also applied in order by golang-migrate.
 - Extensions are created by the `versioned/` migrations themselves: `uuid-ossp` in 000000, and `vector`, `pg_trgm` and `pg_search` in 000002. The BM25 index is built on `embeddings.content` with the Lindera tokenizer `chinese_lindera`.
 - `paradedb/00-init-db.sql` contains, besides the extensions, an old set of table definitions. **Neither Compose nor the code references it.** Do not mount it as a database initdb script: the old tables it creates make `000000_init` fail.
 
@@ -345,7 +345,7 @@ erDiagram
 
 ## Migration mechanism (golang-migrate)
 
-The migration tool is **golang-migrate/migrate v4** (`go.mod`: `github.com/golang-migrate/migrate/v4 v4.19.1`), and its state lives in the `schema_migrations` table (`version` + `dirty`). There are two ways to run migrations:
+The migration tool is **golang-migrate/migrate v4** (`go.mod`: `github.com/golang-migrate/migrate/v4 v4.20.1`), and its state lives in the `schema_migrations` table (`version` + `dirty`). There are two ways to run migrations:
 
 ### Automatic migration at startup (default)
 

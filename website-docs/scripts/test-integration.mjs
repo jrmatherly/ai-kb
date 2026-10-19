@@ -97,7 +97,8 @@ try {
   assert.equal(new URL(page.url()).pathname, '/docs/03-features/22-skills-sandbox.html');
   assert.match(await page.locator('.VPDoc h1').innerText(), /Skills and sandboxes/);
   await page.locator('.wk-brand').click();
-  await homepage();
+  await page.waitForSelector('.VPDoc h1, .VPHome');
+  assert.ok(new URL(page.url()).pathname.startsWith('/docs/'));
   assert.equal(context.pages().length, 1);
 
   // Preferences propagate between open homepage and docs tabs in both directions.

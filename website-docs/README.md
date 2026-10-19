@@ -10,7 +10,7 @@ Product, deployment, API and development documentation is maintained here. The s
 
 In production the documentation is path-mounted on the application host: `ai-kb.matherly.net/` is the AI KB web UI and the gateway forwards only the `/docs/` prefix to this site, so the homepage is not served there and the documentation logo links to `/docs/`. The site uses only these two paths. The site root contains only `index.html`, `404.html` and `docs/`. The homepage scripts, styles and images live under `/docs/_home/`, so an upstream gateway only needs to forward `/` (exact match) and the `/docs/` prefix. `build` rejects any page that references a resource outside these two paths.
 
-The top bar is 64px tall and spans the full width. Both the homepage and the documentation show the logo from the repository README and share colors, fonts and the light or dark preference. The logo returns to the homepage in the current tab. The homepage and the documentation each have navigation suited to their pages.
+The top bar is 64px tall and spans the full width. Both the homepage and the documentation show the logo from the repository README and share colors, fonts and the light or dark preference. On the homepage the logo links to `/`; in the documentation it links to `/docs/`, in the current tab. The homepage and the documentation each have navigation suited to their pages.
 
 ## Publishing: static files and Nginx
 
@@ -69,7 +69,7 @@ Open these paths:
 - `/docs/03-features/23-memory`: the long-term memory page; opening it directly and reloading both work.
 - `/docs/not-found`: returns 404.
 
-Then check that search, the light and dark toggle and the logo link back to the homepage work.
+Then check that search, the light and dark toggle and the logo links work (homepage logo to `/`, documentation logo to `/docs/`).
 
 For later updates, repeat the build, package and upload into a new directory, then change the Nginx `root` and reload. To roll back, point `root` back at the previous release directory. Remove old release directories once the new version is stable.
 
@@ -77,7 +77,7 @@ For later updates, repeat the build, package and upload into a new directory, th
 
 The image builds from a clean checkout. The host needs no Node.js and no pre-generated static files. The Dockerfile has two stages: a Node.js 24 stage installs dependencies from both lock files and builds the homepage and the documentation, and the final Nginx image holds only the static output and the server configuration.
 
-CI publishes the image as `ghcr.io/jrmatherly/ai-kb-website` (the Website Docs workflow): `main` on every push to main, the release tag and bare version on a `v*` tag, and `latest` from the weekly rebuild of the newest release. To build it yourself, from the repository root:
+CI publishes the image as `ghcr.io/jrmatherly/ai-kb-website` (the Website Docs workflow): `main` on every push to main that changes `website-docs/`, the release tag and bare version on a `v*` tag, and `latest` from the weekly rebuild of the newest release. To build it yourself, from the repository root:
 
 ```bash
 docker build -t ai-kb-site:2026.10.13 website-docs
@@ -144,4 +144,4 @@ For hot reload during development, use `npm run dev:homepage` (homepage) and `np
 - `deploy/`, `Dockerfile`: Nginx and Docker deployment configuration.
 - `releases/`: generated release archives.
 
-Brand asset sources are listed in [homepage/BRAND-ASSETS.md](homepage/BRAND-ASSETS.md). The product video plays from a GitHub attachment URL (`videoUrl` in `homepage/app/interactive.tsx`, currently an upstream upload that differs from the repository README's video), so playback needs access to GitHub. Pages, documentation and screenshots ship in the archive.
+Brand asset sources are listed in [homepage/BRAND-ASSETS.md](homepage/BRAND-ASSETS.md). The product video plays from a GitHub attachment URL (`videoUrl` in `homepage/app/interactive.tsx`, the same AI KB video the repository README embeds), so playback needs access to GitHub. Pages, documentation and screenshots ship in the archive.

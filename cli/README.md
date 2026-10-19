@@ -227,9 +227,9 @@ aikb auth logout --all
 
 ## Wire contract
 
-Designed to be AI-agent-first. Stable across minor releases; breaking
-changes announced in the changelog and the corresponding
-`aikb --version` bump. This section is the human overview; the complete,
+Designed to be AI-agent-first. Stable across releases; breaking
+changes are listed under `### Breaking` in `cli/CHANGELOG.md` and ship in a
+new release tag. This section is the human overview; the complete,
 authoritative contract (envelope field stability, error taxonomy, streaming,
 confirmation and dry-run protocols) lives in **[AGENTS.md](AGENTS.md)**.
 
@@ -243,7 +243,7 @@ confirmation and dry-run protocols) lives in **[AGENTS.md](AGENTS.md)**.
 ### JSON output
 
 Every command supports `--format json`, wrapping the resource in the
-symmetric envelope `{ok, data, meta?}` - `data` is an array for `list` /
+symmetric envelope `{ok, data, meta?, profile?}` (batch commands add `status`) - `data` is an array for `list` /
 `search`, a single object for `view` and write outcomes. `--jq` runs
 against the whole envelope, so reach into list items with `.data[]`:
 
@@ -305,7 +305,7 @@ Run `aikb exit-codes` for the machine-readable matrix (JSON); `aikb help exit-co
 **Exit 10** is the wire-level signal for "high-risk write needs
 explicit confirmation". It applies to every command whose `--help` starts
 with a `Risk:` line (`aikb schema <cmd>` reports it as `risk`), to
-`profile remove` on the current profile, and to `aikb api -X DELETE`.
+`profile remove` on the current profile, and to `aikb api -X DELETE` (destructive) and `-X PUT` / `-X PATCH` (write).
 **Never auto-add `-y` without the user's explicit go-ahead** - exit 10
 is the guard against unintended writes.
 
@@ -336,15 +336,15 @@ operations that intentionally go through `aikb api`:
 
 - **Tuning a KB's nested config** - chunking strategy, summary model,
   multimodal extraction defaults, FAQ thresholds, VLM model. Use
-  `aikb api PUT /api/v1/knowledge-bases/<id> --input -` with a JSON
+  `aikb api -X PUT /api/v1/knowledge-bases/<id> --input -` with a JSON
   body matching the server's `UpdateKnowledgeBaseRequest`. (Note: the
   storage provider is set once at create time via
   `kb create --storage-provider <name>` and is not updatable.)
 - **Per-request `chat` parameters** - multi-KB scope, summary model
-  override, image attachments, web search toggle. Use `aikb api POST
+  override, image attachments, web search toggle. Use `aikb api -X POST
   /api/v1/knowledge-chat/<session-id> --input -`.
 - **Per-request `session ask --agent` overrides** - same shape via
-  `aikb api POST /api/v1/agent-chat/<session-id> --input -`.
+  `aikb api -X POST /api/v1/agent-chat/<session-id> --input -`.
 - **Operations without a CLI verb** - register / change-password /
   OIDC flows, organization / sharing endpoints, tenant management.
 
@@ -426,7 +426,7 @@ aikb session resume sess_abc --message msg_xyz
 
 Pass `--modified-args '{"key":"value"}'` to replace tool arguments on approve (must be a non-empty JSON object). Never auto-pass `-y` - the approval is the exit-10 human-in-the-loop gate.
 
-Server-side buffer TTL: 1 hour for redis mode; process lifetime for memory mode (default). After TTL, expect `local.sse_stream_aborted` typed error.
+Server-side buffer TTL: 1 hour for redis mode; process lifetime for memory mode (default). After that, `session resume` fails with `resource.not_found` (exit 4): the message cannot be replayed, so re-run the original query.
 
 See `cli/AGENTS.md` "Stream recovery" section for the full agent contract.
 

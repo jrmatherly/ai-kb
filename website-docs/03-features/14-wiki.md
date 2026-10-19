@@ -86,7 +86,7 @@ The Wiki once kept a separate operation log (the `wiki_log_entries` table, the `
 
 **The knowledge base activity stream is now the only operation history**:
 
-- When an ingest batch ends, `wiki_ingest_batch.go` sums the actions of the batch by kind and calls `service.RecordWikiContentActivity()` to write one `wiki_content_changed` activity.
+- When an ingest batch ends, `wiki_ingest_batch.go` sums the actions of the batch by kind and calls `service.RecordWikiContentActivity()` to write one `wiki.content_changed` activity.
 - When a person creates, edits, reverts or deletes a page in WikiBrowser, `internal/handler/wiki_page.go` projects `manual_create` / `manual_edit` / `revert` / `manual_delete` into the activity stream the same way.
 - Activity records live in the audit log system (`kb_activity.go` → `AuditLogService`), are shown under "Knowledge base → Settings → Activity", and follow the same retention as other audit logs (see [Observability and audit](16-observability.md)).
 - Writes are best-effort: a failed activity record does not fail the Wiki edit itself.

@@ -17,6 +17,7 @@ codec lives in this one package:
 | `mcp.go` | MCP bridge routing handles (`msN`/`mtN`), definition projection and envelope codec |
 | `mcp_sources.go` | bounded citation sidecar for HTTP(S) links in successful MCP results |
 | `handles.go` | exported `HandleTable` for invocation-local spaces (`iN`, `ref-N`, `c000`) |
+| `image_sources.go` | `ImageSourcesNote` and `ToolImageSourcesNote`: notes binding retrieved and tool-result images to their source handles |
 | `leaks.go` | `LeakedIdentifiers` report of raw UUIDs that survive `EncodeMessages`, logged at every model-call site |
 
 ## Identity rules

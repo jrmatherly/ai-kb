@@ -11,8 +11,8 @@
 //   - Buffer TTL:
 //     redis mode  - 1h hardcoded (not configurable from the CLI)
 //     memory mode - process lifetime (server restart = data loss)
-//     After TTL the server returns an error which the CLI maps to
-//     local.sse_stream_aborted.
+//     After TTL the server answers 404, which the CLI maps to
+//     resource.not_found (exit 4).
 //
 // Output shape matches `aikb chat` and `aikb session ask` NDJSON mode:
 // one CLI-injected init line carrying {session_id, message_id, profile} at
@@ -72,7 +72,7 @@ Buffer TTL:
   - redis mode:  1h hardcoded (not configurable from the CLI)
   - memory mode: process lifetime (server restart = data loss)
 
-After TTL expiry the CLI surfaces local.sse_stream_aborted.
+After TTL expiry the CLI surfaces resource.not_found (exit 4); re-run the original query.
 
 Typical use cases:
   - Network blip mid-stream: re-attach with the same session_id and the
@@ -126,7 +126,8 @@ silently treated as NDJSON.`,
 		Output: "NDJSON stream: {type:init, session_id, message_id, profile} then SDK StreamResponse events (response_type, content, done, knowledge_references, assistant_message_id, ...)",
 		Warnings: []string{
 			"Server replays from event 0 (NOT cursor-from-disconnect). Agents that already consumed events on the original stream MUST dedupe by message_id + event hash to avoid double-processing.",
-			"Buffer TTL: redis mode 1h hardcoded; memory mode = process lifetime. After expiry the CLI returns local.sse_stream_aborted.",
+			"Buffer TTL: redis mode 1h hardcoded; memory mode = process lifetime. " +
+				"After expiry the CLI returns resource.not_found (exit 4).",
 			"Output is always NDJSON (an event stream, not an envelope): --jq does not apply and --format " +
 				"text/json/ndjson behave identically here - parse the event lines yourself.",
 		},

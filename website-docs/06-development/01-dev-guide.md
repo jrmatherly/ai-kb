@@ -10,7 +10,7 @@ AI KB is made of three processes that are developed independently, plus a CLI:
 | --- | --- | --- | --- |
 | Main backend `app` | `cmd/server` + `internal/` | Go | **Go 1.26.0** (`go 1.26.0` in `go.mod`). Needs CGO (DuckDB and sqlite-vec bindings) |
 | Document parsing service `docreader` | `docreader/` | Python + gRPC | **Python >= 3.14** (`requires-python` in `docreader/pyproject.toml`). Dependencies are managed with **uv** (the repository has `uv.lock`; the Docker image runs `uv sync --locked`) |
-| Frontend `frontend` | `frontend/` | Node.js + Vue 3 | Node.js 24 (the `frontend/Dockerfile` builder is `node:24-bookworm-slim`; `package.json` declares no `engines`). Vite 7 + TypeScript ~6.0 + Vue 3.5 + TDesign; the package version follows the root `VERSION` |
+| Frontend `frontend` | `frontend/` | Node.js + Vue 3 | Node.js 24 (`engines.node` is `>=24` in `frontend/package.json`; the `frontend/Dockerfile` builder is `node:24-bookworm-slim`). Vite 7 + TypeScript ~6.0 + Vue 3.5 + TDesign; the package version follows the root `VERSION` |
 | CLI | `cli/` (separate Go module) | Go | Go 1.26 (`go 1.26.0` in `cli/go.mod`) |
 
 Recommended extra development tools:
@@ -142,7 +142,7 @@ These targets are defined in the root `Makefile`. `make help` prints a summary o
 | `anydoc-lib` | `scripts/build-anydoc-lib.sh`: builds the anydoc static library (Rust toolchain required; `TARGET=<rust-target-triple>` overrides the platform) |
 | `build-anydoc` | `anydoc-lib`, then `go build -tags anydoc`, linking the in-process office document parser |
 | `run` | `build`, then runs `./ai-kb` |
-| `test` | `go test -v ./...` |
+| `test` | `go vet` + `go test` on every package except `/docreader/` (`run_app_vet_test` in `scripts/git-hooks/common.sh`, the CI package set) |
 | `clean` | `go clean` and deletes the binary |
 | `build-prod` | Production build: CGO_ENABLED=1, `-ldflags "-w -s"` injects Version (from `$VERSION`, else the `VERSION` file)/Edition/CommitID/BuildTime/GoVersion (package variables in `internal/handler`) and sets protobuf `conflictPolicy=warn` (avoids the qdrant/milvus proto conflict). `GO_BUILD_TAGS` adds build tags, for example `anydoc` |
 | `fmt` | `go fmt ./...` |
@@ -250,7 +250,7 @@ make lint            # go vet
 Cross-cutting contract and integration tests live in `cli/acceptance/` (see `cli/acceptance/doc.go`):
 
 - `cli/acceptance/contract/`: golden tests of the envelope JSON output shape, plus consistency of the error.code registry.
-- `cli/acceptance/e2e/`: black-box tests against a real AI KB server (testscript style), behind the `acceptance_e2e` build tag. No workflow runs them in this repository. Run them by hand from `cli/` with `AIKB_E2E_HOST=<server> AIKB_E2E_TOKEN=<token> go test -tags=acceptance_e2e -v ./acceptance/e2e/...`.
+- `cli/acceptance/e2e/`: black-box tests against a real AI KB server (testscript style), behind the `acceptance_e2e` build tag. `cli-e2e.yml` runs them on manual dispatch or when a pull request gets the `acceptance-e2e` label. Run them by hand from `cli/` with `AIKB_E2E_HOST=<server> AIKB_E2E_TOKEN=<token> go test -tags=acceptance_e2e -v ./acceptance/e2e/...`.
 
 ### The tests/ directory and frontend tests
 
@@ -303,7 +303,7 @@ When you add or upgrade a third-party dependency or change a data file shipped w
 
 ### Validation and contribution workflow
 
-CI lives in `.github/workflows/`: check workflows for the areas below, each triggered by `paths:` filters (`app.yml` covers go, govulncheck against `scripts/govulncheck-allowlist.txt`, model-catalog, git-hooks and licenses; `dataset.yml` the dataset tests; miniprogram, markdown and shell run only locally), plus `guards.yml` (English-only, em dash, rebrand, `scripts/version.py check` with `scripts/test_version.py`, and `scripts/check-workflows.sh`, which requires SHA-pinned actions, a top-level `concurrency` and emoji-led names) and the publishing workflows (`docker-image.yml`, `release-lite.yml`, `mcp-server.yml`, `dsh-plugin.yml`). Docker Images also runs every Monday: it checks out the newest release tag, rebuilds every image with `--pull` and no layer cache so base-image package updates land (`apt-get upgrade` in the Debian images, `apk upgrade` in the nginx one), and re-pushes it under the tag, the bare version and `latest`. `scripts/validate.sh` runs the same checks locally. It maps each changed path to an area with the same `paths:` filters and runs that area's commands:
+CI lives in `.github/workflows/`: check workflows for the areas below, each triggered by `paths:` filters (`app.yml` covers go, govulncheck against `scripts/govulncheck-allowlist.txt`, model-catalog, git-hooks and licenses; `dataset.yml` the dataset tests; miniprogram, markdown and start-all run only locally), plus `guards.yml` (English-only, em dash, rebrand, `scripts/version.py check` with `scripts/test_version.py`, `shellcheck -S warning` over every tracked shell script, and `scripts/check-workflows.sh`, which requires SHA-pinned actions, a top-level `concurrency` and emoji-led names) and the publishing workflows (`docker-image.yml`, `release-lite.yml`, `mcp-server.yml`, `dsh-plugin.yml`, `extension.yml`, `helm.yml`). Docker Images also runs every Monday: it checks out the newest release tag, rebuilds every image with `--pull` and no layer cache so base-image package updates land (`apt-get upgrade` in the Debian images, `apk upgrade` in the nginx one), and re-pushes it under the tag, the bare version and `latest`. `scripts/validate.sh` runs the same checks locally. It maps each changed path to an area with the same `paths:` filters and runs that area's commands:
 
 ```bash
 scripts/validate.sh                 # working tree and untracked files against HEAD
@@ -321,6 +321,7 @@ scripts/validate.sh --area helm     # run only the named area (repeatable), what
 | docreader | `docreader/**`, `go.mod`, `go.sum`, `testdata/`, the docreader Dockerfiles | `uv sync --locked`, compileall, Playwright WebKit install, the unittest suite, then the Go client tests against a DocReader server the script starts on port 50051 |
 | model-catalog | `internal/models/catalog/data/**`, `scripts/model-catalog/**` | `generate.py --check`, `go test ./internal/models/...` |
 | git-hooks | `scripts/git-hooks/**`, `scripts/test-git-hooks.sh`, `scripts/check-english-only.sh`, `scripts/check-emdash.sh`, `scripts/emdash-allowlist.txt`, `.claude/hooks/post-edit.sh` | `scripts/test-git-hooks.sh` |
+| start-all | `scripts/start_all.sh`, `scripts/test-start-all.sh` | `scripts/test-start-all.sh` |
 | shell | any `*.sh`, the hooks in `scripts/git-hooks/` | `shellcheck -S warning` on the changed scripts |
 | tap | `scripts/update_tap.py`, `scripts/test_update_tap.py`, `.github/workflows/release-lite.yml` | `python3 -I scripts/test_update_tap.py`: the updater that writes the tap formulas and the Scoop manifest on each release |
 | licenses | `licenses/**`, license scripts, `LICENSE`, `THIRD_PARTY_NOTICES.md` | `check-license-bundle.sh`, `test-license-bundle.sh` |

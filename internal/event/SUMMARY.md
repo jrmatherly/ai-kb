@@ -106,7 +106,7 @@ bus.On(event.EventQueryReceived, func(ctx context.Context, e event.Event) error 
 bus.On(event.EventError, func(ctx context.Context, e event.Event) error {
     data := e.Data.(event.ErrorData)
     // Send to an error tracking system
-    sentry.CaptureException(data.Error)
+    sentry.CaptureMessage(data.Error) // ErrorData.Error is a string
     return nil
 })
 ```

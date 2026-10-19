@@ -312,7 +312,7 @@ Users connect their local browser to AI KB through a Chrome extension. The Docke
 | Name | Default | Description |
 | --- | --- | --- |
 | `BROWSERSKILL_BINARY` | `/opt/ai-kb/browserskill/bsk` inside the Docker image | Absolute path of the `bsk` executable; a native deployment builds and configures it itself; setting it explicitly to empty disables the feature |
-| `BROWSERSKILL_EXTENSION_PATH` | preset inside the Docker image | Path of the extension ZIP users download under Toolbox → Browser connection → "Manual install (fallback)" |
+| `BROWSERSKILL_EXTENSION_PATH` | preset inside the Docker image | Path of the extension ZIP users download under Toolbox → Browser connection → "Install manually (alternative)" |
 | `BROWSERSKILL_PUBLIC_URL` | empty (derived from the page address) | Override only when the gateway uses a separate domain or path; a remote deployment must use `wss://` |
 | `BROWSERSKILL_MAX_CONNECTIONS` | 32 | Maximum number of browser devices online at the same time per application instance |
 | `BROWSERSKILL_INTERNAL_URL` / `BROWSERSKILL_CLUSTER_SECRET` | empty | Multi-replica deployments: each node sets an address the other nodes can reach directly (not the load balancer address), and all replicas share the same random secret (at least 32 characters) |

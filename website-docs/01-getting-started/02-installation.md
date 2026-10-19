@@ -8,7 +8,7 @@ AI KB runs under Docker Compose, Kubernetes Helm, as a single Lite binary, or as
 | --- | --- | --- | --- | --- |
 | Docker Compose (standard) | `docker-compose.yml` | ParadeDB (PostgreSQL) | Redis + Asynq | Production and team self-hosting, recommended |
 | Docker Compose (development) | `docker-compose.dev.yml` | Same (only the infrastructure runs in containers) | Same | Local development: app and frontend run on the host |
-| Helm | `helm/` | ParadeDB (bundled in the chart) | Redis (bundled in the chart) | Kubernetes >= 1.25 |
+| Helm | `helm/` | ParadeDB (bundled, or external via `externalDatabase`) | Redis (bundled, or external via `externalRedis`) | Kubernetes >= 1.25 |
 | Lite single binary | `make build-lite` / `scripts/package-lite.sh` | SQLite (FTS5 + sqlite-vec) | In memory (no Redis) | Personal, offline or low-resource environments |
 | Desktop application | `cmd/desktop` (Wails v2) + `scripts/package-mac-app.sh` | SQLite | In memory | Single-machine desktop use with a GUI and a local data directory |
 
@@ -52,12 +52,14 @@ The fastest path:
 ```bash
 git clone https://github.com/jrmatherly/ai-kb.git && cd ai-kb
 cp .env.example .env              # edit the required values: DB_USER/DB_PASSWORD/DB_NAME, REDIS_PASSWORD, JWT_SECRET, SYSTEM_AES_KEY
-docker compose build              # build the app, docreader and frontend images from the checkout
+docker compose pull               # fetch the published release images
 docker compose up -d
 docker compose ps                 # wait until every service is healthy/running
 ```
 
-No release images are published under `ghcr.io/jrmatherly/ai-kb-*` yet, so `docker compose pull` and a plain `make start-all` (which pulls by default) fail with `denied`. After `docker compose build`, `./scripts/start_all.sh --no-pull` starts the locally built images.
+Release images are published as `ghcr.io/jrmatherly/ai-kb-*` (app, ui, docreader, sandbox), tagged with the release tag, the bare version and `latest` (for example `v2026.10.18.1`, `2026.10.18.1`). Compose uses `${AIKB_VERSION:-latest}`; set `AIKB_VERSION` in `.env` to pin a release. `make start-all` pulls the same images.
+
+To run your own build instead, run `docker compose build` (app, docreader and frontend images from the checkout), then `./scripts/start_all.sh --no-pull` to start the locally built images without pulling over them.
 
 `.env.example` ships default values for `JWT_SECRET` and `SYSTEM_AES_KEY` so a first start works. The server warns about each default until it is replaced, and refuses to start when `JWT_SECRET` is empty or `SYSTEM_AES_KEY` is not exactly 32 bytes. Replace both before storing real credentials and keep them safe: `JWT_SECRET` from `openssl rand -hex 32`, `SYSTEM_AES_KEY` from `openssl rand -hex 16` (32 bytes). Credentials saved under the default AES key become unreadable once the key changes and must be entered again. When upgrading an existing deployment keep the original `SYSTEM_AES_KEY`, otherwise encrypted credentials cannot be decrypted. [Configuration](./04-configuration.md) explains what each secret does.
 
@@ -236,6 +238,14 @@ helm install ai-kb ./helm -n ai-kb --create-namespace \
   --set secrets.jwtSecret=xxx --set secrets.systemAesKey=$(openssl rand -hex 16)
 ```
 
+The chart is also published as an OCI artifact, so the same install works without a checkout. Pass the same `--set` flags:
+
+```bash
+helm install ai-kb oci://ghcr.io/jrmatherly/ai-kb/charts/ai-kb --version 0.4.2 -n ai-kb --create-namespace
+```
+
+To use an existing PostgreSQL (with the ParadeDB extensions) or Redis, set `postgresql.enabled=false` with `externalDatabase.host` / `externalDatabase.port`, or `redis.enabled=false` with `externalRedis.addr` (`host:port`).
+
 ## Desktop (Lite mode / desktop application)
 
 The desktop options target local machines and low-resource environments. Both run the same Lite runtime (one process + SQLite + in-memory queue) and differ only in distribution and startup: the **single binary** (started from the command line, also usable as a background service) and the **desktop application** (GUI, started by double-click). Knowledge base and question answering features are identical. Login without registration, the local OS sandbox and binding a local project directory exist only in the desktop application.
@@ -266,7 +276,7 @@ The single binary, when used through a browser, requires registration and login 
 The desktop application is the GUI way to run AI KB locally: double-click to start, the backend and SQLite live inside the process, and data lands in the system's application data directory. It adds desktop-only features such as a port setting, LAN binding and update checks. Its runtime capabilities match the [Lite runtime (no external dependencies)](#lite-runtime-no-external-dependencies).
 
 ::: tip Download
-Releases from v2026.10.15 on carry desktop builds on [GitHub Releases](https://github.com/jrmatherly/ai-kb/releases): macOS DMGs (`ai-kb-lite-app_<version>_macOS_{amd64,arm64,universal}.dmg`), a Linux tarball (`..._linux_amd64.tar.gz`) and a Windows installer (`..._windows_amd64_setup.exe`). The builds are not code-signed, so macOS Gatekeeper and Windows SmartScreen warn on first launch. To build it yourself, follow the steps below.
+Releases from v2026.10.15 on carry desktop builds on [GitHub Releases](https://github.com/jrmatherly/ai-kb/releases): macOS DMGs (`ai-kb-lite-app_<tag>_macOS_{amd64,arm64,universal}.dmg`), a Linux tarball (`..._linux_amd64.tar.gz`) and a Windows installer (`..._windows_amd64_setup.exe`). The builds are not code-signed, so macOS Gatekeeper and Windows SmartScreen warn on first launch. To build it yourself, follow the steps below.
 :::
 
 - Entry point `cmd/desktop/main.go` + `cmd/desktop/wails.json`. `cmd/desktop/app.go` exposes bindings to the frontend: `GetAPIBaseURL` (returns `http://127.0.0.1:PORT/api/v1`), the HTTP port and "bind to LAN" settings, and `CheckForUpdates` for automatic update checks.

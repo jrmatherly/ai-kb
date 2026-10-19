@@ -66,7 +66,7 @@ Auth, tenant, and request-id headers are applied automatically from the
 active profile. In --format text the raw server response body is written
 to stdout. In --format json (default) the parsed server response is placed directly
 under envelope.data - drill in with --jq '.data...' at the server's own depth
-(e.g. '.data.data[]' for a list endpoint). Only -X DELETE is confirmation-gated.
+(e.g. '.data.data[]' for a list endpoint). -X DELETE (destructive) and -X PUT / -X PATCH (write) are confirmation-gated.
 With --paginate, text mode writes the merged {data, total} JSON object with a
 trailing newline and no envelope.
 

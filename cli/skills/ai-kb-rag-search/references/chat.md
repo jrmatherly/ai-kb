@@ -83,8 +83,8 @@ an `init` line with `session_id`, `message_id` and `profile`, then the stored
 events. The server replays from the first event rather than from where you
 left off, so a consumer that already processed part of the stream must dedupe.
 The buffer lives one hour when the server uses Redis and for the server
-process's lifetime when it uses memory; after that the CLI returns
-`local.sse_stream_aborted`.
+process's lifetime when it uses memory; after that `session resume`
+returns `resource.not_found` (exit 4) and the query must be re-run.
 
 The message id is `data.assistant_message_id` from `chat`, the `agent_query`
 frame in NDJSON mode, or the newest assistant message in

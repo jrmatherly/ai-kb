@@ -50,7 +50,7 @@ The public routes under `/api/v1/embed/:channel_id/*` use the separate `EmbedAut
 Authorization: Embed <publish_token or session_token>
 ```
 
-- `POST /embed/:channel_id/exchange` trades the publish token for a short-lived session token. Session-level calls also send `X-Embed-Session: <sig>`, the signed handle returned when the session was created.
+- `POST /api/v1/embed/:channel_id/exchange` trades the publish token for a short-lived session token. Session-level calls also send `X-Embed-Session: <sig>`, the signed handle returned when the session was created.
 - IM callback routes (`/api/v1/im/callback/:channel_id`) are registered before the global authentication middleware and verify each IM platform's own signature.
 
 ### MCP endpoint token (built-in MCP server)
@@ -164,7 +164,7 @@ The middleware layer (authentication, RBAC, API key gate, embed and MCP endpoint
 | `page` | int | no | Page number, default 1, must be at least 1 |
 | `page_size` | int | no | Items per page, default 20, range 1-100 |
 
-Out-of-range or malformed values return a validation error (code 1010). List responses carry `total`, `page` and `page_size`. Some endpoints use cursor pagination: audit logs (`after_id` + `limit`, response carries `next_cursor`), system runtime tasks (`cursor` + `page_size`, response carries `next_cursor` and `has_more`), Wiki index and log (`cursor` + `limit`).
+Out-of-range or malformed values return a validation error (code 1010). List responses carry `total`, `page` and `page_size`. Some endpoints use cursor pagination: audit logs (`after_id` + `limit`, response carries `next_cursor`), system runtime tasks (`cursor` + `page_size`, response carries `next_cursor` and `has_more`), the Wiki index (`cursor` + `limit`).
 
 ## Streaming protocol (SSE)
 

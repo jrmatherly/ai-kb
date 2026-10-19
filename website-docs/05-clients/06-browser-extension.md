@@ -6,7 +6,7 @@ The AI KB browser extension for Chrome and Edge asks your AI KB server about the
 
 This section installs the extension from a release build or from source.
 
-- **Release build.** Builds for Chrome and Edge are attached to the [extension releases](https://github.com/jrmatherly/ai-kb/releases?q=extension), tagged `extension-v<version>`, once published. Until then, use the from-source steps below. Settings → Publish & Integrations → Browser Extension in the web UI links to the releases too.
+- **Release build.** Install from the [Chrome Web Store](https://chromewebstore.google.com/detail/beamnnjkmfepmlfpbcchiiooimoloiod), or load the `ai-kb-extension-<version>.zip` attached to each [extension release](https://github.com/jrmatherly/ai-kb/releases?q=extension) (tagged `extension-v<version>`, one zip for Chrome and Edge) unpacked. The Edge Add-ons listing follows once its review completes. Settings → Publish & Integrations → Browser Extension in the web UI links to the releases too.
 - **From source, for development.** Build the extension with Node 24 or later:
 
   ```bash

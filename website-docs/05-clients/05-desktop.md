@@ -1,7 +1,7 @@
 # Desktop client (AI KB Lite Desktop)
 
 ::: tip Download
-Releases from v2026.10.15 on carry desktop builds on [GitHub Releases](https://github.com/jrmatherly/ai-kb/releases): macOS DMGs (`ai-kb-lite-app_<version>_macOS_{amd64,arm64,universal}.dmg`), a Linux tarball (`..._linux_amd64.tar.gz`) and a Windows installer (`..._windows_amd64_setup.exe`). The builds are not code-signed, so macOS Gatekeeper and Windows SmartScreen warn on first launch. To build it yourself, see [Installation](../01-getting-started/02-installation.md#desktop-application-cmd-desktop-wails-v2).
+Releases from v2026.10.15 on carry desktop builds on [GitHub Releases](https://github.com/jrmatherly/ai-kb/releases): macOS DMGs (`ai-kb-lite-app_<tag>_macOS_{amd64,arm64,universal}.dmg`), a Linux tarball (`..._linux_amd64.tar.gz`) and a Windows installer (`..._windows_amd64_setup.exe`). The builds are not code-signed, so macOS Gatekeeper and Windows SmartScreen warn on first launch. To build it yourself, see [Installation](../01-getting-started/02-installation.md#desktop-application-cmd-desktop-wails-v2).
 :::
 
 The AI KB Lite desktop application is built on [Wails v2](https://wails.io). It runs the Go backend inside the desktop process with SQLite and local file storage. After it starts you can manage knowledge bases and ask questions, with no Docker and no external database. The source is in `cmd/desktop/`. Its features match the [single Lite binary](../01-getting-started/02-installation.md). The desktop build adds startup without a login and, on macOS, a [host sandbox](../03-features/22-skills-sandbox.md#lite-host) that runs agent commands on the local machine.
@@ -146,7 +146,7 @@ This section describes how the update check finds, downloads and installs a new 
 
 1. **Version source**: `desktopAboutVersion()` uses `handler.Version` injected through ldflags at build time, and otherwise looks for a `VERSION` file up to the repository root. When the version cannot be determined the check gives up.
 2. **Check**: GET `https://api.github.com/repos/jrmatherly/ai-kb/releases/latest` (10s timeout, a fixed desktop `User-Agent`, plus an `Authorization` header when the `GITHUB_TOKEN` environment variable is set, to raise the rate limit). `calVerNewer()` compares `tag_name` with the current version as CalVer (`vYYYY.M.D[.MICRO]`, a missing MICRO counts as 0, so `v2026.10.13.1` is newer than `v2026.10.13`). A tag that is not CalVer is never offered.
-3. **Asset selection**: `findBestAsset()` considers only desktop assets, named `<prefix>-Lite-App_<version>_<os>_<arch>...` (`.sha256` files and the `ai-kb-lite_*` server tarballs are skipped). It matches `runtime.GOOS/GOARCH` as an OS token (`macOS`/`windows`/`linux`) plus the architecture (`amd64`/`arm64`, then `aarch64` on arm64, then `universal` on macOS). With no match, a manual check opens the release page.
+3. **Asset selection**: `findBestAsset()` considers only desktop assets, named `ai-kb-lite-app_<tag>_<os>_<arch>...` and matched case-insensitively on `lite-app_` (`.sha256` files and the `ai-kb-lite_*` server tarballs are skipped). It matches `runtime.GOOS/GOARCH` as an OS token (`macOS`/`windows`/`linux`) plus the architecture (`amd64`/`arm64`, then `aarch64` on arm64, then `universal` on macOS). With no match, a manual check opens the release page.
 4. **Download**: `downloadAndInstall()` downloads to the system temp directory. In `autoDownload` mode the download is silent. A manual check first shows an "Update Available" dialog. After the download it asks "Restart Now" or "Later".
 5. **Install and restart** (`applyUpdateAndRestart()`, per platform):
    - **Windows**: writes a temporary `aikb_update.bat` (wait 2 seconds, run the installer silently with `/S`, restart the program, delete itself), runs it with `cmd.exe /C start /b` and quits the app.
@@ -189,7 +189,7 @@ This section shows how frontend code tells the desktop shell apart from a browse
 
 ## Build
 
-This section walks through building the macOS app from source, which is the only way to get it today.
+This section walks through building the macOS app from source. Prebuilt builds are on GitHub Releases (see the tip at the top of this page).
 
 The macOS packaging script is `scripts/package-mac-app.sh`. The root `Makefile` wraps it as `make package-mac-app`.
 
@@ -213,4 +213,4 @@ What the script does:
    The effective build tags are `desktop` from `wails.json` plus `sqlite_fts5` from the command line. The command's binding generation step compiles `main_bindings.go` alone with `-tags bindings` (no database connection) and refreshes the binding files under `frontend/src/wailsjs/`.
 3. **Assembly**: copies `cmd/desktop/build/bin/AI KB Lite.app` to `dist/` and places the third-party licenses (`scripts/copy-licenses.sh`), `.env` (from `.env.lite.example`), `config/`, `migrations/sqlite/` and the `web/` frontend in `.app/Contents/Resources/`.
 
-The result is `dist/AI KB Lite.app`; double-click it to run. Locally, the repository ships only this macOS packaging script. The Release Lite workflow (`.github/workflows/release-lite.yml`) builds every desktop target with `wails build`: macOS DMGs (Intel, Apple Silicon, universal), a Linux tarball and a Windows NSIS installer (`ai-kb-lite-app_<version>_windows_amd64_setup.exe`), which the update logic above finds and installs. The host sandbox exists only on macOS: the Windows backend is not implemented and reports itself unavailable, and Linux has none.
+The result is `dist/AI KB Lite.app`; double-click it to run. Locally, the repository ships only this macOS packaging script. The Release Lite workflow (`.github/workflows/release-lite.yml`) builds every desktop target with `wails build`: macOS DMGs (Intel, Apple Silicon, universal), a Linux tarball and a Windows NSIS installer (`ai-kb-lite-app_<tag>_windows_amd64_setup.exe`), which the update logic above finds and installs. The host sandbox exists only on macOS: the Windows backend is not implemented and reports itself unavailable, and Linux has none.

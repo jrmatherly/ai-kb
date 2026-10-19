@@ -4,6 +4,8 @@
 
 The data source sync framework enables AI KB to automatically import and synchronize content from external platforms (Feishu, Notion, Confluence, etc.) into knowledge bases. This is the foundational layer upon which all specific connectors are built.
 
+Implemented connectors, registered in `initConnectorRegistry()` (`internal/container/container.go`): Feishu, Lark, Feishu Drive, Lark Drive, Notion, Confluence, Yuque, DingTalk, IMA, RSS, GitLab and Seafile. GitHub, Google Drive, OneDrive, Web Crawler, Slack and IMAP have metadata entries in `connector.go` only, so `GET /api/v1/datasource/types` lists them but they cannot sync yet.
+
 ## Architecture
 
 ### Core Components
@@ -11,7 +13,7 @@ The data source sync framework enables AI KB to automatically import and synchro
 ```text
 ┌─────────────────────────────────────────────────────────────┐
 │                     External Data Sources                  │
-│     (Feishu, Notion, Confluence, GitHub, Google Drive...) │
+│   (Feishu/Lark, Notion, Confluence, Yuque, DingTalk, ...)   │
 └─────────────┬───────────────────────────────────────────────┘
               │
               ▼
@@ -38,7 +40,7 @@ The data source sync framework enables AI KB to automatically import and synchro
               │
               ▼
 ┌─────────────────────────────────────────────────────────────┐
-│              Database (MySQL / PostgreSQL)                  │
+│              Database (PostgreSQL / SQLite)                 │
 │  ├─ data_sources (configuration & state)                   │
 │  └─ sync_logs (history & metadata)                         │
 └─────────────────────────────────────────────────────────────┘
@@ -66,8 +68,13 @@ Manual Trigger or Scheduled Job (cron)
 
 ```text
 internal/datasource/
-├── connector.go          # Connector interface & registry
+├── connector.go          # Connector interface, registry & metadata
 ├── errors.go            # Error definitions
+├── scheduler.go         # Cron scheduler for periodic syncs
+├── httpclient.go        # SSRF-guarded HTTP client for connectors
+├── filename.go          # File name sanitizing for synced items
+├── connector/           # Connector implementations (one package per platform)
+├── syncreason/          # Test-only parity check of sync reason codes vs. frontend keys
 └── README.md            # This file
 
 internal/types/
@@ -87,7 +94,10 @@ internal/router/
 └── sync_task.go        # Lite mode task registration
 
 migrations/versioned/
-└── 000028_datasource_tables.up/down.sql  # Database schema
+└── 000029_datasource_tables.up/down.sql  # Database schema (PostgreSQL)
+
+migrations/sqlite/
+└── 000000_init.up.sql   # Database schema (SQLite, Lite mode)
 ```
 
 ## Data Models
@@ -98,10 +108,10 @@ Represents a configured external data source:
 
 - **ID**: Unique identifier
 - **Type**: Connector type (feishu, notion, confluence, etc)
-- **Config**: Encrypted credentials and configuration (JSON)
+- **Config**: Credentials and configuration (JSON); credential strings are encrypted when `SYSTEM_AES_KEY` is set
 - **SyncSchedule**: Cron expression (e.g., `0 */6 * * *`)
 - **SyncMode**: "incremental" or "full"
-- **Status**: active | paused | error
+- **Status**: active | paused | error | deleted
 - **ConflictStrategy**: overwrite | skip
 - **SyncDeletions**: Whether to sync deletions from source
 - **LastSyncAt**: Timestamp of last successful sync
@@ -125,12 +135,19 @@ All external data sources implement this interface:
 ```go
 type Connector interface {
     Type() string
-    Validate(ctx, config) error
-    ListResources(ctx, config) ([]Resource, error)
-    FetchAll(ctx, config, resourceIDs) ([]FetchedItem, error)
-    FetchIncremental(ctx, config, cursor) ([]FetchedItem, *SyncCursor, error)
+    Validate(ctx context.Context, config *types.DataSourceConfig) error
+    ListResources(ctx context.Context, config *types.DataSourceConfig, parentID string) ([]types.Resource, error)
+    ResolveResourceAncestors(
+        ctx context.Context, config *types.DataSourceConfig, resourceIDs []string,
+    ) ([]string, error)
+    FetchAll(ctx context.Context, config *types.DataSourceConfig, resourceIDs []string) ([]types.FetchedItem, error)
+    FetchIncremental(ctx context.Context, config *types.DataSourceConfig, cursor *types.SyncCursor) ([]types.FetchedItem, *types.SyncCursor, error)
 }
 ```
+
+`ListResources` with an empty `parentID` returns the top-level resources and otherwise the direct children of that resource. `ResolveResourceAncestors` returns the ancestors a lazily loaded picker must expand to show an existing selection; connectors with a flat or full-tree listing return an empty slice.
+
+Optional interfaces in `connector.go` add behavior on top: `StreamingConnector` (`FetchStream`, ingest and checkpoint as items arrive), `FullStreamingConnector` (`FetchFullStream`), `FullSyncWithCursor` (`FetchAllFromCursor`, full sync that still reconciles deletions) and `ConfigDependentListing` (`ReportsCompleteListing`).
 
 ## API Endpoints
 
@@ -142,13 +159,18 @@ GET    /api/v1/datasource              # List (by kb_id)
 GET    /api/v1/datasource/:id          # Get
 PUT    /api/v1/datasource/:id          # Update
 DELETE /api/v1/datasource/:id          # Delete
+PUT    /api/v1/datasource/:id/credentials         # Replace credentials
+DELETE /api/v1/datasource/:id/credentials/:field  # Clear a credential field
 ```
 
 ### Operations
 
 ```text
+POST   /api/v1/datasource/validate-credentials  # Test credentials without saving
+POST   /api/v1/datasource/list-resources    # List resources for an unsaved config
 POST   /api/v1/datasource/:id/validate      # Test connection
 GET    /api/v1/datasource/:id/resources     # List available resources
+POST   /api/v1/datasource/:id/resource-ancestors  # Resolve ancestors of selected resources
 POST   /api/v1/datasource/:id/sync          # Trigger manual sync
 POST   /api/v1/datasource/:id/pause         # Pause
 POST   /api/v1/datasource/:id/resume        # Resume
@@ -164,7 +186,7 @@ GET    /api/v1/datasource/logs/:log_id      # Get specific log
 ### Metadata
 
 ```text
-GET    /api/v1/datasource/types             # Available connectors
+GET    /api/v1/datasource/types             # Metadata for every connector type, implemented or not
 ```
 
 ## Implementation Guide
@@ -190,29 +212,42 @@ GET    /api/v1/datasource/types             # Available connectors
        return types.ConnectorTypeYourType
    }
    
-   func (c *YourConnector) Validate(ctx, config) error {
+   func (c *YourConnector) Validate(ctx context.Context, config *types.DataSourceConfig) error {
        // Test connectivity and credentials
    }
    
-   func (c *YourConnector) ListResources(ctx, config) ([]types.Resource, error) {
-       // List available resources (documents, spaces, etc)
+   func (c *YourConnector) ListResources(
+       ctx context.Context, config *types.DataSourceConfig, parentID string,
+   ) ([]types.Resource, error) {
+       // List available resources (documents, spaces, etc); children of parentID when it is set
    }
    
-   func (c *YourConnector) FetchAll(ctx, config, resourceIDs) ([]types.FetchedItem, error) {
+   func (c *YourConnector) ResolveResourceAncestors(
+       ctx context.Context, config *types.DataSourceConfig, resourceIDs []string,
+   ) ([]string, error) {
+       // Flat or full-tree listings have nothing to reveal
+       return []string{}, nil
+   }
+   
+   func (c *YourConnector) FetchAll(
+       ctx context.Context, config *types.DataSourceConfig, resourceIDs []string,
+   ) ([]types.FetchedItem, error) {
        // Full sync - fetch all items from specified resources
    }
    
-   func (c *YourConnector) FetchIncremental(ctx, config, cursor) ([]types.FetchedItem, *types.SyncCursor, error) {
+   func (c *YourConnector) FetchIncremental(
+       ctx context.Context, config *types.DataSourceConfig, cursor *types.SyncCursor,
+   ) ([]types.FetchedItem, *types.SyncCursor, error) {
        // Incremental sync - fetch only changed items since cursor
    }
    ```
 
-3. **Register the connector** in the container (in container.go)
+3. **Register the connector** in `initConnectorRegistry()` in `internal/container/container.go`
 
    ```go
-   container.Provide(func() datasource.Connector {
-       return yourconnector.NewConnector()
-   })
+   if err := registry.Register(yourconnector.NewConnector()); err != nil {
+       errs = errors.Join(errs, fmt.Errorf("register yourtype connector: %w", err))
+   }
    ```
 
 4. **Add metadata** in `connector.go`
@@ -232,7 +267,7 @@ GET    /api/v1/datasource/types             # Available connectors
 
 - Stores data source configurations
 - Indexes: tenant_id, knowledge_base_id, type, status
-- Encrypted config field (AES-256-GCM)
+- Config field with credential strings encrypted (AES-256-GCM) when `SYSTEM_AES_KEY` is set
 
 ### sync_logs table
 
@@ -245,7 +280,7 @@ GET    /api/v1/datasource/types             # Available connectors
 1. **Adapter Pattern**: Each connector is a separate implementation, easy to add new ones
 2. **Async Task Queue**: Syncs are non-blocking, using asynq (or sync mode in Lite)
 3. **Incremental Sync**: Supports cursor-based incremental syncs to minimize API calls
-4. **Encryption**: API keys/tokens stored encrypted with AES-256-GCM
+4. **Encryption**: API keys/tokens stored encrypted with AES-256-GCM when `SYSTEM_AES_KEY` is set
 5. **Multi-tenant**: All operations are tenant-isolated
 6. **Channel Tracking**: Knowledge.Channel field tracks data source type for origin tracking
 

@@ -13,7 +13,7 @@ metadata:
         description: Base URL of the AI KB server, for example https://kb.example.com
       - name: AIKB_API_KEY
         required: true
-        description: Workspace API key with the retrieve capability
+        description: Workspace API key with the retrieve capability (plus chat for `chat` and `session ask`)
 ---
 
 # AI KB - answers and retrieval

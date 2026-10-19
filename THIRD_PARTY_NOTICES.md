@@ -51,7 +51,7 @@ the tool itself, retain its license and provide its corresponding source too.
 
 ## Maintaining this bundle
 
-When upgrading either MPL module, update the version, license, and SHA-256 pin in
+When upgrading an MPL module, update its version, license, and SHA-256 pin in
 `licenses/sources/modules.tsv` together. Archives are unmodified Go module proxy
 ZIPs, including their original copyright notices. Verify them with
 `go mod download -json` and the module's `go.sum` entry before updating.

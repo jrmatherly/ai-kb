@@ -48,7 +48,7 @@ export AIKB_KB_ID=$(aikb search kb "Design docs" --jq '.data[0].id')
 # 2. ingest, keeping the ids
 ID=$(aikb doc upload ./spec.pdf --jq '.data.id')
 URL_ID=$(aikb doc fetch https://example.com/rfc.html --title "RFC" --jq '.data.id')
-NOTE_ID=$(aikb doc create --text "# Decision\n\nWe chose X because Y." --title "Decision: X" --jq '.data.id')
+NOTE_ID=$(aikb doc create --text $'# Decision\n\nWe chose X because Y.' --title "Decision: X" --jq '.data.id')
 
 # 3. wait, then search or chat (ai-kb-rag-search)
 aikb doc wait "$ID" "$URL_ID" "$NOTE_ID" --timeout 20m
@@ -58,8 +58,8 @@ aikb search chunks "why X"
 ## Safety / Gotchas
 
 - **A knowledge base must be retrieval-ready** (embedding and chat models
-  bound) or uploads stay unindexed; `ai-kb-shared` section 2 explains
-  `kb create --embedding-model ... --chat-model ...` and `kb config`.
+  bound) or uploads stay unindexed; `ai-kb-shared` ("Choosing the knowledge base") explains
+  `kb create --embedding-model ... --chat-model ...` and `kb config set`.
 - **`doc wait` before any search** that depends on the new material. Parsing a
   large PDF can take minutes; the default timeout is 10 minutes.
 - **Prefer `--dry-run`** to show the user what a bulk `--recursive` upload will

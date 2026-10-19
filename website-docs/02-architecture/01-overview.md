@@ -49,16 +49,16 @@ Besides the standard Docker Compose deployment, the repository supports:
 | --- | --- | --- |
 | Backend language | Go | `go.mod` declares `go 1.26.0` |
 | Web framework | `github.com/gin-gonic/gin` | v1.12.0 |
-| ORM | `gorm.io/gorm` + postgres/sqlite drivers | v1.31.1; SQLite ships with the `sqlite-vec` vector extension |
+| ORM | `gorm.io/gorm` + postgres/sqlite drivers | v1.31.2; SQLite ships with the `sqlite-vec` vector extension |
 | Dependency injection | `go.uber.org/dig` | v1.19.0 (constructor injection, see the backend design page) |
 | Async tasks | `github.com/hibiken/asynq` | v0.26.0 (Redis-backed, six worker pools) |
-| Cache / queue | `github.com/redis/go-redis/v9` | v9.14.1 |
+| Cache / queue | `github.com/redis/go-redis/v9` | v9.23.0 |
 | Authentication | `github.com/golang-jwt/jwt/v5` + OIDC | Three paths: JWT Bearer, X-API-Key, OIDC |
 | Database migrations | `github.com/golang-migrate/migrate/v4` | `migrations/versioned/*.up.sql`, run at startup when `AUTO_MIGRATE` is on |
 | Logging | `github.com/sirupsen/logrus` + lumberjack rotation | Custom formatter, `request_id` carried through every line |
 | Configuration | `github.com/spf13/viper` + `config/config.yaml` + environment variables | - |
 | Observability | OpenTelemetry + Langfuse (`internal/tracing/langfuse`) | Traces at the level of individual LLM calls |
-| gRPC | `google.golang.org/grpc` v1.81.0 | Calls docreader |
+| gRPC | `google.golang.org/grpc` v1.84.0 | Calls docreader |
 | LLM access | In-house protocol layer `internal/models/api` (one package per wire format: OpenAI, Anthropic, Gemini, DashScope and others), Ollama, the Tencent Cloud LKE SDK | 30 built-in provider definitions in `internal/models/providers`, see [Model management](../03-features/06-models.md) |
 | Vectors / retrieval | pgvector, ES v7/v8, OpenSearch, Qdrant, Milvus, Weaviate, Doris, Tencent VectorDB, sqlite-vec | Assembled at runtime from `RETRIEVE_DRIVER` and the `vector_stores` table |
 | Knowledge graph | `neo4j-go-driver/v6` | Optional |

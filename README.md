@@ -70,7 +70,7 @@ docker compose pull     # Release images from ghcr.io/jrmatherly/ai-kb-*
 docker compose up -d    # Start core services
 ```
 
-Every product release publishes the `app`, `docreader`, `ui` and `sandbox` images to GHCR under the release tag (`v2026.10.18.1`) and its bare version; `latest` is refreshed by the weekly rebuild. Set `AIKB_VERSION` in `.env` to a release tag for a reproducible deployment. `docker compose build` builds the same images from the checkout instead.
+Every product release publishes the `app`, `docreader`, `ui` and `sandbox` images to GHCR under the release tag (`v2026.10.18.1`), its bare version and `latest`. Set `AIKB_VERSION` in `.env` to a release tag for a reproducible deployment. `docker compose build` builds the same images from the checkout instead.
 
 > [!NOTE]
 > `.env.example` ships default `JWT_SECRET` and `SYSTEM_AES_KEY` values so the first start works, and the server logs a warning for each until you replace them. Replace both before you store real credentials: `openssl rand -hex 32` for `JWT_SECRET`, `openssl rand -hex 16` for `SYSTEM_AES_KEY` (exactly 32 characters). The server refuses to start if `JWT_SECRET` is empty or `SYSTEM_AES_KEY` is not exactly 32 bytes. The shipped `JWT_SECRET` is never used to sign: the server stores a per-install secret instead. Embed sessions and presigned file links stay off until you set `SYSTEM_SIGNING_KEY` or a real `SYSTEM_AES_KEY`.

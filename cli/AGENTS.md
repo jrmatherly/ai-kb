@@ -93,14 +93,14 @@ rendering, pass `--format text`.
 
 ### CLI vs server SDK contract boundary
 
-CLI 1.0 contract covers:
+The CLI wire contract covers:
 
 - ✅ Envelope wire shape (success + error)
 - ✅ CLI-injected events (`init` only)
 - ✅ NDJSON line shape (one bare JSON object per line)
 - ✅ Passthrough discipline (CLI doesn't rename SDK events)
 
-CLI 1.0 contract does NOT cover:
+The CLI wire contract does NOT cover:
 
 - ❌ Specific SDK event names (`answer` / `tool_call` / `complete` / ...)
 - ❌ SDK event field shapes (server's own version contract)
@@ -150,7 +150,7 @@ is or isn't aligned with.
 
 | | |
 | --- | --- |
-| **AI KB** | DELETE triggers exit-10 (`input.confirmation_required`); user bypasses with `-y/--yes` |
+| **AI KB** | DELETE triggers exit-10 (`input.confirmation_required`); PUT and PATCH get the exit-10 write gate (`api.put` / `api.patch`); user bypasses with `-y/--yes` |
 | **Rationale** | DELETE is irreversible. Most raw-API CLI commands rely on restricted credentials for safety, but self-hosted deployments may not have restricted-credential infrastructure available. Defensive default because agents are common consumers. |
 
 ### 3. `retry_argv` distinct from `hint`
@@ -466,7 +466,7 @@ The server **replays all stored events from the start** of the assistant message
 
 1. **Dedupe by message_id** (or maintain a per-message event hash set). Naively processing all received events causes duplicate side effects (re-running tool calls, re-rendering answers).
 2. **Capture the ids from the original stream.** `session_id` is on the CLI's `{"type":"init","session_id":"..."}` first NDJSON line. The message id is the `assistant_message_id` on the SDK's `agent_query` frame (`chat` JSON output also returns it as `data.assistant_message_id`), or read the persisted one from `aikb message list --session <id>`.
-3. **Handle `local.sse_stream_aborted` typed error**: server-side buffer expired (TTL exceeded) or process restarted (memory mode). The message is no longer recoverable; restart the original query.
+3. **Handle `resource.not_found` (exit 4) from `session resume`**: the server-side buffer expired (TTL exceeded) or the process restarted (memory mode), so the message is gone. It is not recoverable; restart the original query. `local.sse_stream_aborted` is raised only by `chat` and `session ask` when their own stream drops.
 
 ### Server-side buffer TTL
 
@@ -475,7 +475,7 @@ The server **replays all stored events from the start** of the assistant message
 | `STREAM_MANAGER_TYPE=redis` | **1 hour** (server-side; not configurable from the CLI) |
 | `STREAM_MANAGER_TYPE=memory` (default) | **Process lifetime** (server restart = data loss; no explicit cleanup logic) |
 
-After TTL, `aikb session resume` returns the typed error `local.sse_stream_aborted`, which maps to exit code 1 per the Error code reference.
+After TTL, `aikb session resume` returns `resource.not_found`, which maps to exit code 4 per the Error code reference.
 
 ## Dry-run contract
 
@@ -523,7 +523,7 @@ echo '{"query":"...","agent_id":"..."}' | aikb api -X POST /api/v1/agent-chat/<s
 
 Agents see the same `risk.action` string (in the form `noun.verb`) on three independent surfaces:
 
-1. **Error envelope** - `envelope.error.risk` (`{level, action}`) on an exit-10 confirmation-required error, so the agent can decide whether to escalate to the user. `level` is `destructive` or `write` (reversible updates). `aikb schema <cmd>` reports each command's `risk`; `doc.delete_all` and `api.delete` appear only in the envelope.
+1. **Error envelope** - `envelope.error.risk` (`{level, action}`) on an exit-10 confirmation-required error, so the agent can decide whether to escalate to the user. `level` is `destructive` or `write` (reversible updates). `aikb schema <cmd>` reports each command's `risk`; `doc.delete_all`, `api.delete`, `api.put` and `api.patch` appear only in the envelope.
 
 2. **Help text** - a `Risk: <action> (<level>)` line prepended to the top of `--help` output on every gated cobra command. `aikb api` is intentionally excluded: it is a generic HTTP passthrough whose risk depends on the method, so a static Risk: line would mislead for non-DELETE methods.
 
@@ -576,7 +576,7 @@ Required-input idioms in this codebase:
 - Custom required (e.g., `agent update` needs at-least-one-edit-flag): RunE-level validation that returns `input.invalid_argument`
 - Mutex: `cmd.MarkFlagsMutuallyExclusive("a", "b")`
 
-Reasons hard-required-flags is the v0.5+ default:
+Reasons hard-required-flags is the default:
 
 - Admin / debug commands have no natural human-interactive prompt to lean on.
 - Agent-friendly: MCP callers do not stall waiting for stdin prompts.

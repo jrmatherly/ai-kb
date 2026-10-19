@@ -59,7 +59,7 @@ When an upgrade or retry fails, the sandbox keeps serving the previous ready ver
 
 Sources must be readable anonymously; downloads never carry the user's private repository credentials. Export a private skill as a ZIP first. `owner/slug` is ambiguous; use `@owner/slug` or the full URL.
 
-The skill package limit is separate from the ordinary document limit: `MAX_SKILL_BUNDLE_SIZE_MB` defaults to 256 MiB, is never lower than `MAX_FILE_SIZE_MB` when unset, and caps at 512 MiB. A GitHub download is measured as the whole repository archive, not just the skill subdirectory. After changing it, restart app and frontend so the application and Nginx limits agree.
+The skill package limit is separate from the ordinary document limit: `MAX_SKILL_BUNDLE_SIZE_MB` defaults to 256 MiB, is never lower than `MAX_FILE_SIZE_MB`, and caps at 512 MiB. A GitHub download is measured as the whole repository archive, not just the skill subdirectory. After changing it, restart app and frontend so the application and Nginx limits agree.
 
 ## Choose a sandbox backend
 

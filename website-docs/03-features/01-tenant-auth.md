@@ -499,7 +499,7 @@ sequenceDiagram
 | `tenant.enable_cross_tenant_access` | `true` / `false` | `false` | Deployment-wide switch for cross-tenant superusers (`AIKB_TENANT_ENABLE_CROSS_TENANT_ACCESS` overrides) |
 | `tenant.auto_accept_invitation` | `true` / `false` | `false` | Email invitations add registered users directly (`system_settings` > `AIKB_TENANT_AUTO_ACCEPT_INVITATION`) |
 | `JWT_SECRET` (env) | any string | `aikb-default-jwt-secret-change-me` in `.env.example`; startup fails when empty | The JWT HMAC key; also signs the OIDC state. The shipped default never signs: a per-install secret from the `system_secrets` table is used instead |
-| `SYSTEM_AES_KEY` (env) | 32-byte AES key | `aikb-default-aes-key-change-me!!` in `.env.example`; startup fails when empty or another length | Encrypts the API key column at rest; the shipped default is public, replace it before storing real credentials |
+| `SYSTEM_AES_KEY` (env) | 32-byte AES key | `aikb-default-aes-key-change-me!!` in `.env.example`; startup fails when empty or another length | Encrypts stored credentials (model, web search, data source and workspace secrets) at rest; the shipped default is public, replace it before storing real credentials |
 | `oidc.*` | see [OIDC configuration](#oidc-configuration) | off | OIDC single sign-on |
 | `frontend_base_url` / `FRONTEND_BASE_URL` | URL | relative path | The base of the invitation link registration page |
 | `AIKB_INVITATION_TTL` (env) | Go duration | `168h` (7 days) | Lifetime of workspace invitations and invitation links |
@@ -668,8 +668,8 @@ type TenantAPIKey struct {
     TenantID         *uint64         // NULL for a platform key
     ScopeType        APIKeyScopeType // "tenant" | "platform"
     Name             string
-    KeyHash          string      `json:"-" gorm:"uniqueIndex"` // the hash used for lookup
-    APIKey           string      // plaintext (AES-256-GCM encrypted before storing, see BeforeSave/AfterFind)
+    KeyHash          string      `json:"-" gorm:"uniqueIndex"` // SHA-256 of the token, the only stored form
+    KeyHint          string      `json:"-"`                      // display hint: first 7 + "..." + last 4 characters
     FullAccess       bool        // full access (not limited by capabilities)
     KnowledgeBaseIDs StringArray // the KB allow-list (empty = unrestricted)
     Capabilities     StringArray // the capability list
@@ -677,7 +677,7 @@ type TenantAPIKey struct {
 }
 ```
 
-- **Encryption at rest**: `SYSTEM_AES_KEY` is required at startup, so the `BeforeSave` hook always stores the `api_key` column AES-GCM encrypted and `AfterFind` decrypts it; a failed encryption aborts the write rather than storing plaintext. Lookup always goes through the irreversible `KeyHash`.
+- **Storage**: the token is never stored. `key_hash` holds its SHA-256 for lookup and `key_hint` its masked form. At startup `BackfillTenantAPIKeyHints` converts rows from older versions that still hold an encrypted token, then clears `api_key`.
 - **Responses**: only the create response carries the full key. List and update responses mask `api_key` to its first 7 and last 4 characters (`sk-Ab12...wxyz`), so a lost key is replaced, not recovered.
 - **Validation flow**: the request carries `X-API-Key` → the hash is computed → the row is loaded by `KeyHash` → `RevokedAt` / `ExpiresAt` are checked → `TenantAPIKeyScope{KeyID, ScopeType, FullAccess, KnowledgeBaseIDs, Capabilities}` is injected into the context and later read with `types.TenantAPIKeyScopeFromContext`; `last_used_at` is refreshed asynchronously.
 

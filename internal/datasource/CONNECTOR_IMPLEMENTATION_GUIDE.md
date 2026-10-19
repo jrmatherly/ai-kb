@@ -76,9 +76,10 @@ package yourtype
 
 import (
     "context"
+    "encoding/json"
     "fmt"
     "net/http"
-    "encoding/json"
+    "time"
 )
 
 type Client struct {
@@ -119,7 +120,9 @@ package yourtype
 
 import (
     "context"
+    "encoding/json"
     "fmt"
+    "time"
     
     "github.com/jrmatherly/ai-kb/internal/types"
 )
@@ -162,8 +165,15 @@ func (c *YourConnector) Validate(ctx context.Context, config *types.DataSourceCo
     return nil
 }
 
-// ListResources lists available resources (documents, spaces, folders)
-func (c *YourConnector) ListResources(ctx context.Context, config *types.DataSourceConfig) ([]types.Resource, error) {
+// ListResources lists available resources (documents, spaces, folders).
+// An empty parentID asks for the top level; a flat listing returns an empty
+// slice for any other parentID.
+func (c *YourConnector) ListResources(
+    ctx context.Context, config *types.DataSourceConfig, parentID string,
+) ([]types.Resource, error) {
+    if parentID != "" {
+        return []types.Resource{}, nil
+    }
     yourConfig := &Config{}
     if err := parseConfig(config, yourConfig); err != nil {
         return nil, err
@@ -188,6 +198,14 @@ func (c *YourConnector) ListResources(ctx context.Context, config *types.DataSou
     }
     
     return resources, nil
+}
+
+// ResolveResourceAncestors returns the ancestors a lazily loaded picker must
+// expand to show the selected resources. A flat listing has none.
+func (c *YourConnector) ResolveResourceAncestors(
+    ctx context.Context, config *types.DataSourceConfig, resourceIDs []string,
+) ([]string, error) {
+    return []string{}, nil
 }
 
 // FetchAll performs a full sync
@@ -294,9 +312,9 @@ func parseConfig(config *types.DataSourceConfig, target interface{}) error {
 }
 ```
 
-## Step 5: Register in Container
+## Step 5: Register the Connector
 
-Edit `internal/container/container.go`:
+Connectors are registered in `initConnectorRegistry()` in `internal/container/container.go`, which the container provides as the `*datasource.ConnectorRegistry`. Import your package and add a `registry.Register` call next to the existing ones; registration errors are aggregated with `errors.Join` so a broken connector fails startup:
 
 ```go
 import (
@@ -304,33 +322,20 @@ import (
     yourconnector "github.com/jrmatherly/ai-kb/internal/datasource/connector/yourtype"
 )
 
-func setupContainer() (*dig.Container, error) {
-    container := dig.New()
-    
+func initConnectorRegistry() (*datasource.ConnectorRegistry, error) {
+    registry := datasource.NewConnectorRegistry()
+
+    var errs error
     // ... existing registrations ...
-    
-    // Register your connector
-    must(container.Provide(func() *datasource.Connector {
-        var c datasource.Connector = yourconnector.NewConnector()
-        return &c
-    }))
-    
-    // ... rest of setup ...
+    if err := registry.Register(yourconnector.NewConnector()); err != nil {
+        errs = errors.Join(errs, fmt.Errorf("register yourtype connector: %w", err))
+    }
+
+    if errs != nil {
+        return nil, errs
+    }
+    return registry, nil
 }
-```
-
-Better yet, register through the registry in the connector setup:
-
-```go
-// In the service initialization section
-connectorRegistry := datasource.NewConnectorRegistry()
-connectorRegistry.Register(yourconnector.NewConnector())
-connectorRegistry.Register(feishuconnector.NewConnector())
-// ... etc
-
-container.Provide(func() *datasource.ConnectorRegistry {
-    return connectorRegistry
-})
 ```
 
 ## Step 6: Add Connector Type Constant
@@ -356,7 +361,7 @@ var ConnectorMetadataRegistry = map[string]ConnectorMetadata{
         Name:         "Your Platform Name",
         Description:  "Sync documents from Your Platform",
         Priority:     X,  // Lower number = higher priority in UI
-        AuthType:     "oauth2",  // or "api_key", "token", "password"
+        AuthType:     "oauth2",  // or "api_key", "token", "password", "custom", "none"
         Capabilities: []string{"incremental", "webhook", "deletion_sync"},
     },
 }
@@ -402,7 +407,7 @@ func TestYourConnectorFetchAll(t *testing.T) {
 - [ ] Implemented `client.go` with API wrapper
 - [ ] Implemented `connector.go` with Connector interface
 - [ ] Added connector type constant
-- [ ] Registered in container
+- [ ] Registered in `initConnectorRegistry()`
 - [ ] Added metadata entry
 - [ ] Added unit tests
 - [ ] Tested manually with real API
@@ -474,7 +479,7 @@ type Item struct {
    err := connector.Validate(ctx, config)
    
    // Test ListResources
-   resources, err := connector.ListResources(ctx, config)
+   resources, err := connector.ListResources(ctx, config, "")
    
    // Test FetchAll
    items, err := connector.FetchAll(ctx, config, []string{resources[0].ExternalID})
@@ -487,25 +492,13 @@ type Item struct {
 
 ## Example: Feishu Connector Reference
 
-The Feishu connector would be a good first implementation since:
-
-1. Feishu API is well-documented
-2. AI KB already has `internal/im/feishu/` for reference
-3. Popular in China (key market)
-4. Has webhook support for real-time sync
-
-Structure:
+The Feishu connector is the most complete reference implementation:
 
 ```text
 internal/datasource/connector/feishu/
-├── client.go       (Feishu API client)
-├── connector.go    (Implements Connector)
-└── types.go        (Feishu types)
+├── core/     (shared API client, regions, request pacing, Markdown export)
+├── wiki/     (Wiki connector: feishu and lark types)
+└── drive/    (Drive connector: feishu_drive and lark_drive types)
 ```
 
-Key files to reference:
-
-- `internal/im/feishu/adapter.go` - Feishu API patterns
-- `internal/im/feishu/longconn.go` - Connection handling
-
-This will be a good model for other connectors.
+`wiki/` also shows the optional `StreamingConnector` and lazy `ListResources` with `ResolveResourceAncestors`. Smaller single-package connectors such as `notion/`, `yuque/` and `rss/` are a simpler starting point.

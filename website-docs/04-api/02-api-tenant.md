@@ -144,7 +144,7 @@ Purpose: create a workspace API key. Permission: Owner, JWT only. Handler: `inte
 | `name` | string | yes | Key name |
 | `full_access` | bool | no | Full workspace access (default false) |
 | `knowledge_base_ids` | []string | no | Knowledge base allow-list (scoped key); an unknown ID returns 400, one from another workspace 403 |
-| `capabilities` | []string | no | Capability list (see the [API overview](./01-api-overview.md)); unknown entries are dropped |
+| `capabilities` | []string | no | Capability list (see the [API overview](./01-api-overview.md)); required unless `full_access` is true, and an unknown entry returns 400 |
 | `expires_at_unix` | *int64 | no | Expiry timestamp; must be in the future |
 
 Response: 201 `{"success":true,"data":{...,"api_key":"<key>","token":"<key>"}}` (both fields carry the same plaintext key). This is the only response that carries the full key; store it on receipt. A lost key cannot be retrieved: delete it and create a new one.

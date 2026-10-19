@@ -2,7 +2,7 @@
 
 ## Wiring the event system into the chat pipeline
 
-These are sketches, not current code. Nothing outside `internal/event` emits the query, retrieval, rerank, merge or chat stage events today: the chat pipeline emits only the agent streaming events (`thought`, `tool_call`, `final_answer` and the rest) through the per-request `chatManage.EventBus`. `event.NewMonitoringHandler` and `event.NewAnalyticsHandler` do not exist, and the plugin helpers called below (`performSearch`, `rewriteQuery`, `performRerank`) are placeholders.
+These are sketches, not current code. Nothing outside `internal/event` emits the query, retrieval, rerank, merge or chat stage events today: the chat pipeline emits only the agent streaming events (`thought`, `tool_call`, `final_answer` and the rest), `error` and `memory_recalled` through the per-request `chatManage.EventBus`. `event.NewMonitoringHandler` and `event.NewAnalyticsHandler` do not exist, and `PluginRewriteQuery`, `ErrRewrite` and the plugin helpers called below (`performSearch`, `rewriteQuery`, `performRerank`) are placeholders.
 
 ### 1. Set up the event bus at service startup
 
@@ -39,8 +39,10 @@ func InitializeEventSystem() {
 // internal/application/service/chat_pipeline/search.go
 
 import (
-    "github.com/jrmatherly/ai-kb/internal/event"
+    "strings"
     "time"
+
+    "github.com/jrmatherly/ai-kb/internal/event"
 )
 
 func (p *PluginSearch) OnEvent(
@@ -52,8 +54,8 @@ func (p *PluginSearch) OnEvent(
     // Emit retrieval start
     startTime := time.Now()
     event.Emit(ctx, event.NewEvent(event.EventRetrievalStart, event.RetrievalData{
-        Query:           chatManage.ProcessedQuery,
-        KnowledgeBaseID: chatManage.KnowledgeBaseID,
+        Query:           chatManage.RewriteQuery,
+        KnowledgeBaseID: strings.Join(chatManage.KnowledgeBaseIDs, ","),
         TopK:            chatManage.EmbeddingTopK,
         RetrievalType:   "vector",
     }).WithSessionID(chatManage.SessionID))
@@ -66,15 +68,15 @@ func (p *PluginSearch) OnEvent(
             Error:     err.Error(),
             Stage:     "retrieval",
             SessionID: chatManage.SessionID,
-            Query:     chatManage.ProcessedQuery,
+            Query:     chatManage.RewriteQuery,
         }).WithSessionID(chatManage.SessionID))
         return ErrSearch.WithError(err)
     }
     
     // Emit retrieval complete
     event.Emit(ctx, event.NewEvent(event.EventRetrievalComplete, event.RetrievalData{
-        Query:           chatManage.ProcessedQuery,
-        KnowledgeBaseID: chatManage.KnowledgeBaseID,
+        Query:           chatManage.RewriteQuery,
+        KnowledgeBaseID: strings.Join(chatManage.KnowledgeBaseIDs, ","),
         TopK:            chatManage.EmbeddingTopK,
         RetrievalType:   "vector",
         ResultCount:     len(results),
@@ -138,7 +140,7 @@ func (p *PluginRerank) OnEvent(
     inputCount := len(chatManage.SearchResult)
     
     event.Emit(ctx, event.NewEvent(event.EventRerankStart, event.RerankData{
-        Query:      chatManage.ProcessedQuery,
+        Query:      chatManage.RewriteQuery,
         InputCount: inputCount,
         ModelID:    chatManage.RerankModelID,
     }).WithSessionID(chatManage.SessionID))
@@ -151,7 +153,7 @@ func (p *PluginRerank) OnEvent(
     
     // Emit rerank complete
     event.Emit(ctx, event.NewEvent(event.EventRerankComplete, event.RerankData{
-        Query:       chatManage.ProcessedQuery,
+        Query:       chatManage.RewriteQuery,
         InputCount:  inputCount,
         OutputCount: len(rerankResults),
         ModelID:     chatManage.RerankModelID,
@@ -208,7 +210,7 @@ func (p *PluginChatCompletion) OnEvent(
         Query:      chatManage.Query,
         ModelID:    chatManage.ChatModelID,
         Response:   chatResponse.Content,
-        TokenCount: chatResponse.TokenCount,
+        TokenCount: chatResponse.Usage.TotalTokens,
         Duration:   time.Since(startTime).Milliseconds(),
         IsStream:   false,
     }).WithSessionID(chatManage.SessionID))
@@ -220,31 +222,23 @@ func (p *PluginChatCompletion) OnEvent(
 
 ### 3. Emit the query-received event from the handler layer
 
-```go
-// internal/handler/message.go
+The QA entry point is `executeQA` in `internal/handler/session/qa.go`, which already emits `EventAgentQuery` on the global bus in agent mode. A query-received event would go next to it:
 
-func (h *MessageHandler) SendMessage(c *gin.Context) {
-    ctx := c.Request.Context()
-    
-    // Parse the request
-    var req types.SendMessageRequest
-    if err := c.ShouldBindJSON(&req); err != nil {
-        c.JSON(400, gin.H{"error": err.Error()})
-        return
-    }
-    
-    // Emit query received
-    event.Emit(ctx, event.NewEvent(event.EventQueryReceived, event.QueryData{
-        OriginalQuery: req.Content,
-        SessionID:     req.SessionID,
-        UserID:        c.GetString("user_id"),
-    }).WithSessionID(req.SessionID).WithRequestID(c.GetString("request_id")))
-    
-    // Handle the message...
+```go
+// internal/handler/session/qa.go, inside executeQA
+
+// Emit query received
+if err := event.Emit(ctx, event.NewEvent(event.EventQueryReceived, event.QueryData{
+    OriginalQuery: reqCtx.query,
+    SessionID:     sessionID,
+}).WithSessionID(sessionID).WithRequestID(reqCtx.requestID)); err != nil {
+    logger.Errorf(ctx, "Failed to emit query received event: %v", err)
 }
 ```
 
 ### 4. Custom monitoring handler
+
+This sketch needs `github.com/prometheus/client_golang`, which is not in `go.mod` today.
 
 ```go
 // internal/monitoring/event_monitor.go

@@ -75,9 +75,9 @@ Homebrew 7 taps `jrmatherly/ai-kb` for you and trusts that one formula. If `brew
 Each release carries `aikb_<tag>_<os>_<arch>.tar.gz` (darwin and linux, amd64 and arm64), `aikb_<tag>_windows_<arch>.zip`, a `.sha256` beside each archive, and a build provenance attestation per archive.
 
 ```bash
-gh release download v2026.10.18 -R jrmatherly/ai-kb -p 'aikb_v2026.10.18_darwin_arm64.tar.gz*'
-gh attestation verify aikb_v2026.10.18_darwin_arm64.tar.gz -R jrmatherly/ai-kb   # or: shasum -a 256 -c aikb_v2026.10.18_darwin_arm64.tar.gz.sha256
-tar xzf aikb_v2026.10.18_darwin_arm64.tar.gz
+gh release download v2026.10.18.1 -R jrmatherly/ai-kb -p 'aikb_v2026.10.18.1_darwin_arm64.tar.gz*'
+gh attestation verify aikb_v2026.10.18.1_darwin_arm64.tar.gz -R jrmatherly/ai-kb   # or: shasum -a 256 -c aikb_v2026.10.18.1_darwin_arm64.tar.gz.sha256
+tar xzf aikb_v2026.10.18.1_darwin_arm64.tar.gz
 sudo mv aikb /usr/local/bin/   # or any directory on $PATH
 ```
 
@@ -98,7 +98,7 @@ $user = [Environment]::GetEnvironmentVariable('Path', 'User')
 [Environment]::SetEnvironmentVariable('Path', "$user;$env:LOCALAPPDATA\Programs\aikb", 'User')
 ```
 
-Open a new terminal and run `aikb --version`. SmartScreen may flag a browser-downloaded, unsigned `aikb.exe`; `Unblock-File .\aikb.exe` after verifying the attestation clears it. A winget package (`jrmatherly.aikb`) follows once its first manifest is accepted. Uninstall with `scoop uninstall aikb` (and `scoop bucket rm ai-kb`), or delete the folder and its `PATH` entry; stored credentials live in the OS keyring and are removed with `aikb auth logout` or `aikb profile remove <name>`.
+Open a new terminal and run `aikb --version`. SmartScreen may flag a browser-downloaded, unsigned `aikb.exe`; `Unblock-File .\aikb.exe` after verifying the attestation clears it. A winget package is planned; until it exists, use Scoop or the zip archive. Uninstall with `scoop uninstall aikb` (and `scoop bucket rm ai-kb`), or delete the folder and its `PATH` entry; stored credentials live in the OS keyring and are removed with `aikb auth logout` or `aikb profile remove <name>`.
 
 ### Build from source
 

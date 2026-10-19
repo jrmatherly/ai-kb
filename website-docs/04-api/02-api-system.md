@@ -241,7 +241,7 @@ curl -X PUT $BASE/api/v1/system/admin/settings/tenant.default_storage_quota_gb -
 
 ### DELETE /api/v1/system/admin/settings/:key
 
-Purpose: reset a setting to its environment variable or built-in default. Idempotent.
+Purpose: reset a setting to its environment variable or built-in default (platform key: `system_settings_manage`). Idempotent.
 
 Response: 200 `{"success":true}`
 
@@ -282,7 +282,7 @@ curl -X POST $BASE/api/v1/system/admin/runtime/queues/default/tasks/t-1/actions/
 
 ### DELETE /api/v1/system/admin/runtime/queues/:queue/archived
 
-Purpose: purge the archived (finally failed) tasks of one queue. Live tasks are untouched.
+Purpose: purge the archived (finally failed) tasks of one queue (platform key: `system_runtime_manage`). Live tasks are untouched.
 
 Response: 200 `{"success":true,"deleted":N}`
 

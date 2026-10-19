@@ -15,13 +15,13 @@ proves it over the paths `scope.txt` selects. These keep upstream's spelling on 
   shields the whole file.
 - The upstream credit: `[Tencent/WeKnora](https://github.com/Tencent/WeKnora)` in the README and the homepage
   footer and the docs footer's "Based on Tencent/WeKnora" links, shielded by `keep.tsv`.
-- Provenance: upstream issue and PR links (`Tencent/WeKnora#NNNN`, `/issues/`, `/pull/`, `/discussions/`),
-  `.upstream-review/`, the upstream-review skill, `CLAUDE.md`.
+- Provenance: upstream issue and PR links (`Tencent/WeKnora#NNNN`, `/issues/`, `/pull/`, `/discussions/`).
 - The git remote: Tencent/WeKnora is fetched as the remote `weknora`, so refs like `weknora/main` are ours and
   `keep.tsv` shields them.
 
 Outside `scope.txt`, so the check does not cover them:
 
 - History: `CHANGELOG.md`, `cli/CHANGELOG.md`, `mcp-server/CHANGELOG.md`.
-- Generated: proto stubs, lockfiles and the `docs/` swagger are regenerated, never rewritten (swagger: pinned swag v1.16.6, `make docs`).
+- Generated: proto stubs and lockfiles. (The `docs/` swagger is in scope; its only upstream spellings are the WeKnoraCloud names above, and it is regenerated with `make docs`, pinned swag v1.16.6, never rewritten.)
+- Agent and upstream-review state: `.upstream-review/`, `.claude/`, `.serena/`, `CLAUDE.md` and `AGENTS.md`, and the rebrand contract files themselves (`map.tsv`, `unchanged.md`, `scope.txt`, `keep.tsv`).
 - `third_party/` (vendored firecrawl anydoc; only its benchmark logs mention upstream), `docs/images/` (art).

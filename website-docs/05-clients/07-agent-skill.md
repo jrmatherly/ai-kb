@@ -30,7 +30,7 @@ Settings → Publish & Integrations → Agent skill shows the same steps and let
    The command prints what it wrote:
 
    ```json
-   {"ok":true,"data":{"dir":"~/.claude/skills","installed":["~/.claude/skills/ai-kb-ingest/SKILL.md","~/.claude/skills/ai-kb-rag-search/SKILL.md","~/.claude/skills/ai-kb-rag-search/references/chat.md","~/.claude/skills/ai-kb-rag-search/references/search-chunks.md","~/.claude/skills/ai-kb-shared/SKILL.md"],"skills":["ai-kb-ingest","ai-kb-rag-search","ai-kb-shared"]}}
+   {"ok":true,"data":{"dir":"/home/you/.claude/skills","installed":["/home/you/.claude/skills/ai-kb-ingest/SKILL.md","/home/you/.claude/skills/ai-kb-rag-search/SKILL.md","/home/you/.claude/skills/ai-kb-rag-search/references/chat.md","/home/you/.claude/skills/ai-kb-rag-search/references/search-chunks.md","/home/you/.claude/skills/ai-kb-shared/SKILL.md"],"skills":["ai-kb-ingest","ai-kb-rag-search","ai-kb-shared"]}}
    ```
 
    `aikb skills install --dry-run` lists the files without writing them; `--force` overwrites an earlier install. Without the CLI's installer, `npx skills add jrmatherly/ai-kb --skill ai-kb-shared` (the `skills` CLI from vercel-labs) finds the same three skills under `cli/skills` in this repository, and each `SKILL.md` carries an `openclaw` metadata block so OpenClaw reads them too.

@@ -60,8 +60,8 @@ a failure looks like `{ok:false, error}`.
   `retryable`, and `risk`.
 - `--jq '<program>'` projects the envelope and prints bare strings, so
   `ID=$(aikb kb create "Handbook" --jq .data.id)` needs no quote stripping.
-- `--format text` renders for a human; `--format ndjson` streams events for
-  `chat`, `session ask` and `doc wait`. `AIKB_FORMAT` sets the default.
+- `--format text` renders for a human; `--format ndjson` streams raw events for
+  `chat` and `session ask` (`doc wait` writes its single result on one line). `AIKB_FORMAT` sets the default.
 - `aikb auth token` is the one command that prints no envelope: it writes the
   bare credential for `TOKEN=$(aikb auth token)`. `--format json` restores the
   envelope with `{token, mode, profile}`.

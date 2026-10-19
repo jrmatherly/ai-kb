@@ -10,7 +10,7 @@ The client has these feature areas:
 2. **Knowledge bases**: create, get, update and delete knowledge bases
 3. **Knowledge items**: add, get and delete knowledge content
 4. **Workspaces**: workspace CRUD
-5. **Knowledge Q&A**: regular and streaming Q&A
+5. **Knowledge Q&A**: streaming Q&A
 6. **Agent Q&A**: agent-based Q&A with thinking, tool calls and reflection
 7. **Chunks**: query, update and delete knowledge chunks
 8. **Messages**: get and delete session messages
@@ -88,7 +88,7 @@ metadata := map[string]string{
     "source": "local",
     "type":   "document",
 }
-knowledge, err := apiClient.CreateKnowledgeFromFile(context.Background(), kb.ID, "path/to/file.pdf", metadata)
+knowledge, err := apiClient.CreateKnowledgeFromFile(context.Background(), kb.ID, "path/to/file.pdf", metadata, nil, "", "", nil)
 if err != nil {
     // handle the error
 }
@@ -103,33 +103,14 @@ if err != nil {
 ### Example: create a session and ask questions
 
 ```go
-// Create a session
+// Create a session. A session is only a conversation container: the knowledge
+// bases and retrieval settings come with each question.
 sessionRequest := &client.CreateSessionRequest{
-    KnowledgeBaseID: knowledgeBaseID,
-    SessionStrategy: &client.SessionStrategy{
-        MaxRounds:        10,
-        EnableRewrite:    true,
-        FallbackStrategy: "fixed_answer",
-        FallbackResponse: "Sorry, I cannot answer this question",
-        EmbeddingTopK:    5,
-        KeywordThreshold: 0.5,
-        VectorThreshold:  0.7,
-        RerankModelID:    "rerank_model_id",
-        RerankTopK:       3,
-        RerankThreshold:  0.8,
-        SummaryModelID:   "summary_model_id",
-    },
+    Title:       "Test session",
+    Description: "A session for testing",
 }
 
 session, err := apiClient.CreateSession(context.Background(), sessionRequest)
-if err != nil {
-    // handle the error
-}
-
-// Regular Q&A
-answer, err := apiClient.KnowledgeQA(context.Background(), session.ID, &client.KnowledgeQARequest{
-    Query: "What is artificial intelligence?",
-})
 if err != nil {
     // handle the error
 }
@@ -235,45 +216,14 @@ err = agentSession.Ask(context.Background(), "What is deep learning?",
 | `AgentResponseTypeReflection` | Self-reflection | When the agent evaluates its own answer |
 | `AgentResponseTypeError` | Error | When an error occurs |
 
-### Agent Q&A test tool
-
-An interactive command-line tool for testing the agent:
-
-```bash
-cd client/cmd/agent_test
-go build -o agent_test
-./agent_test -url http://localhost:8080 -kb <knowledge_base_id>
-```
-
-The tool supports:
-
-- Creating and managing sessions
-- Interactive agent Q&A
-- Showing every agent event live
-- Performance stats and debug output
-
-See `client/cmd/agent_test/README.md` for details.
-
-### Advanced agent Q&A
-
-`agent_example.go` has more advanced examples:
-
-- Basic agent Q&A
-- Tool call tracking
-- Capturing knowledge references
-- Full event tracing
-- Custom error handling
-- Stream cancellation
-- Multiple sessions
-
 ### Example: manage models
 
 ```go
 // Create a model
 modelRequest := &client.CreateModelRequest{
     Name:        "Test model",
-    Type:        client.ModelTypeChat,
-    Source:      client.ModelSourceInternal,
+    Type:        client.ModelTypeKnowledgeQA,
+    Source:      client.ModelSourceLocal,
     Description: "A model for testing",
     Parameters: client.ModelParameters{
         "temperature": 0.7,

@@ -99,7 +99,7 @@ The concurrency of the 6 Asynq worker pools is adjustable through system setting
 
 - `ResourceCleaner` (`internal/container/cleanup.go`): components register their teardown with `RegisterWithName(name, cleanupFunc)` (the ants pool, the Langfuse flush, the MCP manager, the IM service, the data source scheduler, housekeeping and others), and `Cleanup(ctx)` runs them all at exit, in reverse registration order. `Promote(name)` moves a hook to the front; BrowserSkill uses it so the local browser closes before hooks that wait on in-flight jobs.
 - `EngineFactory` (`internal/container/engine_factory.go`): creates retrieval engine instances at runtime from rows of the `vector_stores` table (`createQdrantEngine`, `createMilvusEngine`, `createDorisEngine`, `createOpenSearchEngine` and the rest) instead of binding one engine statically at startup.
-- `initDatabase` does more than open the connection: automatic golang-migrate migrations (`AUTO_MIGRATE`; a failure only warns), backfilling the `__pending_env__` storage provider marker, migrating legacy storage backends, syncing PostgreSQL sequences, resetting pending tasks in Lite mode, and a declarative UPSERT of the built-in models from `config/builtin_models.yaml`. With SQLite it forces `SetMaxOpenConns(1)` to serialize writes.
+- `initDatabase` does more than open the connection: automatic golang-migrate migrations (`AUTO_MIGRATE`; a failure only warns), backfilling the `__pending_env__` storage provider marker, migrating legacy storage backends, syncing PostgreSQL sequences, resetting pending tasks in Lite mode, and a declarative UPSERT of the built-in models from `config/builtin_models.yaml`, then resolving the per-install JWT secret (`system_secrets`) and backfilling API key hashes and hints (`BackfillTenantAPIKeyHints`). With SQLite it forces `SetMaxOpenConns(1)` to serialize writes.
 
 ## cmd/server startup sequence
 
@@ -111,8 +111,8 @@ flowchart TD
     B --> C["runtime.SilenceGinRouteSpam()<br/>mute 150+ route registration lines"]
     C --> D["runtime.LogStartupEnv()<br/>print the environment banner (before the container build, for troubleshooting)"]
     D --> E["container.BuildContainer(runtime.GetContainer())<br/>DI wiring: DB migrations / Redis / Asynq / router ..."]
+    E -.- E1["initDatabase: BackfillTenantAPIKeyHints moves keys still stored in api_key<br/>(older keys, migration 000065 copies) to key_hash + key_hint, empties api_key"]
     E --> F["runStartupBootstrap(c): best-effort, failures only warn"]
-    F --> F1["TenantAPIKeyService.BackfillMissingKeyHashes<br/>(backfill legacy API key hashes from migration 000065)"]
     F --> F2["bootstrapSystemAdmin<br/>the user named by AIKB_BOOTSTRAP_SYSTEM_ADMIN_EMAIL<br/>is promoted to system administrator when none exists (idempotent)"]
     F --> G["c.Invoke(cfg, router, resourceCleaner, systemSettingSvc, modelCatalogSvc)"]
     G --> H["listenWithRetry(addr, 10 attempts, 300ms exponential backoff, 3s cap)"]
@@ -311,7 +311,7 @@ erDiagram
 Design points:
 
 - **Multi-workspace isolation**: almost every entity carries `TenantID`; `tenant_id=0` means system level (system audit entries, for example).
-- **Sensitive fields encrypted at rest**: `Model.Parameters`, `VectorStore.ConnectionConfig`, `StorageBackend.Config`, `DataSource.Config`, `TenantAPIKey.APIKey` and others are encrypted with AES-256-GCM in their GORM `Value()` hook using `SYSTEM_AES_KEY` (32 bytes) and decrypted leniently in `Scan()` (a decryption failure reads as "not configured" rather than an error).
+- **Sensitive fields encrypted at rest**: `Model.Parameters`, `VectorStore.ConnectionConfig`, `StorageBackend.Config`, `DataSource.Config` and others are encrypted with AES-256-GCM in their GORM `Value()` hook using `SYSTEM_AES_KEY` (32 bytes) and decrypted leniently in `Scan()` (a decryption failure reads as "not configured" rather than an error). API keys are not encrypted: only a SHA-256 `KeyHash` and a masked `KeyHint` are stored.
 - **Bound at creation, then immutable**: a knowledge base's `VectorStoreID` (gorm tag `<-:create`) and `StorageBackendID` cannot change after creation, which keeps the index and the files consistent.
 - **Asynchronous state machine**: `Knowledge.ParseStatus` has seven states, and `PendingSubtasksCount` tracks the parallel enrichment subtasks (summary, question, graph) of the finalizing stage.
 - **Append-only audit**: `AuditLog` has no update or soft-delete columns and covers 60+ `AuditAction` values.

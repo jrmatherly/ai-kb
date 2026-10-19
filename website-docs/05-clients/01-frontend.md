@@ -31,9 +31,9 @@ From `frontend/package.json`:
 
 Dependency details worth knowing:
 
-- `xlsx` installs `0.20.2` from a fixed SheetJS URL, and `package-lock.json` keeps its integrity hash. The repository does not ship the package, so an offline build needs a prepared npm cache.
+- `xlsx` installs `0.20.3` from a fixed SheetJS URL, and `package-lock.json` keeps its integrity hash. The repository does not ship the package, so an offline build needs a prepared npm cache.
 - `frontend/pnpm-workspace.yaml` does not declare workspace packages. It only holds the `allowBuilds` allow-list (`@vue-office/pptx`, `esbuild` and `vue-demi` may run build scripts) for pnpm's build-script security policy.
-- `overrides` / `resolutions` disable `lightningcss` and pin one version each of `esbuild` and `serialize-javascript`.
+- `overrides` / `resolutions` disable `lightningcss` and pin `tdesign-icons-vue-next` to `0.4.11`.
 
 ## Module structure
 
@@ -151,7 +151,7 @@ Routes are defined in `frontend/src/router/index.ts` with `createWebHistory`. Ev
 | Account | `general` (personal preferences), `userprofile`, `mymemory` (personal memory), `envvars` (personal variables) |
 | Workspace | `tenant` (workspace information), `members`, `chathistory`, `memory` (workspace memory) |
 | Models and runtime | `models`, `ollama`, `weknoracloud` |
-| Integrations | `integration-im`, `integration-embed`, `integration-api`, `integration-mcpserver`, `integration-cli`, `integration-chrome`, `integration-claw` |
+| Integrations | `integration-im`, `integration-embed`, `integration-api`, `integration-mcpserver`, `integration-cli`, `integration-browser`, `integration-claw` |
 | Data and extensions | `vectorstore`, `parser`, `storage`, `sandbox`, `websearch` |
 | System administration | `system-global`, `model-catalog`, `runtime-queues`, `platform-api-keys`, `system-audit-log` |
 | Platform | `system` (version information) |

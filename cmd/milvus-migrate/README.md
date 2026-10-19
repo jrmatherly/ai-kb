@@ -39,7 +39,7 @@ By default the migration reads 64 rows per batch and reads only the fields neede
 
 AI KB's `internal/utils` parses SQL with `pg_query_go`, which needs CGO. When you run `go run` directly in a session with `CGO_ENABLED=0`, you get `undefined: pg_query.Parse` or `undefined: pg_query.Deparse`.
 
-The project ships an MSYS2 GCC. You can enable CGO for the current PowerShell session and then run the migration. These settings affect only the current window and do not change the system-wide Go configuration:
+If you have an MSYS2 GCC (for example under `.local-tools\msys64\ucrt64\bin`), you can enable CGO for the current PowerShell session and then run the migration. These settings affect only the current window and do not change the system-wide Go configuration:
 
 ```powershell
 # Make sure the current directory is the project root that contains go.mod
