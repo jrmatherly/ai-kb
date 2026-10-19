@@ -257,6 +257,8 @@ make run-lite                       # build and start ./ai-kb-lite with the .env
 make package-lite                   # package the release tarball (scripts/package-lite.sh)
 ```
 
+Without building, install the released Lite server with Homebrew: `brew install jrmatherly/ai-kb/ai-kb-lite` (the formula lives in the tap `jrmatherly/homebrew-ai-kb` and is rewritten on each release). Its wrapper keeps config and data under `~/.config/aikb` and `~/.local/share/aikb`, and sets `AIKB_CONFIG_FILE` to `~/.config/aikb/config/config.yaml` so the `aikb` CLI's own `config.yaml` in that directory is never loaded as the server config.
+
 The single binary, when used through a browser, requires registration and login like the standard edition. The desktop application obtains a per-process random credential through the native bridge at startup and calls `POST /auth/auto-setup` to create and log in a local account automatically. That endpoint rejects anonymous HTTP requests.
 
 ### Desktop application (cmd/desktop, Wails v2)
@@ -288,7 +290,7 @@ cd frontend && npm ci && npm run dev          # development; npm run build produ
 make -C docreader proto && make -C docreader run  # uv sync, regenerate the stubs, then the image CMD (python -m docreader.main from the repository root)
 ```
 
-Configuration file lookup order (`LoadConfig` in `internal/config/config.go`): the current directory, then `./config`, then `$HOME/.appname`, then `/etc/appname/`. The file name is `config.yaml`.
+Configuration file lookup order (`LoadConfig` in `internal/config/config.go`): the current directory, then `./config`, then `$HOME/.appname`, then `/etc/appname/`. The file name is `config.yaml`. `AIKB_CONFIG_FILE` (a path) replaces the search with that one file; the Lite Homebrew wrapper sets it so the `aikb` CLI's own `config.yaml` is never loaded as the server config.
 
 ## Common deployment topologies
 

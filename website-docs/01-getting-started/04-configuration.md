@@ -17,7 +17,7 @@ The main configuration structure is defined in `internal/config/config.go`. The 
 
 `LoadConfig()` in `internal/config/config.go` runs these steps:
 
-1. viper searches for `config.yaml` in order: the current directory, then `./config`, then `$HOME/.appname`, then `/etc/appname/`.
+1. When `AIKB_CONFIG_FILE` is set, viper loads exactly that file. Otherwise it searches for `config.yaml` in order: the current directory, then `./config`, then `$HOME/.appname`, then `/etc/appname/`.
 2. **Environment variable expansion**: the file content goes through a regex replacement; `${ENV_VAR}` is replaced with the value of the environment variable of the same name. When the variable is unset, the literal `${ENV_VAR}` is kept as is, so misconfiguration surfaces instead of silently becoming empty.
 3. viper enables `AutomaticEnv()` with the key separator `.` mapped to `_` (so `server.port` can be overridden by the environment variable `SERVER_PORT`).
 4. Prompt templates are loaded from `config/prompt_templates/*.yaml` and **back-filled** into the conversation configuration by the `xxx_prompt_id` fields (`backfillConversationDefaults`).

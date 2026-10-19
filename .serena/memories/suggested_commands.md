@@ -12,7 +12,7 @@ Validate
 - Model catalog: `make model-catalog-check` (= `python3 scripts/model-catalog/generate.py --check` + `go test ./internal/models/...`); regenerate with `make model-catalog-generate`.
 - Frontend: `npm --prefix frontend test`, `npm --prefix frontend run type-check`, `npm --prefix frontend run build`; i18n: `npm --prefix frontend run check-i18n`.
 - docreader: `uv sync --project docreader --locked`; `uv run --project docreader python -m unittest discover -s docreader/tests -p "test_*.py" -v`; Go side `go test ./docreader/client ./docreader/proto`; server `uv run --project docreader python -m docreader.main` (gRPC :50051).
-- CLI/client modules: `go -C cli test -race ./... && go -C cli vet ./...`; `go -C client test ./...`.
+- CLI/client modules: `go -C cli test -race ./... && go -C cli vet ./...`; `go -C client test ./...`. `scripts/validate.sh --area cli` also cross-compiles the six release targets with `CGO_ENABLED=0`; `--area tap` runs the tap updater tests (`python3 -I scripts/test_update_tap.py`).
 - Hooks and bundles: `bash scripts/test-git-hooks.sh`; `bash scripts/check-license-bundle.sh && bash scripts/test-license-bundle.sh`; install hooks with `scripts/install-git-hooks.sh`.
 - Swagger: `make docs` (regenerates `docs/`).
 - Migrations: `make migrate-up|migrate-down|migrate-version|migrate-create|migrate-force|migrate-goto` (wrap `scripts/migrate.sh`).
@@ -20,6 +20,7 @@ Validate
 Release
 
 - `make bump-version [VERSION=YYYY.M.D[.MICRO]]` (also raises the Helm chart patch version, so each product release publishes a chart pinning its image tag), `make bump-lib LIB=dsh-ai-kb|extension|mcp-server|helm-chart PART=patch|minor|major`, `make check-version`.
+- Cut a product release: `make bump-version`, push, `git tag -s v<ver> -m "v<ver>"` and push the tag (signed), then `gh workflow run release-lite.yml -R jrmatherly/ai-kb -f tag=v<ver>`; the run publishes the Lite tarballs, desktop apps and `aikb` archives with attestations, and its `update-tap` job rewrites the tap `jrmatherly/homebrew-ai-kb` (no hand sync). Extension releases never take the Latest flag. Latest product release: v2026.10.18.1 (2026-10-18).
 
 Upstream and English-only
 

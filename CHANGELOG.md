@@ -2,18 +2,33 @@
 
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [2026.10.18.1] - 2026-10-18
 
 ### Features
 
 - **ADDED**: Every product release publishes the `aikb` CLI for macOS, Linux and Windows (`aikb_<tag>_<os>_<arch>.tar.gz`, `aikb_<tag>_windows_<arch>.zip`, each with a `.sha256` and a build provenance attestation), installable with `brew install jrmatherly/ai-kb/aikb` or Scoop from the `jrmatherly/homebrew-ai-kb` bucket.
 - **CHANGED**: The Homebrew formulas and the Scoop manifest live in the tap `jrmatherly/homebrew-ai-kb`, rewritten on each release by `scripts/update_tap.py` and committed as the `ai-kb-tap-publisher` App; `Formula/ai-kb-lite.rb` left this repository.
 
+## [2026.10.18] - 2026-10-18
+
+### Security
+
+- **CHANGED**: The anydoc build moves its zip dependency to 9.0.5 (RUSTSEC-2026-0367, 0368 and 0369).
+- **CHANGED**: Audit log Tier 1: logins and logouts (password and OIDC, with the actor's workspace role and a reason on failures), workspace API key changes (including whether a key is full access), and model, agent, MCP server, web search provider and storage backend changes are recorded; the workspace audit feed labels every row and includes knowledge base activity.
+
+### Features
+
+- **ADDED**: `AIKB_IM_PLATFORMS` allow-lists the IM platforms a deployment offers (blank means all); the capabilities payload carries `im_platforms`.
+- **ADDED**: `AIKB_WEKNORACLOUD_ENABLED` opts in to the upstream cloud parser and model provider; while off, the engine is left out of the engine list, the provider and Settings entry are hidden, model create and update refuse it, and its credential routes answer 400.
+- **ADDED**: The Agent skill page replaces the Claw Skill page, built on `aikb skills install`; a new `ai-kb-ingest` skill joins `ai-kb-shared` and `ai-kb-rag-search`, all three written as original text with OpenClaw metadata.
+- **CHANGED**: Helm chart 0.4.x: `externalDatabase` and `externalRedis` values, `app.extraVolumes` and `app.extraVolumeMounts`, a Recreate default strategy for single-writer data volumes and a `checksum/secret` pod annotation.
+- **CHANGED**: Extension releases no longer claim the GitHub "Latest" flag, so the desktop updater resolves to a product release; the extension page links to a release search that returns results.
+- **CHANGED**: The CLI reports its version from product `v*` tags only; DuckDuckGo web search queries the worldwide region.
+
 ### Fixes
 
 - **FIXED**: `ai-kb-lite` loads its own `config/config.yaml` by explicit path (`AIKB_CONFIG_FILE`), so an `aikb` CLI profile at `~/.config/aikb/config.yaml` no longer makes the server panic at start.
-- **FIXED**: Audit rows record the login role from the workspace membership, label every workspace feed row, list the fields a configuration change carried and whether an API key is full access; the disabled AI KB Cloud parser engine is left out of the engine list.
-- **CHANGED**: The anydoc build moves its zip dependency to 9.0.5 (RUSTSEC-2026-0367, 0368 and 0369).
+- **FIXED**: The API Integration page warns instead of erroring when signed-token mode is chosen before an HMAC secret exists; the audit empty states say where rows went.
 
 ## [2026.10.17.1] - 2026-10-17
 
