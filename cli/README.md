@@ -43,21 +43,6 @@ For contributing to the CLI source, see [AGENTS.md](AGENTS.md).
 
 ## Install
 
-### From source
-
-Requires Go 1.26+.
-
-```bash
-git clone https://github.com/jrmatherly/ai-kb.git
-cd ai-kb/cli
-make build                      # bin/aikb, with version metadata
-sudo mv bin/aikb /usr/local/bin/   # or anywhere on $PATH
-```
-
-A plain `go build -o aikb .` works too but reports version `dev`, which
-weakens `aikb doctor`'s version-skew check. The CLI has no version of its
-own: it carries the product's CalVer release tag (`git describe --tags`).
-
 ### Pre-built binaries
 
 ```bash
@@ -76,6 +61,21 @@ The tap and the Scoop bucket are `jrmatherly/homebrew-ai-kb`, rewritten by
 the release workflow. `go install` is not supported (the module lives in
 `cli/` and release tags are dated CalVer). Details and the Windows PATH steps:
 [the CLI docs](https://ai-kb.matherly.net/docs/05-clients/02-cli#installation).
+
+### From source
+
+Requires Go 1.26+.
+
+```bash
+git clone https://github.com/jrmatherly/ai-kb.git
+cd ai-kb/cli
+make build                      # bin/aikb, with version metadata
+sudo mv bin/aikb /usr/local/bin/   # or anywhere on $PATH
+```
+
+A plain `go build -o aikb .` works too but reports version `dev`, which
+weakens `aikb doctor`'s version-skew check. The CLI has no version of its
+own: it carries the product's CalVer release tag (`git describe --tags`).
 
 ---
 
