@@ -43,14 +43,14 @@ Use RAG to look things up, the agent for multi-step tasks, and the wiki to organ
   <img src="./docs/images/readme/capabilities-en-light.svg" alt="01 RAG: answers you can check, with hybrid search, multimodal parsing and citations. 02 Agent: tasks done with knowledge and tools, with multi-step reasoning, skills and sandbox, the local browser, MCP tools and memory. 03 Wiki: documents organized into a wiki, with a knowledge graph and rollback." width="100%">
 </picture>
 
-**The agent's toolbox.** Skills installed from ClawHub / SkillHub / Git / ZIP run in session-persistent Docker / E2B / Cube sandboxes, with an interactive terminal and graphical desktop beside the chat. Through the BrowserSkill extension the agent operates the user's own Chrome or Edge, and external MCP services (OAuth included) can be connected and enabled tool by tool.
+**The agent's toolbox.** Skills installed from ClawHub / SkillHub / Git / ZIP run in session-persistent Docker / E2B / Cube sandboxes, with an interactive terminal and graphical desktop beside the chat. Through Tencent's BrowserSkill extension the agent operates the user's own Chrome or Edge, and external MCP services (OAuth included) can be connected and enabled tool by tool. A separate AI KB browser extension for Chrome and Edge lets people ask about the page they are reading and clip pages, selections and notes into a knowledge base.
 
 Beyond the three modes:
 
 - **Memory and curation**: cross-session long-term memory keeps the profile, preferences and facts a user has confirmed. Folder uploads keep their directory tree, and retrieval chunks can be edited, diffed and rolled back.
 - **Data sources and formats**: auto-sync from Feishu wiki / Feishu Drive / Confluence / GitLab / Tencent IMA / Notion / Yuque / DingTalk Docs / Seafile / RSS, with more on the way. 10+ document formats including PDF, Word, images, Excel and XMind; Office files are parsed in-process by anydoc.
 - **Channels and integrations**: Q&A in WeCom, Feishu, Slack, Telegram and other IM apps; an embed widget for external websites; a built-in MCP Server for Cursor, Claude and other AI tools; scoped API keys with a principal model for programmatic access.
-- **Models**: 30 built-in providers with a generated model catalog, including OpenAI, DeepSeek, Qwen (Alibaba Cloud), Zhipu, Hunyuan, Gemini, MiniMax, NVIDIA and LiteLLM, plus Ollama for local models.
+- **Models**: 30 built-in provider definitions with a generated model catalog, including OpenAI, Anthropic, DeepSeek, Qwen (Alibaba Cloud), Zhipu, Hunyuan, Gemini, MiniMax, NVIDIA and LiteLLM, plus Ollama for local models.
 - **Permissions and operations**: multi-workspace RBAC (four roles, per-resource ownership, per-workspace audit log), several storage instances per workspace, a runtime task-queue dashboard with worker-pool governance, and Langfuse tracing for agent steps, token usage and pipelines.
 - **Deployment**: LLMs, vector databases and storage backends are all swappable. Deploy locally or on a private cloud and keep the data in your own environment.
 
@@ -66,13 +66,13 @@ Requires [Docker](https://www.docker.com/), [Docker Compose](https://docs.docker
 git clone https://github.com/jrmatherly/ai-kb.git
 cd ai-kb
 cp .env.example .env    # Replace JWT_SECRET and SYSTEM_AES_KEY (see the note below)
-docker compose build    # Build the app, docreader and frontend images locally
+docker compose pull     # Release images from ghcr.io/jrmatherly/ai-kb-*
 docker compose up -d    # Start core services
 ```
 
+Every product release publishes the `app`, `docreader`, `ui` and `sandbox` images to GHCR under the release tag (`v2026.10.18.1`) and its bare version; `latest` is refreshed by the weekly rebuild. Set `AIKB_VERSION` in `.env` to a release tag for a reproducible deployment. `docker compose build` builds the same images from the checkout instead.
+
 > [!NOTE]
-> No release images are published under `ghcr.io/jrmatherly/ai-kb-*` yet, so `docker compose pull` fails with `denied`. Build the images from the checkout as above; the first build takes a while.
->
 > `.env.example` ships default `JWT_SECRET` and `SYSTEM_AES_KEY` values so the first start works, and the server logs a warning for each until you replace them. Replace both before you store real credentials: `openssl rand -hex 32` for `JWT_SECRET`, `openssl rand -hex 16` for `SYSTEM_AES_KEY` (exactly 32 characters). The server refuses to start if `JWT_SECRET` is empty or `SYSTEM_AES_KEY` is not exactly 32 bytes. The shipped `JWT_SECRET` is never used to sign: the server stores a per-install secret instead. Embed sessions and presigned file links stay off until you set `SYSTEM_SIGNING_KEY` or a real `SYSTEM_AES_KEY`.
 
 Then open **<http://localhost>** and follow the onboarding guide. A walkthrough with sample data is in the [Quickstart](https://ai-kb.matherly.net/docs/01-getting-started/03-quickstart).
@@ -112,13 +112,13 @@ docker compose down     # Stop services
 If you already have AI KB running and want a newer version:
 
 ```bash
-git pull                # Update the checkout
-docker compose build    # Rebuild the images from it
+git pull                # Update the checkout (compose file, migrations, .env.example)
+docker compose pull     # Fetch the release images for AIKB_VERSION
 docker compose up -d    # Recreate containers with the new images
 ```
 
 > [!NOTE]
-> `docker compose up -d` alone reuses the images already built and may leave the UI version out of sync with the checkout.
+> `docker compose up -d` alone reuses the images already present and may leave the UI version out of sync with the checkout. If you build locally, run `docker compose build` instead of `pull`.
 
 **Major version changes.** Releases after `2026.10.15.1` move PostgreSQL from 17 to 18 and the optional vector stores and Langfuse to new major versions. Existing volumes need a dump and restore or a re-index; see [Upgrading](https://ai-kb.matherly.net/docs/01-getting-started/02-installation#upgrading) in the installation guide.
 
@@ -129,7 +129,7 @@ docker compose up -d    # Recreate containers with the new images
 | **Docker Compose** | The standard deployment above: all features, multiple services |
 | **Kubernetes (Helm)** | Production clusters; the chart is in [`helm/`](./helm) |
 | **Lite single binary** | Local or low-resource use with no external dependencies (SQLite + in-memory queue); see [Lite vs. standard](./docs/LITE.md) |
-| **Desktop app** | The Lite runtime with a GUI, login-free start and a macOS host sandbox; no installer is published yet, so build it from source |
+| **Desktop app** | The Lite runtime with a GUI, login-free start and a macOS host sandbox; every release attaches macOS DMGs (universal, arm64, amd64), a Windows installer and a Linux tarball |
 
 All options, hardware requirements and deployment topologies: [Installation guide](https://ai-kb.matherly.net/docs/01-getting-started/02-installation).
 
@@ -142,6 +142,14 @@ All options, hardware requirements and deployment topologies: [Installation guid
 > - regularly update to the latest version for security patches and improvements.
 
 ## What's New
+
+### 2026.10.18.1 <sub>· [changelog](./CHANGELOG.md)</sub>
+
+The `aikb` CLI ships with every release for macOS, Linux and Windows: `brew install jrmatherly/ai-kb/aikb`, Scoop from the same tap, or archives with sha256 files and build provenance attestations.
+
+### 2026.10.18 <sub>· [changelog](./CHANGELOG.md)</sub>
+
+Audit log Tier 1 (logins, API keys, model and integration changes), the `AIKB_IM_PLATFORMS` allow-list, the upstream cloud parser and provider behind `AIKB_WEKNORACLOUD_ENABLED`, the Agent skill page with the new `ai-kb-ingest` skill, and Helm chart 0.4 with external database and Redis values.
 
 ### 2026.10.17.1 <sub>· [changelog](./CHANGELOG.md)</sub>
 
@@ -163,71 +171,32 @@ AI KB started from [Tencent/WeKnora](https://github.com/Tencent/WeKnora) at v0.8
 
 ## Product Tour
 
+Screenshots from a live AI KB deployment.
+
 ### Quick Q&A and smart reasoning
 
-**Two ways to ask.** Quick Q&A answers from the knowledge base with RAG and cites the sources it used. In smart reasoning the agent plans multi-step work, searching, reading documents and calling tools and skills, and shows each step in the conversation. [Docs →](https://ai-kb.matherly.net/docs/03-features/18-chat-experience)
+**Two ways to ask.** Quick Q&A answers from the knowledge base with RAG and cites the sources it used, here the product documentation answering an install question. In smart reasoning the agent plans multi-step work, searching, reading documents and calling tools and skills, and shows each step in the conversation. [Docs →](https://ai-kb.matherly.net/docs/03-features/18-chat-experience)
 
-<a href="./docs/images/readme/spotlight-qa-light.webp">
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="./docs/images/readme/spotlight-qa-dark.webp">
-  <img src="./docs/images/readme/spotlight-qa-light.webp" alt="Quick Q&A and smart reasoning" width="100%">
-</picture>
-</a>
-
-### Local browser
-
-**Operate the browser on your computer.** Through Tencent's open-source BrowserSkill extension, the agent opens pages and fills in forms in your own Chrome or Edge, and hands over to you for logins and CAPTCHAs. [Docs →](https://ai-kb.matherly.net/docs/05-clients/09-local-browser)
-
-<a href="./docs/images/readme/spotlight-browser-light.webp">
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="./docs/images/readme/spotlight-browser-dark.webp">
-  <img src="./docs/images/readme/spotlight-browser-light.webp" alt="Local browser" width="100%">
-</picture>
-</a>
-
-### Skills and sandbox
-
-**Run skills and produce files.** Docker, E2B and Cube backends are supported. Turns in the same session share one workspace, and generated files can be previewed and downloaded. Open the graphical desktop or interactive terminal beside the chat to follow each step and take over when needed. [Docs →](https://ai-kb.matherly.net/docs/03-features/22-skills-sandbox)
-
-<a href="./docs/images/readme/spotlight-sandbox-light.webp">
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="./docs/images/readme/spotlight-sandbox-dark.webp">
-  <img src="./docs/images/readme/spotlight-sandbox-light.webp" alt="Skills and sandbox" width="100%">
-</picture>
-</a>
-
-### Toolbox: MCP services and skills
-
-**Tools the agent can use.** Connect external MCP services and choose, tool by tool, which are enabled and which calls need approval. Install skills from ClawHub, SkillHub, Git or ZIP, manage them per workspace, and reuse them across sandboxes. [Docs →](https://ai-kb.matherly.net/docs/03-features/22-skills-sandbox)
-
-<a href="./docs/images/readme/spotlight-toolbox-light.webp">
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="./docs/images/readme/spotlight-toolbox-dark.webp">
-  <img src="./docs/images/readme/spotlight-toolbox-light.webp" alt="Toolbox: MCP services and skills" width="100%">
-</picture>
-</a>
-
-### Automatic wiki
-
-**Documents organized into a browsable wiki.** With Wiki enabled, AI KB extracts people, products and concepts from knowledge-base documents into pages with source citations, organized by directory. The knowledge graph shows how pages relate; pages can be edited directly and every change can be rolled back. [Docs →](https://ai-kb.matherly.net/docs/03-features/14-wiki)
-
-<a href="./docs/images/readme/spotlight-wiki-light.webp">
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="./docs/images/readme/spotlight-wiki-dark.webp">
-  <img src="./docs/images/readme/spotlight-wiki-light.webp" alt="Automatic wiki" width="100%">
-</picture>
-</a>
+<a href="./docs/images/readme/spotlight-qa.webp"><img src="./docs/images/readme/spotlight-qa.webp" alt="A Quick Answer chat: the question asks how to install the aikb CLI on macOS, and the answer cites 02-cli.md and shows the brew install command" width="100%"></a>
 
 ### Observability
 
-**Tracing and runtime monitoring.** Langfuse traces the reasoning, tool calls and token usage of each agent step. The document parsing timeline shows progress stage by stage, and the task-queue dashboard lists queued and failed tasks. [Docs →](https://ai-kb.matherly.net/docs/03-features/16-observability)
+**Tracing and runtime monitoring.** Every document gets a processing timeline, stage by stage with its background tasks, and a Langfuse trace ID when tracing is on. Langfuse records the reasoning, tool calls and token usage of each agent step, and the task-queue dashboard lists queued and failed tasks with retry. [Docs →](https://ai-kb.matherly.net/docs/03-features/16-observability)
 
-<a href="./docs/images/readme/spotlight-observability-light.webp">
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="./docs/images/readme/spotlight-observability-dark.webp">
-  <img src="./docs/images/readme/spotlight-observability-light.webp" alt="Observability" width="100%">
-</picture>
-</a>
+<a href="./docs/images/readme/spotlight-observability.webp"><img src="./docs/images/readme/spotlight-observability.webp" alt="The processing pipeline panel for a document: parsing, chunking, vectorization and post-processing stages on a timeline, with the span's timing and a Langfuse trace id" width="100%"></a>
+
+### Browser extension
+
+**Ask about any page, clip what matters.** The AI KB extension for Chrome and Edge opens a side panel to ask the server's agents about the page you are on, and clips pages, selections and notes into a knowledge base as Markdown, with shortcuts and a quick-clip mode. [Docs →](https://ai-kb.matherly.net/docs/05-clients/06-browser-extension)
+
+<a href="./docs/images/readme/spotlight-extension.webp"><img src="./docs/images/readme/spotlight-extension.webp" alt="The AI KB browser extension's capture tab, where a clipped page is reviewed before it is saved to a knowledge base" width="100%"></a>
+
+### Also in the box
+
+- **Skills and sandbox.** Skills from ClawHub, SkillHub, Git or ZIP run in session-persistent Docker, E2B or Cube sandboxes; generated files can be previewed and downloaded, and the graphical desktop or terminal opens beside the chat. [Docs →](https://ai-kb.matherly.net/docs/03-features/22-skills-sandbox)
+- **Toolbox.** Connect external MCP services and decide, tool by tool, which are enabled and which calls need approval; manage skills per workspace and reuse them across sandboxes. [Docs →](https://ai-kb.matherly.net/docs/03-features/08-mcp)
+- **Local browser.** Through Tencent's BrowserSkill extension and the `bsk` daemon, the agent operates your own Chrome or Edge and hands over for logins and CAPTCHAs. [Docs →](https://ai-kb.matherly.net/docs/05-clients/09-local-browser)
+- **Automatic wiki.** With Wiki enabled, AI KB extracts people, products and concepts into interlinked pages with citations and a knowledge graph; pages can be edited and every change rolled back. [Docs →](https://ai-kb.matherly.net/docs/03-features/14-wiki)
 
 ## Architecture
 
@@ -257,22 +226,23 @@ A modular pipeline from document parsing, vectorization and retrieval to LLM inf
 | Component | Options |
 | ----------- | --------- |
 | [LLMs](https://ai-kb.matherly.net/docs/03-features/06-models) | 30 built-in providers plus Ollama, including OpenAI / Azure OpenAI / Anthropic / DeepSeek / Qwen / Zhipu / Hunyuan / Doubao / Gemini / MiniMax / NVIDIA / SiliconFlow / OpenRouter / LiteLLM |
-| Embeddings | Ollama / BGE / GTE / Zhipu / OpenAI-compatible APIs |
+| Embeddings | Ollama for local models, and OpenAI-compatible remote APIs from the provider catalog (Zhipu, Jina, Cohere, Qwen and others) |
 | Vector databases | PostgreSQL (pgvector) / Elasticsearch / OpenSearch / Milvus / Weaviate / Qdrant / Apache Doris / Tencent VectorDB |
 | [Object storage](https://ai-kb.matherly.net/docs/03-features/19-storage-backends) | Local / Tencent Cloud COS / MinIO / AWS S3 / Volcengine TOS / Alibaba Cloud OSS / Kingsoft Cloud KS3 / Huawei Cloud OBS |
 | [Document formats](https://ai-kb.matherly.net/docs/03-features/03-document-parsing) | PDF / Word / PPT / Excel / CSV / TXT / Markdown / HTML / EPUB / MHTML / JSON / XMind / images |
 | [Data sources](https://ai-kb.matherly.net/docs/03-features/10-datasource) | Feishu wiki / Feishu Drive / Lark / Confluence / GitLab / Tencent IMA / Notion / Yuque / DingTalk Docs / Seafile / RSS |
 | [IM channels](https://ai-kb.matherly.net/docs/03-features/12-im-integration) | WeCom / Feishu / Lark / QQBot / Slack / Telegram / DingTalk / Mattermost / WeChat / Yunzhijia |
-| [Web search](https://ai-kb.matherly.net/docs/03-features/11-web-search) | DuckDuckGo / Bing / Google / Tavily / Baidu / Ollama / SearXNG / Keenable / Zhipu AI / Exa / Metaso / Bocha / Serply |
+| [Web search](https://ai-kb.matherly.net/docs/03-features/11-web-search) | DuckDuckGo / Bing / Google / Brave / Tavily / Baidu / Ollama / SearXNG / Keenable / Zhipu AI / Exa / Metaso / Bocha / Serply |
 | Deployment | Docker Compose / Kubernetes (Helm) / Lite single binary / desktop app; offline and private-cloud installs; English UI |
 
 ## Clients and Integrations
 
 | | Client | What it does |
 | :-: | -------- | -------------- |
-| <img src="./docs/images/readme/icons/terminal.svg" width="22" height="22" alt=""> | [**CLI `aikb`**](./cli/README.md) | Agent-first command line for the full API, with a curated MCP tool surface and bundled Agent Skills |
+| <img src="./docs/images/readme/icons/terminal.svg" width="22" height="22" alt=""> | [**CLI `aikb`**](./cli/README.md) | Agent-first command line for the full API, with a curated MCP tool surface and bundled Agent Skills; `brew install jrmatherly/ai-kb/aikb`, Scoop, or release archives |
 | <img src="./docs/images/readme/icons/plug.svg" width="22" height="22" alt=""> | [**Built-in MCP Server**](https://ai-kb.matherly.net/docs/03-features/08-mcp) | Publishes knowledge bases to Cursor, Claude and other MCP clients over Streamable HTTP; the Python [`mcp-server/`](./mcp-server/MCP_CONFIG.md) is deprecated |
-| <img src="./website-docs/homepage/public/docs/_home/brands/browserskill.png" width="22" height="22" alt=""> | [**Local Browser (BrowserSkill)**](https://ai-kb.matherly.net/docs/05-clients/09-local-browser) | Lets agents operate the user's own Chrome / Edge |
+| <img src="./docs/images/readme/icons/plug.svg" width="22" height="22" alt=""> | [**Browser extension**](https://ai-kb.matherly.net/docs/05-clients/06-browser-extension) | Chrome and Edge side panel to ask about the current page and clip pages, selections and notes into a knowledge base; source in [`extension/`](./extension) |
+| <img src="./website-docs/homepage/public/docs/_home/brands/browserskill.png" width="22" height="22" alt=""> | [**Local Browser (BrowserSkill)**](https://ai-kb.matherly.net/docs/05-clients/09-local-browser) | Lets agents operate the user's own Chrome / Edge through Tencent's BrowserSkill extension |
 | <img src="./docs/images/readme/icons/phone.svg" width="22" height="22" alt=""> | [**WeChat Mini Program**](./miniprogram/README.md) | Lightweight mobile client: configure API access, select knowledge bases, import URLs, and ask knowledge chat from WeChat |
 | <img src="./docs/images/readme/icons/skills.svg" width="22" height="22" alt=""> | [**Agent skill**](https://ai-kb.matherly.net/docs/05-clients/07-agent-skill) | Agent Skills (`SKILL.md`) bundled with the `aikb` CLI for Claude Code, Codex, Cursor and other agents, installed with `aikb skills install` |
 | <img src="./website-docs/homepage/public/docs/_home/brands/deepseek-color.svg" width="22" height="22" alt=""> | [**DeepSeek Harness plugin**](https://www.npmjs.com/package/@jrmatherly/dsh-ai-kb) | Gives `dsh` coding agents four read-only tools: search, read document, ask and list knowledge bases |
@@ -284,6 +254,7 @@ A modular pipeline from document parsing, vectorization and retrieval to LLM inf
 `aikb` is the official CLI for driving the API from a terminal or an AI agent. It is **agent-first**: every command emits a stable JSON envelope by default (with typed error codes mapped to exit codes), and `--format text` renders for humans. It also serves a curated MCP tool surface (`aikb mcp serve`) and ships bundled Agent Skills.
 
 ```bash
+brew install jrmatherly/ai-kb/aikb  # macOS and Linux; Windows: scoop bucket add ai-kb https://github.com/jrmatherly/homebrew-ai-kb && scoop install ai-kb/aikb
 aikb profile add prod --host https://kb.example.com --use
 aikb auth login
 aikb kb list
@@ -296,7 +267,7 @@ For headless / CI use, set `AIKB_API_KEY` + `AIKB_HOST` and skip `auth login`; n
 
 ## Documentation
 
-The full product documentation lives at **[ai-kb.matherly.net/docs](https://ai-kb.matherly.net/docs/)**, organized as Getting Started → Architecture → Features → API → Clients → Development and covering ~360 API endpoints and ~150 environment variables.
+The full product documentation lives at **[ai-kb.matherly.net/docs](https://ai-kb.matherly.net/docs/)**, organized as Getting Started → Architecture → Features → API → Clients → Development and covering about 390 API operations and the full `.env.example` reference.
 
 | Start here | |
 | ------------ | --- |
