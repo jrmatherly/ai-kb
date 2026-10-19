@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Bug Fixes
+
+- **FIXED**: The IM Integration page describes only the platforms `AIKB_IM_PLATFORMS` allows, a new channel starts on the first allowed platform with that platform's mode and credential defaults, and Add Channel is disabled when the allow-list is empty (previously the form defaulted to WeCom, which the server refused).
+
 ## [2026.10.18.1] - 2026-10-18
 
 ### Features

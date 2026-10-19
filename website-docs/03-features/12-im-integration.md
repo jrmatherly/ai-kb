@@ -2,7 +2,7 @@
 
 IM integration connects an agent to chat platforms such as WeCom, Feishu, DingTalk, Slack and Telegram. Users ask the bot a question in the platform, and AI KB answers with the retrieval and model configuration of the bound agent.
 
-Create a channel under Settings → IM integration: pick the platform, enter the application credentials, bind an agent and enable it. Webhook mode needs the callback URL registered in the platform console; long-connection mode needs no public callback URL to receive messages. Each channel can carry its own reply language, which fixes the language the agent answers in on that channel. It is set through the API (`locale`), since the admin UI has no language picker; when left empty the deployment default applies.
+Create a channel under Settings → IM integration: pick the platform, enter the application credentials, bind an agent and enable it. Webhook mode needs the callback URL registered in the platform console; long-connection mode needs no public callback URL to receive messages. Each channel can carry its own reply language, which fixes the language the agent answers in on that channel. It is set through the API (`locale`), since the admin UI has no language picker; when left empty the deployment default applies. The section description names the platforms this deployment allows (`AIKB_IM_PLATFORMS`), and a new channel starts on the first allowed platform in the picker with that platform's connection mode and credential defaults already applied. With an empty allow-list the capability is unsupported, so the section is hidden; if it is reached anyway, Add Channel is disabled.
 
 <Screenshot
   src="/screenshots/im-channels.png"
