@@ -6457,7 +6457,9 @@ export default {
     },
     im: {
       title: 'IM Integration',
-      description: 'Connect agent to instant messaging platforms like WeCom, Feishu, Lark, Slack, Telegram, DingTalk, Mattermost, WeChat, QQBot and Yunzhijia',
+      description: 'Connect agents to the instant messaging platforms this deployment allows: {platforms}',
+      descriptionAll: 'Connect agents to instant messaging platforms such as WeCom, Feishu, Lark, Slack, Telegram, DingTalk, Mattermost, WeChat, QQBot and Yunzhijia',
+      descriptionNone: 'No instant messaging platform is enabled for this deployment. Set AIKB_IM_PLATFORMS on the server to allow some.',
       feishu: 'Feishu',
       lark: 'Lark',
       slack: 'Slack',

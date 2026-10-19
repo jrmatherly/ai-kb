@@ -54,7 +54,7 @@
           </button>
 
           <button v-if="authStore.hasRole('admin')" type="button" class="channel-card channel-card--add"
-            @click="openCreate">
+            :disabled="platformOptions.length === 0" @click="openCreate">
             <span class="channel-card__badge" aria-hidden="true">
               <t-icon name="add" />
             </span>
@@ -736,17 +736,23 @@ let wechatPollTimer: ReturnType<typeof setTimeout> | null = null;
 
 const defaultCredentials = (): Record<string, any> => ({});
 
-const formData = ref({
-  target_agent_id: '',
-  platform: 'wecom' as IMPlatform,
-  name: '',
-  mode: 'websocket' as 'webhook' | 'websocket' | 'longpoll',
-  output_mode: 'stream' as 'stream' | 'full',
-  locale: '' as IMLocale,
-  session_mode: 'user' as 'user' | 'thread',
-  knowledge_base_id: '',
-  credentials: defaultCredentials(),
-});
+// A new channel starts on the first platform the picker offers; the server refuses the rest.
+const blankForm = (targetAgentId = '') => {
+  const platform = platformOptions.value[0]?.value ?? 'wecom';
+  return {
+    target_agent_id: targetAgentId,
+    platform,
+    name: defaultChannelName(platform),
+    mode: 'websocket' as 'webhook' | 'websocket' | 'longpoll',
+    output_mode: 'stream' as 'stream' | 'full',
+    locale: '' as IMLocale,
+    session_mode: 'user' as 'user' | 'thread',
+    knowledge_base_id: '',
+    credentials: defaultCredentials(),
+  };
+};
+
+const formData = ref(blankForm());
 
 const channelMenuOptions = (channel: IMChannel | IMChannelOverview) => ([
   {
@@ -798,21 +804,20 @@ function platformSupportsThread(platform: string): boolean {
   return ['slack', 'mattermost', 'feishu', 'lark', 'telegram', 'yunzhijia'].includes(platform);
 }
 
-watch(
-  () => formData.value.platform,
-  (p) => {
-    if (p === 'dingtalk' || p === 'qqbot') formData.value.mode = 'websocket';
-    if (p === 'mattermost') {
-      formData.value.mode = 'webhook';
-      if (typeof formData.value.credentials.post_to_main !== 'boolean') {
-        formData.value.credentials.post_to_main = false;
-      }
+function applyPlatformRules(p: string) {
+  if (p === 'dingtalk' || p === 'qqbot') formData.value.mode = 'websocket';
+  if (p === 'mattermost') {
+    formData.value.mode = 'webhook';
+    if (typeof formData.value.credentials.post_to_main !== 'boolean') {
+      formData.value.credentials.post_to_main = false;
     }
-    if (!platformSupportsThread(p)) {
-      formData.value.session_mode = 'user';
-    }
-  },
-);
+  }
+  if (!platformSupportsThread(p)) {
+    formData.value.session_mode = 'user';
+  }
+}
+
+watch(() => formData.value.platform, applyPlatformRules);
 // Whether WeChat credentials are already bound
 const wechatBound = computed(() => {
   return formData.value.platform === 'wechat' &&
@@ -962,9 +967,6 @@ async function copyUrl(channel: IMChannel) {
 
 function openCreate() {
   resetForm();
-  if (filterAgentId.value) {
-    formData.value.target_agent_id = filterAgentId.value;
-  }
   showCreateDialog.value = true;
 }
 
@@ -1017,17 +1019,9 @@ function resetForm() {
   wechatQRImgUrl.value = '';
   wechatQRCode.value = '';
   wechatQRStatus.value = '';
-  formData.value = {
-    target_agent_id: filterAgentId.value || '',
-    platform: 'wecom',
-    name: defaultChannelName('wecom'),
-    mode: 'websocket',
-    output_mode: 'stream',
-    locale: '',
-    session_mode: 'user',
-    knowledge_base_id: '',
-    credentials: defaultCredentials(),
-  };
+  formData.value = blankForm(filterAgentId.value || '');
+  onPlatformChange(formData.value.platform);
+  applyPlatformRules(formData.value.platform);
 }
 
 async function handleSave() {

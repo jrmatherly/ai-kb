@@ -5,7 +5,7 @@
         <div class="section-header">
           <h2>{{ $t('agentEditor.im.title') }}</h2>
           <p class="section-description">
-            {{ $t('agentEditor.im.description') }}
+            {{ imDescription }}
             <a
               :href="docsUrl('imIntegration')"
               target="_blank"
@@ -52,8 +52,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
+import { useDeploymentCapabilitiesStore } from '@/stores/deploymentCapabilities'
 import IMChannelPanel from '@/components/IMChannelPanel.vue'
 import AgentEmbedChannelPanel from '@/components/AgentEmbedChannelPanel.vue'
 import ApiIntegrationSettings from '@/views/integrations/ApiIntegrationSettings.vue'
@@ -65,6 +67,16 @@ import type { IntegrationTab } from '@/config/integrations'
 import { docsUrl } from '@/utils/docsUrl'
 
 const filterAgentId = ref('')
+const { t, te } = useI18n()
+const deploymentCapabilities = useDeploymentCapabilitiesStore()
+
+const imDescription = computed(() => {
+  const platforms = deploymentCapabilities.imPlatforms
+  if (platforms === undefined) return t('agentEditor.im.descriptionAll')
+  if (platforms.length === 0) return t('agentEditor.im.descriptionNone')
+  const label = (p: string) => (te(`agentEditor.im.${p}`) ? t(`agentEditor.im.${p}`) : p)
+  return t('agentEditor.im.description', { platforms: platforms.map(label).join(', ') })
+})
 
 defineProps<{
   tab: IntegrationTab
