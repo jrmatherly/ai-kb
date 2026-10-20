@@ -1,6 +1,6 @@
 {
   "name": "ai-kb-home-page",
-  "version": "2026.10.18.1",
+  "version": "2026.10.20",
   "private": true,
   "scripts": {
     "dev": "next dev",
