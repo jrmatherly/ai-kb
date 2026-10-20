@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [2026.10.20.1] - 2026-10-20
+
+### Bug Fixes
+
+- **FIXED**: The app image builds again: the licence check it runs at build time reads `frontend/package-lock.json`, which the Docker build context now includes (v2026.10.20 shipped no app image).
+
 ## [2026.10.20] - 2026-10-20
 
 ### Features
