@@ -7,17 +7,15 @@ import base64
 import logging
 import os
 import posixpath
-import tempfile
 from urllib.parse import unquote
 import uuid
 from typing import Any, Dict
 
 from bs4 import BeautifulSoup
-import ebooklib
-from ebooklib import epub
 
 from docreader.models.document import Document
 from docreader.parser.base_parser import BaseParser
+from docreader.parser.epub_container import Epub, EpubItem, normalize_epub_path
 
 logger = logging.getLogger(__name__)
 
@@ -34,39 +32,26 @@ class EPUBParser(BaseParser):
             "Parsing EPUB file: %s, size: %d bytes", self.file_name, len(content)
         )
         try:
-            with tempfile.NamedTemporaryFile(
-                suffix=".epub", delete=False, mode="wb"
-            ) as epub_file:
-                epub_file.write(content)
-                epub_path = epub_file.name
-            try:
-                book = epub.read_epub(epub_path)
+            with Epub(content) as book:
                 metadata = self._extract_metadata(book)
                 markdown_content, images = self._extract_content(book)
-
-                metadata["source_format"] = "epub"
-                metadata["file_size"] = len(content)
-                metadata["chapter_count"] = len(
-                    [part for part in markdown_content.split("\n## ") if part.strip()]
-                )
-                metadata["image_count"] = len(images)
-                return Document(
-                    content=markdown_content, images=images, metadata=metadata
-                )
-            finally:
-                if os.path.exists(epub_path):
-                    os.unlink(epub_path)
-        except ImportError:
-            logger.error("ebooklib not installed")
-            raise
+            metadata["source_format"] = "epub"
+            metadata["file_size"] = len(content)
+            metadata["chapter_count"] = len(
+                [part for part in markdown_content.split("\n## ") if part.strip()]
+            )
+            metadata["image_count"] = len(images)
+            return Document(
+                content=markdown_content, images=images, metadata=metadata
+            )
         except Exception as e:
             logger.warning(
-                "ebooklib failed to parse EPUB: %s, trying ZIP fallback", str(e)
+                "EPUB container unreadable: %s, trying ZIP fallback", str(e)
             )
             return self._parse_epub_fallback(content)
 
     def _parse_epub_fallback(self, content: bytes) -> Document:
-        """Parse EPUB directly as a ZIP when ebooklib cannot read it."""
+        """Parse EPUB directly as a ZIP when the container or OPF is unreadable."""
         import re
         import zipfile
         from io import BytesIO
@@ -94,13 +79,9 @@ class EPUBParser(BaseParser):
                 for img_file in epub_zip.namelist():
                     if img_file.lower().endswith(img_exts):
                         try:
-                            img_data = epub_zip.read(img_file)
-                            ext = os.path.splitext(img_file)[1]
-                            img_path = f"images/{uuid.uuid4().hex}{ext}"
-                            images[img_path] = base64.b64encode(img_data).decode(
-                                "utf-8"
+                            self._store_image(
+                                images, image_aliases, img_file, epub_zip.read(img_file)
                             )
-                            self._add_image_aliases(image_aliases, img_file, img_path)
                         except Exception as e:
                             logger.warning(
                                 "Failed to extract image %s: %s", img_file, e
@@ -133,7 +114,7 @@ class EPUBParser(BaseParser):
             content="\n\n".join(markdown_parts), images=images, metadata=metadata
         )
 
-    def _extract_metadata(self, book) -> Dict[str, Any]:
+    def _extract_metadata(self, book: Epub) -> Dict[str, Any]:
         metadata: Dict[str, Any] = {}
         mapping = {
             "title": "title",
@@ -145,34 +126,31 @@ class EPUBParser(BaseParser):
             "identifier": "isbn",
         }
         for dc_key, out_key in mapping.items():
-            try:
-                values = book.get_metadata("DC", dc_key)
-            except Exception:
-                values = None
+            values = book.metadata.get(dc_key)
             if values:
-                if out_key == "author":
-                    metadata[out_key] = ", ".join(value[0] for value in values)
-                else:
-                    metadata[out_key] = values[0][0]
+                metadata[out_key] = ", ".join(values) if out_key == "author" else values[0]
         return metadata
 
-    def _extract_content(self, book) -> tuple[str, Dict[str, str]]:
+    def _extract_content(self, book: Epub) -> tuple[str, Dict[str, str]]:
         markdown_parts = []
         images: Dict[str, str] = {}
         image_aliases: Dict[str, str] = {}
 
         if self.extract_images:
-            for item in book.get_items():
-                if item.get_type() == ebooklib.ITEM_IMAGE:
-                    img_data = item.get_content()
-                    ext = os.path.splitext(item.get_name())[1]
-                    img_path = f"images/{uuid.uuid4().hex}{ext}"
-                    images[img_path] = base64.b64encode(img_data).decode("utf-8")
-                    self._add_image_aliases(image_aliases, item.get_name(), img_path)
+            for item in book.items:
+                if not item.is_image:
+                    continue
+                try:
+                    img_data = book.read(item)
+                except KeyError:
+                    logger.warning("EPUB manifest image %s is not in the archive", item.name)
+                    continue
+                self._store_image(images, image_aliases, item.name, img_data)
 
         for item in self._documents_in_reading_order(book):
             markdown_parts.append(
                 self._process_chapter(
+                    book,
                     item,
                     toc_index=len(markdown_parts),
                     image_aliases=image_aliases,
@@ -182,22 +160,16 @@ class EPUBParser(BaseParser):
         return "\n\n".join(part for part in markdown_parts if part.strip()), images
 
     @staticmethod
-    def _documents_in_reading_order(book) -> list:
+    def _documents_in_reading_order(book: Epub) -> list[EpubItem]:
         """Return the book's documents in spine order.
 
-        The spine is the reading order. ``get_items()`` follows the manifest,
-        which can list files in any order: Standard Ebooks puts the title page
-        after the last chapter there. Documents the spine leaves out follow, in
-        manifest order.
+        The spine is the reading order. The manifest can list files in any
+        order: Standard Ebooks puts the title page after the last chapter
+        there. Documents the spine leaves out follow, in manifest order.
         """
-        documents = [
-            item
-            for item in book.get_items()
-            if item.get_type() == ebooklib.ITEM_DOCUMENT
-        ]
+        documents = [item for item in book.items if item.is_document]
         ordered = []
-        for idref, _linear in book.spine:
-            item = book.get_item_with_id(idref)
+        for item in book.spine:
             if item in documents and item not in ordered:
                 ordered.append(item)
         ordered.extend(item for item in documents if item not in ordered)
@@ -205,31 +177,36 @@ class EPUBParser(BaseParser):
 
     def _process_chapter(
         self,
-        html_item,
+        book: Epub,
+        html_item: EpubItem,
         toc_index: int = 0,
         image_aliases: Dict[str, str] | None = None,
     ) -> str:
         try:
-            html_content = html_item.get_content()
+            html_content = book.read(html_item)
             soup = BeautifulSoup(html_content, "lxml")
             title_tag = soup.find(["h1", "h2"])
             if title_tag:
                 chapter_title = title_tag.get_text().strip()
                 title_tag.decompose()
             else:
-                chapter_title = html_item.get_name().replace("/", "")
+                chapter_title = html_item.name.replace("/", "")
                 chapter_title = chapter_title.replace(".xhtml", "")
                 chapter_title = chapter_title.replace("-", " ").title()
-            body_html = str(soup.body) if soup.body else str(html_content)
+            body_html = (
+                str(soup.body)
+                if soup.body
+                else html_content.decode("utf-8", errors="ignore")
+            )
             chapter_md = self._html_to_markdown(
                 body_html,
                 image_aliases=image_aliases,
-                base_path=posixpath.dirname(html_item.get_name()),
+                base_path=posixpath.dirname(html_item.name),
             )
             return f"## {chapter_title}\n\n{chapter_md}"
         except Exception as e:
             logger.error(
-                "Failed to process chapter %s: %s", html_item.get_name(), e
+                "Failed to process chapter %s: %s", html_item.name, e
             )
             return f"## Chapter {toc_index + 1}\n\n[Error processing chapter: {e}]"
 
@@ -279,12 +256,24 @@ class EPUBParser(BaseParser):
                 link.unwrap()
 
     @staticmethod
+    def _store_image(
+        images: Dict[str, str],
+        image_aliases: Dict[str, str],
+        original_path: str,
+        data: bytes,
+    ) -> None:
+        ext = os.path.splitext(original_path)[1]
+        img_path = f"images/{uuid.uuid4().hex}{ext}"
+        images[img_path] = base64.b64encode(data).decode("utf-8")
+        EPUBParser._add_image_aliases(image_aliases, original_path, img_path)
+
+    @staticmethod
     def _add_image_aliases(
         image_aliases: Dict[str, str],
         original_path: str,
         image_path: str,
     ) -> None:
-        normalized = EPUBParser._normalize_epub_path(original_path)
+        normalized = normalize_epub_path(original_path)
         aliases = {
             original_path,
             normalized,
@@ -306,20 +295,20 @@ class EPUBParser(BaseParser):
             if not src:
                 continue
             # Only src is a URI reference. Strip its URI suffixes before decoding
-            # once; archive paths from EbookLib and ZIP already contain literal
+            # once; archive paths from the manifest and ZIP already contain literal
             # characters, including #, ? and percent-encoded-looking names.
             raw_path = src.split("#", 1)[0].split("?", 1)[0].replace("\\", "/")
             src_path = unquote(raw_path).replace("\\", "/")
-            normalized_src = EPUBParser._normalize_epub_path(src_path)
+            normalized_src = normalize_epub_path(src_path)
             # Some EPUBs reference literal percent-looking names verbatim.
             # Try the undecoded path after the decoded path at each location.
-            raw_normalized = EPUBParser._normalize_epub_path(raw_path)
+            raw_normalized = normalize_epub_path(raw_path)
             candidates = [normalized_src, raw_normalized]
             if base_path:
-                joined = EPUBParser._normalize_epub_path(
+                joined = normalize_epub_path(
                     posixpath.join(base_path, src_path)
                 )
-                raw_joined = EPUBParser._normalize_epub_path(
+                raw_joined = normalize_epub_path(
                     posixpath.join(base_path, raw_path)
                 )
                 # Resolve relative to the chapter before trying ambiguous aliases.
@@ -330,8 +319,3 @@ class EPUBParser(BaseParser):
                     img["src"] = image_aliases[candidate]
                     break
 
-    @staticmethod
-    def _normalize_epub_path(path: str) -> str:
-        """Normalize a decoded archive path without interpreting it as a URI."""
-        normalized = posixpath.normpath(path.replace("\\", "/"))
-        return "" if normalized == "." else normalized.lstrip("/")

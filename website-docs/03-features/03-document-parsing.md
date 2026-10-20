@@ -258,7 +258,7 @@ Reads `content.json` (new format) or `content.xml` (old format) from the XMind a
 
 #### epub_parser.py: EPUBParser (.epub e-books)
 
-The main path uses **ebooklib** (read through a temp file): it extracts DC metadata (title/author/publisher/language/description/date/isbn), processes chapters in TOC order where possible (the first h1/h2 of each chapter becomes the title, output as `## title` plus the markdownify-converted body), extracts every `ITEM_IMAGE` as `images/<uuid>.<ext>` and rewrites `<img src>` through multi-variant path aliases. Internal EPUB links (chapter jumps, `#fragment`) are unwrapped to plain text. When ebooklib fails it falls back to **reading the ZIP directly**, converting html/xhtml files one by one sorted by `chapter(\d+)`. Metadata includes `chapter_count`/`image_count`.
+The main path reads the container with the standard library (`epub_container.py`: `META-INF/container.xml`, then the OPF's metadata, manifest and spine): it extracts DC metadata (title/author/publisher/language/description/date/isbn), processes chapters in spine order, skipping the EPUB 3 navigation document (the first h1/h2 of each chapter becomes the title, output as `## title` plus the markdownify-converted body), extracts every `image/*` manifest item as `images/<uuid>.<ext>` and rewrites `<img src>` through multi-variant path aliases. Internal EPUB links (chapter jumps, `#fragment`) are unwrapped to plain text. When the container or OPF is unreadable it falls back to **reading the ZIP directly**, converting html/xhtml files one by one sorted by `chapter(\d+)`. Metadata includes `chapter_count`/`image_count`.
 
 #### markitdown_parser.py: MarkitdownParser (the markitdown engine)
 
@@ -290,7 +290,7 @@ flowchart TD
     H -- "doc" --> Y["DocParser: LibreOffice to docx, antiword fallback"]
     H -- "xlsx / xls / xlsb" --> Z["ExcelParser (repair + merged-cell fill + per-row key-value)"]
     H -- "md / markdown" --> M["MarkdownParser (table normalization + base64 image extraction)"]
-    H -- "epub" --> EP["EPUBParser (ebooklib, ZIP fallback)"]
+    H -- "epub" --> EP["EPUBParser (OPF manifest + spine, ZIP fallback)"]
     H -- "html / htm" --> HT["HTMLParser (BeautifulSoup + markdownify)"]
     H -- "mhtml" --> MH["MHTMLParser"]
     H -- "pptx / ppt" --> PT["MarkitdownParser (LibreOffice normalization + media rescue)"]

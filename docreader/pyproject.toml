@@ -6,7 +6,6 @@ readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
     "beautifulsoup4>=4.14.2",
-    "ebooklib>=0.18",
     "grpcio>=1.80.0",
     "grpcio-health-checking>=1.80.0",
     "grpcio-tools>=1.80.0",
@@ -31,6 +30,11 @@ dependencies = [
 
 # The one uv floor: uv refuses older versions; docker/Dockerfile.docreader and the workflows' setup-uv (version-file)
 # install the newest version that satisfies it. 0.13.0 wrote uv.lock revision 5; raise it when a newer uv rewrites the lockfile.
+# ebooklib is AGPL-3.0-or-later. The test fixtures write EPUBs with it; the service reads them with the
+# standard library (parser/epub_container.py), and docker/Dockerfile.docreader syncs with --no-dev.
+[dependency-groups]
+dev = ["ebooklib>=0.18"]
+
 [tool.uv]
 required-version = ">=0.13.0"
 # Supply-chain cooldown: resolution skips releases younger than 7 days (stored as a span, so uv.lock stays stable).

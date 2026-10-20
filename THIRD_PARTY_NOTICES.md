@@ -60,10 +60,6 @@ into `/app/.venv`. Each package's license text ships with it, in that package's
 `*.dist-info` directory under `site-packages`. Packages with copyleft or
 weak-copyleft licenses:
 
-- EbookLib `0.20`, GNU Affero General Public License v3 or later. Used by the EPUB
-  parser (`docreader/parser/epub_parser.py`). Unmodified; source on
-  [PyPI](https://pypi.org/project/EbookLib/0.20/) and in the
-  [upstream repository](https://github.com/aerkalov/ebooklib).
 - certifi `2026.7.22`, Mozilla Public License 2.0. Unmodified; source on
   [PyPI](https://pypi.org/project/certifi/2026.7.22/) and in the
   [upstream repository](https://github.com/certifi/python-certifi).
