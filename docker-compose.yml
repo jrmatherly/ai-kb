@@ -465,7 +465,6 @@ services:
       - GRPC_TLS_CERT=${GRPC_TLS_CERT:-}
       - GRPC_TLS_KEY=${GRPC_TLS_KEY:-}
       - GRPC_TLS_CA=${GRPC_TLS_CA:-}
-      - GRPC_TLS_SERVER_NAME=${GRPC_TLS_SERVER_NAME:-}
       # When true, require a client certificate (mTLS)
       - GRPC_MTLS_REQUIRE_CLIENT_CERT=${GRPC_MTLS_REQUIRE_CLIENT_CERT:-false}
       - GRPC_AUTH_TOKEN=${GRPC_AUTH_TOKEN:-}
