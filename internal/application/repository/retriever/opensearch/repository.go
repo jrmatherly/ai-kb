@@ -437,6 +437,12 @@ func sanitizeIndexName(name string) (string, error) {
 	return name, nil
 }
 
+// Close stops the client's background pollers; the registry calls it when it
+// stops serving this repository.
+func (r *Repository) Close() error {
+	return r.client.Client.Close()
+}
+
 // drainAndClose drains and closes a response body. The v5 SDK buffers
 // every decoded body before returning, so for those this only closes the
 // buffered copy; it still guards any raw response and keeps one idiom.
