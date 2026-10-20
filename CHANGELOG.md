@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [2026.10.20] - 2026-10-20
+
 ### Features
 
 - **ADDED**: OIDC groups to roles: the system settings `oidc.groups_claim`, `oidc.system_admin_groups` and `oidc.group_role_map` (environment fallbacks `OIDC_AUTH_GROUPS_CLAIM`, `OIDC_AUTH_SYSTEM_ADMIN_GROUPS`, `OIDC_AUTH_GROUP_ROLE_MAP`) set workspace membership and the system administrator flag from the identity provider's groups at each OIDC sign-in, inside the workspaces the mapping names; the last owner and the last administrator are kept; each sign-in writes an `auth.oidc_group_sync` audit row and Settings > Members shows a banner in a governed workspace.
