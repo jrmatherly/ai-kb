@@ -1,6 +1,6 @@
 # migrations/mysql: unwired MySQL schema script
 
-⚠️ **No code or script runs the SQL in this directory. MySQL is not currently a supported primary database for AI KB.**
+**No code or script runs the SQL in this directory. MySQL is not currently a supported primary database for AI KB.**
 
 ## Current state
 

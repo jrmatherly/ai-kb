@@ -89,7 +89,7 @@ internal/handler/
 └── datasource.go        # HTTP request handlers
 
 internal/router/
-├── router.go           # Route registration
+├── routes_infra.go     # RegisterDataSourceRoutes (/api/v1/datasource)
 ├── task.go             # Asynq task registration
 └── sync_task.go        # Lite mode task registration
 
@@ -193,73 +193,7 @@ GET    /api/v1/datasource/types             # Metadata for every connector type,
 
 ### Adding a New Connector
 
-1. **Create the connector package** in `internal/datasource/connector/<type>/`
-
-   ```go
-   // connector/<type>/client.go - API client
-   // connector/<type>/connector.go - Implements Connector interface
-   // connector/<type>/types.go - Type-specific models
-   ```
-
-2. **Implement the Connector interface**
-
-   ```go
-   type YourConnector struct {
-       // fields
-   }
-   
-   func (c *YourConnector) Type() string {
-       return types.ConnectorTypeYourType
-   }
-   
-   func (c *YourConnector) Validate(ctx context.Context, config *types.DataSourceConfig) error {
-       // Test connectivity and credentials
-   }
-   
-   func (c *YourConnector) ListResources(
-       ctx context.Context, config *types.DataSourceConfig, parentID string,
-   ) ([]types.Resource, error) {
-       // List available resources (documents, spaces, etc); children of parentID when it is set
-   }
-   
-   func (c *YourConnector) ResolveResourceAncestors(
-       ctx context.Context, config *types.DataSourceConfig, resourceIDs []string,
-   ) ([]string, error) {
-       // Flat or full-tree listings have nothing to reveal
-       return []string{}, nil
-   }
-   
-   func (c *YourConnector) FetchAll(
-       ctx context.Context, config *types.DataSourceConfig, resourceIDs []string,
-   ) ([]types.FetchedItem, error) {
-       // Full sync - fetch all items from specified resources
-   }
-   
-   func (c *YourConnector) FetchIncremental(
-       ctx context.Context, config *types.DataSourceConfig, cursor *types.SyncCursor,
-   ) ([]types.FetchedItem, *types.SyncCursor, error) {
-       // Incremental sync - fetch only changed items since cursor
-   }
-   ```
-
-3. **Register the connector** in `initConnectorRegistry()` in `internal/container/container.go`
-
-   ```go
-   if err := registry.Register(yourconnector.NewConnector()); err != nil {
-       errs = errors.Join(errs, fmt.Errorf("register yourtype connector: %w", err))
-   }
-   ```
-
-4. **Add metadata** in `connector.go`
-
-   ```go
-   types.ConnectorTypeYourType: {
-       Type: types.ConnectorTypeYourType,
-       Name: "Your Platform",
-       AuthType: "oauth2",
-       // ...
-   }
-   ```
+Follow [CONNECTOR_IMPLEMENTATION_GUIDE.md](CONNECTOR_IMPLEMENTATION_GUIDE.md). It covers the package, the SSRF-guarded HTTP client, error sentinels, registration, metadata, sync reason codes and the frontend form and icon.
 
 ## Database Schema
 

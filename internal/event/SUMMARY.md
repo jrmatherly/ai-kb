@@ -11,7 +11,7 @@ An in-process publish and subscribe bus for events raised while a query is handl
    - `On(eventType, handler)` registers a listener. Several listeners per type are allowed.
    - `Off(eventType)` removes every listener for a type.
    - `EmitAndWait(ctx, event)` runs every listener in its own goroutine and waits for all of them.
-   - Sync mode (`NewEventBus`) runs listeners in order and stops at the first error. Async mode (`NewAsyncEventBus`) starts each listener in a goroutine, returns at once and drops listener errors.
+   - Sync mode (`NewEventBus`) runs listeners in order and stops at the first error. Async mode (`NewAsyncEventBus`) starts each listener in a goroutine, returns at once, drops listener errors and logs recovered panics.
 
 2. **Event types** (`event.go`)
    - Query processing (received, validated, preprocess, rewrite, rewritten)
@@ -62,7 +62,7 @@ internal/event/
 
 ## Performance
 
-- `BenchmarkEventBus_Emit` (one sync listener) measured about 320 ns per emit on an Apple M3 Pro. The benchmark event has no ID, so each emit also generates a UUID.
+- `BenchmarkEventBus_Emit` (one sync listener) measured about 300 ns per emit on an Apple M3 Pro. The benchmark event has no ID, so each emit also generates a UUID.
 - Listener registration and lookup are guarded by a `sync.RWMutex`.
 
 ## Use cases
@@ -139,14 +139,14 @@ Add emits to the chat pipeline plugins (`internal/application/service/chat_pipel
 ```go
 // In search.go
 event.Emit(ctx, event.NewEvent(event.EventRetrievalStart, event.RetrievalData{
-    Query:           chatManage.ProcessedQuery,
-    KnowledgeBaseID: chatManage.KnowledgeBaseID,
+    Query:           chatManage.RewriteQuery,
+    KnowledgeBaseID: strings.Join(chatManage.KnowledgeBaseIDs, ","),
     TopK:            chatManage.EmbeddingTopK,
 }).WithSessionID(chatManage.SessionID))
 
 // In rerank.go
 event.Emit(ctx, event.NewEvent(event.EventRerankComplete, event.RerankData{
-    Query:       chatManage.ProcessedQuery,
+    Query:       chatManage.RewriteQuery,
     InputCount:  len(chatManage.SearchResult),
     OutputCount: len(rerankResults),
     Duration:    time.Since(startTime).Milliseconds(),

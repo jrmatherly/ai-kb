@@ -11,6 +11,8 @@ A connector is an adapter that translates between AI KB's data model and an exte
 - Full sync (fetch all items from selected resources)
 - Incremental sync (fetch only changed items since last sync)
 
+Nine connector packages live under `internal/datasource/connector/`: `confluence`, `dingtalk`, `feishu` (`core`, `wiki`, `drive`), `gitlab`, `ima`, `notion`, `rss`, `seafile` and `yuque`. `initConnectorRegistry()` in `internal/container/container.go` registers them as twelve types: `feishu`, `lark`, `feishu_drive`, `lark_drive`, `notion`, `confluence`, `yuque`, `dingtalk`, `ima`, `rss`, `gitlab` and `seafile`.
+
 ## Step 1: Create Connector Package Structure
 
 ```bash
@@ -76,10 +78,11 @@ package yourtype
 
 import (
     "context"
-    "encoding/json"
     "fmt"
     "net/http"
     "time"
+
+    "github.com/jrmatherly/ai-kb/internal/datasource"
 )
 
 type Client struct {
@@ -88,13 +91,37 @@ type Client struct {
     httpClient *http.Client
 }
 
-// NewClient creates a new API client
-func NewClient(config *Config) *Client {
+// NewClient creates a new API client. BaseURL is user input, so it passes the
+// SSRF policy first, and the HTTP client re-checks every dial and redirect.
+func NewClient(config *Config) (*Client, error) {
+    if err := datasource.ValidateConnectorBaseURL(config.BaseURL); err != nil {
+        return nil, fmt.Errorf("%w: %w", datasource.ErrInvalidConfig, err)
+    }
     return &Client{
         baseURL:    config.BaseURL,
         apiToken:   config.APIToken,
-        httpClient: &http.Client{Timeout: 30 * time.Second},
+        httpClient: datasource.NewConnectorHTTPClient(30 * time.Second),
+    }, nil
+}
+
+// apiError carries the HTTP status; Is maps it to the datasource sentinels so
+// the service can tell bad credentials from a missing resource.
+type apiError struct {
+    status int
+}
+
+func (e *apiError) Error() string { return fmt.Sprintf("yourtype API: status %d", e.status) }
+
+func (e *apiError) Is(target error) bool {
+    switch target {
+    case datasource.ErrInvalidCredentials:
+        return e.status == http.StatusUnauthorized
+    case datasource.ErrPermissionDenied:
+        return e.status == http.StatusForbidden
+    case datasource.ErrResourceNotFound:
+        return e.status == http.StatusNotFound
     }
+    return false
 }
 
 // Example methods
@@ -108,10 +135,16 @@ func (c *Client) GetDocument(ctx context.Context, docID string) (*YourItem, erro
     // Fetch single document
 }
 
+func (c *Client) GetDocumentsFromResource(ctx context.Context, resourceID string) ([]YourItem, error) {
+    // Fetch every document under one selected resource
+}
+
 func (c *Client) GetDocumentsModifiedSince(ctx context.Context, since time.Time) ([]YourItem, error) {
     // Fetch documents modified since timestamp
 }
 ```
+
+Every connector except `rss` (which calls `utils.NewSSRFSafeHTTPClient` directly) builds its client with `datasource.NewConnectorHTTPClient`. Do not use a bare `&http.Client{}`: it bypasses the SSRF guards. Return failures wrapped in the `datasource.Err*` sentinels from `internal/datasource/errors.go` (`ErrInvalidConfig`, `ErrInvalidCredentials`, `ErrPermissionDenied`, `ErrResourceNotFound`, ...), either with `fmt.Errorf("%w: ...", sentinel)` or through a typed error's `Is` method as above.
 
 ## Step 4: Implement Connector Interface (connector.go)
 
@@ -124,6 +157,7 @@ import (
     "fmt"
     "time"
     
+    "github.com/jrmatherly/ai-kb/internal/datasource"
     "github.com/jrmatherly/ai-kb/internal/types"
 )
 
@@ -144,21 +178,22 @@ func (c *YourConnector) Type() string {
 // Validate verifies that the configuration is valid
 func (c *YourConnector) Validate(ctx context.Context, config *types.DataSourceConfig) error {
     if config == nil {
-        return fmt.Errorf("config is nil")
+        return datasource.ErrInvalidConfig
     }
     
     // Parse your type-specific config
     yourConfig := &Config{}
     if err := parseConfig(config, yourConfig); err != nil {
-        return fmt.Errorf("invalid config: %w", err)
+        return fmt.Errorf("%w: %w", datasource.ErrInvalidConfig, err)
     }
     
-    // Create client
-    client := NewClient(yourConfig)
-    
-    // Test connection
-    _, err := client.GetResources(ctx)
+    client, err := NewClient(yourConfig)
     if err != nil {
+        return err
+    }
+    
+    // Test connection. A 401 surfaces as errors.Is(err, datasource.ErrInvalidCredentials).
+    if _, err := client.GetResources(ctx); err != nil {
         return fmt.Errorf("connection failed: %w", err)
     }
     
@@ -179,7 +214,10 @@ func (c *YourConnector) ListResources(
         return nil, err
     }
     
-    client := NewClient(yourConfig)
+    client, err := NewClient(yourConfig)
+    if err != nil {
+        return nil, err
+    }
     yourResources, err := client.GetResources(ctx)
     if err != nil {
         return nil, err
@@ -215,7 +253,10 @@ func (c *YourConnector) FetchAll(ctx context.Context, config *types.DataSourceCo
         return nil, err
     }
     
-    client := NewClient(yourConfig)
+    client, err := NewClient(yourConfig)
+    if err != nil {
+        return nil, err
+    }
     
     var allItems []types.FetchedItem
     
@@ -257,7 +298,10 @@ func (c *YourConnector) FetchIncremental(ctx context.Context, config *types.Data
         return nil, nil, err
     }
     
-    client := NewClient(yourConfig)
+    client, err := NewClient(yourConfig)
+    if err != nil {
+        return nil, nil, err
+    }
     
     // Determine start time for incremental fetch
     var sinceTime time.Time
@@ -362,12 +406,27 @@ var ConnectorMetadataRegistry = map[string]ConnectorMetadata{
         Description:  "Sync documents from Your Platform",
         Priority:     X,  // Lower number = higher priority in UI
         AuthType:     "oauth2",  // or "api_key", "token", "password", "custom", "none"
-        Capabilities: []string{"incremental", "webhook", "deletion_sync"},
+        Capabilities: []string{"incremental", CapabilityFullSyncReconcile},
     },
 }
 ```
 
-## Step 8: Test Your Connector
+Two capability values change behavior. `full_sync_reconcile` (`CapabilityFullSyncReconcile`) says the connector can set `types.SyncCursor.CompleteListing`, so a full sync with deletion sync on deletes knowledge items missing from a complete listing. `selection_tracks_source` (`CapabilitySelectionTracksSource`) says each item's `source_resource_id` is the selected resource it was listed under, so items of a deselected resource can be found. `incremental`, `deletion_sync` and `hierarchical` only describe the connector to API clients.
+
+## Step 8: Sync Reason Codes
+
+A per-item failure is a `types.FetchedItem` with no content and `error_reason_code` (plus English fallback text in `error_reason`) in `Metadata`. Declare the codes in a package-level `SyncReasonTexts map[string]string` (see `connector/seafile/types.go`), add that table to the list in `internal/datasource/syncreason/parity_test.go`, and add a `datasource.syncError.<code>` key for each code to `frontend/src/i18n/locales/en-US.ts`. The parity test fails when either side has a code the other lacks.
+
+## Step 9: Frontend Form and Icon
+
+- Add an entry to `connectorDefs` in `frontend/src/views/knowledge/settings/DataSourceEditorDialog.vue` with the type, doc links and one field per credential key (`labelKey`, `placeholder`, `secret: true` for secrets), and add the label keys to `en-US.ts`.
+- Add the icon under `frontend/src/assets/img/` and map the type to it in `frontend/src/views/knowledge/settings/datasourceIcons.ts`.
+
+## Optional Interfaces
+
+`internal/datasource/connector.go` defines optional interfaces the sync service checks for: `StreamingConnector` (`FetchStream`, ingest and checkpoint as items arrive), `FullStreamingConnector` (`FetchFullStream`), `FullSyncWithCursor` (`FetchAllFromCursor`, full sync that still reconciles deletions) and `ConfigDependentListing` (`ReportsCompleteListing`, for a `full_sync_reconcile` connector that reports a complete listing only under some configurations).
+
+## Step 10: Test Your Connector
 
 ```go
 // Example test
@@ -404,11 +463,14 @@ func TestYourConnectorFetchAll(t *testing.T) {
 
 - [ ] Created `internal/datasource/connector/yourtype/` package
 - [ ] Implemented `types.go` with platform data structures
-- [ ] Implemented `client.go` with API wrapper
+- [ ] Implemented `client.go` with `datasource.NewConnectorHTTPClient` and `ValidateConnectorBaseURL`
+- [ ] Mapped API failures to the `datasource.Err*` sentinels
 - [ ] Implemented `connector.go` with Connector interface
 - [ ] Added connector type constant
 - [ ] Registered in `initConnectorRegistry()`
 - [ ] Added metadata entry
+- [ ] Added `SyncReasonTexts` to the parity test and `datasource.syncError.*` keys to `en-US.ts`
+- [ ] Added the form entry in `DataSourceEditorDialog.vue` and the icon in `datasourceIcons.ts`
 - [ ] Added unit tests
 - [ ] Tested manually with real API
 - [ ] Documented any special requirements
