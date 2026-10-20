@@ -8,10 +8,10 @@ function area(name: string, data: Map<string, unknown>, listeners: Set<Listener>
     for (const listener of listeners) listener(changes, name);
   };
   return {
-    get: async (key: string | null) => {
+    get: async (key: string | string[] | null) => {
       await tick();
       if (key === null) return Object.fromEntries(data);
-      return data.has(key) ? { [key]: data.get(key) } : {};
+      return Object.fromEntries([key].flat().filter((k) => data.has(k)).map((k) => [k, data.get(k)]));
     },
     set: async (items: Record<string, unknown>) => {
       await tick();

@@ -80,6 +80,8 @@ export type Capture = {
   url: string;
   savedAt: string;
   status: 'pending' | 'completed' | 'failed' | 'cancelled' | 'timeout';
+  // The server and workspace it was saved under; a capture is listed only there.
+  scope?: string;
 };
 
 export type Intent = 'clip:article' | 'clip:select' | 'quick:article' | 'quick:select' | 'note' | 'ask';
