@@ -23,6 +23,13 @@ test('send takes the first reply without resending', async () => {
   assert.equal(calls.length, 1);
 });
 
+test('send waits for a slow EXTRACT instead of running it twice', async () => {
+  const calls = fakeRuntime([new Promise((r) => setTimeout(() => r({ draft: null, reason: 'cancelled' }), 30))]);
+  const reply = await send<{ draft: null; reason: string }>({ type: 'EXTRACT', tabId: 1, mode: 'article' }, 10);
+  assert.equal(reply.reason, 'cancelled');
+  assert.equal(calls.length, 1);
+});
+
 test('send reports a missing listener after the resend', async () => {
   fakeRuntime([new Promise(() => {}), Promise.resolve(undefined)]);
   await assert.rejects(send({ type: 'GET_HEADERS' }, 10), /no reply to GET_HEADERS/);

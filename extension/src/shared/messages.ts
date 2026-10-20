@@ -23,12 +23,16 @@ export type Request =
 // A worker replies within milliseconds; silence means Chrome ended the idle worker as the message arrived,
 // which drops the reply (seen live on the Stop request). Sending again starts a fresh worker.
 const SILENCE_MS = 2_000;
+// EXTRACT injects and reads the page, which can legitimately take seconds; a second send would run it twice.
+const NO_RESEND = new Set<Request['type']>(['EXTRACT']);
 
 export async function send<T>(request: Request, silenceMs = SILENCE_MS): Promise<T> {
   const silence = Symbol('silence');
   const once = () => chrome.runtime.sendMessage(request) as Promise<T | undefined>;
   let timer: ReturnType<typeof setTimeout> | undefined;
-  const first = await Promise.race([once(), new Promise<typeof silence>((r) => { timer = setTimeout(() => r(silence), silenceMs); })]);
+  const first = NO_RESEND.has(request.type)
+    ? await once()
+    : await Promise.race([once(), new Promise<typeof silence>((r) => { timer = setTimeout(() => r(silence), silenceMs); })]);
   clearTimeout(timer);
   const reply = first === silence ? await once() : first;
   // A missing listener resolves undefined, which would otherwise read as a sign-out.
