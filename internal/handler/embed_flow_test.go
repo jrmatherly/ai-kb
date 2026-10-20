@@ -113,6 +113,14 @@ func (f *flowTenantSvc) BulkSetStorageQuota(context.Context, int64) (int64, erro
 func (f *flowTenantSvc) SearchTenants(context.Context, string, uint64, int, int) ([]*types.Tenant, int64, error) {
 	return nil, 0, nil
 }
+func (f *flowTenantSvc) GetTenantBySlug(context.Context, string) (*types.Tenant, error) {
+	return nil, nil
+}
+
+func (f *flowTenantSvc) SetTenantSlug(context.Context, uint64, *string) error {
+	return nil
+}
+
 func (f *flowTenantSvc) GetTenantByIDForUser(context.Context, uint64, string) (*types.Tenant, error) {
 	return f.tenant, nil
 }

@@ -356,6 +356,17 @@ definitions:
     - system.user_created
     - system.api_key_created
     - system.api_key_revoked
+    - auth.login_succeeded
+    - auth.login_failed
+    - auth.logout
+    - tenant_api_key.created
+    - tenant_api_key.updated
+    - tenant_api_key.deleted
+    - model.changed
+    - agent.changed
+    - mcp_service.changed
+    - web_search_provider.changed
+    - storage_backend.changed
     - system.queue_task_retried
     - system.queue_task_deleted
     - system.queue_task_run_now
@@ -420,6 +431,17 @@ definitions:
     - AuditActionSystemUserCreated
     - AuditActionSystemAPIKeyCreated
     - AuditActionSystemAPIKeyRevoked
+    - AuditActionAuthLoginSucceeded
+    - AuditActionAuthLoginFailed
+    - AuditActionAuthLogout
+    - AuditActionTenantAPIKeyCreated
+    - AuditActionTenantAPIKeyUpdated
+    - AuditActionTenantAPIKeyDeleted
+    - AuditActionModelChanged
+    - AuditActionAgentChanged
+    - AuditActionMCPServiceChanged
+    - AuditActionWebSearchProviderChanged
+    - AuditActionStorageBackendChanged
     - AuditActionSystemQueueTaskRetried
     - AuditActionSystemQueueTaskDeleted
     - AuditActionSystemQueueTaskRunNow
@@ -4404,6 +4426,10 @@ definitions:
         allOf:
         - $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_types.RetrieverEngines'
         description: Retriever engines
+      slug:
+        description: Slug is the unique human key of the workspace (OIDC group mapping);
+          nil when unset.
+        type: string
       status:
         description: Status
         type: string
@@ -7098,6 +7124,20 @@ definitions:
           login, not here. Nil = field omitted from the PATCH and stays
           untouched.
         type: integer
+    type: object
+  internal_handler.updateTenantRequest:
+    properties:
+      description:
+        maxLength: 512
+        type: string
+      name:
+        maxLength: 128
+        minLength: 1
+        type: string
+      slug:
+        description: Slug is system-admin only; "" clears it.
+        maxLength: 64
+        type: string
     type: object
   internal_handler_session.AttachmentUpload:
     properties:
@@ -18670,12 +18710,12 @@ paths:
         name: id
         required: true
         type: integer
-      - description: Workspace details
+      - description: Name, description, slug (admin only; empty clears)
         in: body
         name: request
         required: true
         schema:
-          $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_types.Tenant'
+          $ref: '#/definitions/internal_handler.updateTenantRequest'
       produces:
       - application/json
       responses:
@@ -18685,7 +18725,15 @@ paths:
             additionalProperties: true
             type: object
         "400":
-          description: Invalid request parameters
+          description: Invalid request parameters or slug
+          schema:
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
+        "403":
+          description: Slug change by a non system administrator
+          schema:
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
+        "409":
+          description: Slug already in use
           schema:
             $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:

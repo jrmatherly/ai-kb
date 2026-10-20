@@ -566,6 +566,7 @@ The checks in `ValidateToken`:
 type Tenant struct {
     ID                      uint64               `json:"id" gorm:"primaryKey"`
     Name                    string               `json:"name"`
+    Slug                    *string              `json:"slug,omitempty"` // unique key, system administrators only
     Description             string               `json:"description"`
     Status                  string               `json:"status" gorm:"default:'active'"`
     RetrieverEngines        RetrieverEngines     `json:"retriever_engines" gorm:"type:json"`

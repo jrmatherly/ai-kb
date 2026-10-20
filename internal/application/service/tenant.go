@@ -117,6 +117,26 @@ func (s *tenantService) GetTenantByID(ctx context.Context, id uint64) (*types.Te
 	return tenant, nil
 }
 
+// GetTenantBySlug returns the live tenant with that slug, or (nil, nil) when none has it.
+func (s *tenantService) GetTenantBySlug(ctx context.Context, slug string) (*types.Tenant, error) {
+	return s.repo.GetTenantBySlug(ctx, slug)
+}
+
+// ErrTenantSlugTaken is returned when another live workspace already has the slug.
+var ErrTenantSlugTaken = errors.New("workspace slug already in use")
+
+// SetTenantSlug writes the slug column alone; nil clears it. A unique-index hit from a concurrent write is
+// reported as ErrTenantSlugTaken.
+func (s *tenantService) SetTenantSlug(ctx context.Context, id uint64, slug *string) error {
+	if err := s.repo.SetTenantSlug(ctx, id, slug); err != nil {
+		if isUniqueViolation(err) {
+			return ErrTenantSlugTaken
+		}
+		return err
+	}
+	return nil
+}
+
 // GetTenantsByIDs batches GetTenantByID; returns a map keyed by tenant ID.
 func (s *tenantService) GetTenantsByIDs(ctx context.Context, ids []uint64) (map[uint64]*types.Tenant, error) {
 	return s.repo.GetTenantsByIDs(ctx, ids)

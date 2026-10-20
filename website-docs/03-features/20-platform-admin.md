@@ -46,6 +46,7 @@ System administrators can also:
 
 - **Reset a user's password** (`POST /system/admin/users/reset-password`): replaces the target user's local password and revokes all of their sessions. **You cannot reset your own password here**; the self-service change still requires the old password.
 - **Apply the default storage quota in bulk** (`POST /system/admin/tenants/apply-default-storage-quota`): writes the current default quota onto every existing workspace. This updates the quota stored on those workspaces.
+- **Set or clear a workspace slug** (Settings > Workspace, or `PUT /tenants/:id` with `slug`): the unique key the OIDC group mapping names. A workspace Owner or Admin who sends `slug` gets 403.
 
 ### Create a user
 

@@ -169,6 +169,8 @@ export function userInfoFromApi(
 export interface TenantInfo {
   id: string
   name: string
+  /** Unique human key of the workspace; null until a system admin sets one. */
+  slug?: string | null
   description?: string
   status?: string
   business?: string

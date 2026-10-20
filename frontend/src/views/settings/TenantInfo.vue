@@ -68,6 +68,39 @@
           </div>
         </div>
 
+        <!-- Workspace slug: shown to everyone, editable by a system admin only (the server enforces it). -->
+        <div class="setting-row">
+          <div class="setting-info">
+            <label>{{ $t('tenant.details.slugLabel') }}</label>
+            <p class="desc">{{ $t('tenant.details.slugDescription') }}</p>
+          </div>
+          <div class="setting-control">
+            <template v-if="!editingSlug">
+              <span class="info-value" :class="{ 'is-empty': !tenantInfo?.slug }">
+                {{ tenantInfo?.slug || $t('tenant.details.slugEmptyPlaceholder') }}
+              </span>
+              <t-button v-if="canEditSlug" theme="default" variant="text" shape="square" size="small"
+                class="edit-btn" :title="$t('tenant.details.editSlug')" :aria-label="$t('tenant.details.editSlug')"
+                @click="startEditSlug">
+                <template #icon>
+                  <t-icon name="edit" />
+                </template>
+              </t-button>
+            </template>
+            <div v-else class="inline-edit">
+              <t-input v-model="editSlug" :placeholder="$t('tenant.details.editSlugPlaceholder')" :maxlength="64"
+                :disabled="savingSlug" autofocus class="inline-edit-input" @enter="saveTenantSlug"
+                @keydown="onEditSlugKeydown" />
+              <t-button theme="primary" size="small" :loading="savingSlug" :disabled="!canSubmitSlug" @click="saveTenantSlug">
+                {{ $t('tenant.details.editNameConfirm') }}
+              </t-button>
+              <t-button theme="default" variant="outline" size="small" :disabled="savingSlug" @click="cancelEditSlug">
+                {{ $t('tenant.details.editNameCancel') }}
+              </t-button>
+            </div>
+          </div>
+        </div>
+
         <!-- Tenant description -->
         <div class="setting-row">
           <div class="setting-info">
@@ -529,6 +562,62 @@ const saveTenantDescription = async () => {
     MessagePlugin.error(err?.message || t('tenant.details.editDescriptionFailed'))
   } finally {
     savingDescription.value = false
+  }
+}
+
+// Workspace slug: in-place editing like the name; empty clears it. Only a system admin sees the control.
+const SLUG_PATTERN = /^[a-z][a-z0-9-]{1,63}$/
+const canEditSlug = computed(() => authStore.isSystemAdmin)
+const editingSlug = ref(false)
+const editSlug = ref('')
+const savingSlug = ref(false)
+const editSlugTrimmed = computed(() => editSlug.value.trim())
+const canSubmitSlug = computed(
+  () => !savingSlug.value && editSlugTrimmed.value !== (tenantInfo.value?.slug || ''),
+)
+
+const startEditSlug = () => {
+  editSlug.value = tenantInfo.value?.slug || ''
+  editingSlug.value = true
+}
+
+const cancelEditSlug = () => {
+  if (savingSlug.value) return
+  editingSlug.value = false
+  editSlug.value = ''
+}
+
+const onEditSlugKeydown = (_value: any, ctx: { e: KeyboardEvent }) => {
+  if (ctx?.e?.key === 'Escape') cancelEditSlug()
+}
+
+const saveTenantSlug = async () => {
+  if (!tenantInfo.value?.id) return
+  const slug = editSlugTrimmed.value
+  if (slug === (tenantInfo.value.slug || '')) {
+    editingSlug.value = false
+    return
+  }
+  if (slug && !SLUG_PATTERN.test(slug)) {
+    MessagePlugin.warning(t('tenant.details.slugInvalid'))
+    return
+  }
+  try {
+    savingSlug.value = true
+    const resp = await updateTenantApi(Number(tenantInfo.value.id), { slug })
+    if (resp.success) {
+      tenantInfo.value = { ...tenantInfo.value, slug: slug || null }
+      MessagePlugin.success(t('tenant.details.editSlugSuccess'))
+      editingSlug.value = false
+    } else if (resp.status === 409) {
+      MessagePlugin.error(t('tenant.details.slugTaken'))
+    } else {
+      MessagePlugin.error(resp.message || t('tenant.details.editSlugFailed'))
+    }
+  } catch (err: any) {
+    MessagePlugin.error(err?.message || t('tenant.details.editSlugFailed'))
+  } finally {
+    savingSlug.value = false
   }
 }
 

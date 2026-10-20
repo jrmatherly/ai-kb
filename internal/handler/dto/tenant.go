@@ -13,6 +13,7 @@ import (
 type TenantResponse struct {
 	ID                  uint64                     `json:"id"`
 	Name                string                     `json:"name"`
+	Slug                *string                    `json:"slug"`
 	Description         string                     `json:"description"`
 	Status              string                     `json:"status"`
 	RetrieverEngines    types.RetrieverEngines     `json:"retriever_engines"`
@@ -47,6 +48,7 @@ func NewTenantResponseWithRole(tenant *types.Tenant, role types.TenantRole) *Ten
 	resp := &TenantResponse{
 		ID:                tenant.ID,
 		Name:              tenant.Name,
+		Slug:              tenant.Slug,
 		Description:       tenant.Description,
 		Status:            tenant.Status,
 		RetrieverEngines:  tenant.RetrieverEngines,

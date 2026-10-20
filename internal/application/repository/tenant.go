@@ -117,9 +117,27 @@ func (r *tenantRepository) SearchTenants(ctx context.Context, keyword string, te
 	return tenants, total, nil
 }
 
-// UpdateTenant updates tenant.
+// GetTenantBySlug returns the live tenant with that slug, or (nil, nil) when none has it.
+func (r *tenantRepository) GetTenantBySlug(ctx context.Context, slug string) (*types.Tenant, error) {
+	var tenant types.Tenant
+	if err := r.db.WithContext(ctx).Where("slug = ?", slug).First(&tenant).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &tenant, nil
+}
+
+// SetTenantSlug writes the slug column alone: UpdateTenant uses Updates(struct), which skips a nil pointer.
+func (r *tenantRepository) SetTenantSlug(ctx context.Context, id uint64, slug *string) error {
+	return r.db.WithContext(ctx).Model(&types.Tenant{}).Where("id = ?", id).Update("slug", slug).Error
+}
+
+// UpdateTenant updates tenant. The slug is omitted so a stale full-struct save from another request cannot
+// write an old slug back; SetTenantSlug is its only writer.
 func (r *tenantRepository) UpdateTenant(ctx context.Context, tenant *types.Tenant) error {
-	return r.db.WithContext(ctx).Model(&types.Tenant{}).Where("id = ?", tenant.ID).Updates(tenant).Error
+	return r.db.WithContext(ctx).Model(&types.Tenant{}).Where("id = ?", tenant.ID).Omit("slug").Updates(tenant).Error
 }
 
 // DeleteTenant soft-deletes the tenant and every active membership row

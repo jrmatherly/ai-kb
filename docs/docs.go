@@ -17459,12 +17459,12 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "Workspace details",
+                        "description": "Name, description, slug (admin only; empty clears)",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.Tenant"
+                            "$ref": "#/definitions/internal_handler.updateTenantRequest"
                         }
                     }
                 ],
@@ -17477,7 +17477,19 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Invalid request parameters",
+                        "description": "Invalid request parameters or slug",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Slug change by a non system administrator",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Slug already in use",
                         "schema": {
                             "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
@@ -19612,6 +19624,17 @@ const docTemplate = `{
                 "system.user_created",
                 "system.api_key_created",
                 "system.api_key_revoked",
+                "auth.login_succeeded",
+                "auth.login_failed",
+                "auth.logout",
+                "tenant_api_key.created",
+                "tenant_api_key.updated",
+                "tenant_api_key.deleted",
+                "model.changed",
+                "agent.changed",
+                "mcp_service.changed",
+                "web_search_provider.changed",
+                "storage_backend.changed",
                 "system.queue_task_retried",
                 "system.queue_task_deleted",
                 "system.queue_task_run_now",
@@ -19676,6 +19699,17 @@ const docTemplate = `{
                 "AuditActionSystemUserCreated",
                 "AuditActionSystemAPIKeyCreated",
                 "AuditActionSystemAPIKeyRevoked",
+                "AuditActionAuthLoginSucceeded",
+                "AuditActionAuthLoginFailed",
+                "AuditActionAuthLogout",
+                "AuditActionTenantAPIKeyCreated",
+                "AuditActionTenantAPIKeyUpdated",
+                "AuditActionTenantAPIKeyDeleted",
+                "AuditActionModelChanged",
+                "AuditActionAgentChanged",
+                "AuditActionMCPServiceChanged",
+                "AuditActionWebSearchProviderChanged",
+                "AuditActionStorageBackendChanged",
                 "AuditActionSystemQueueTaskRetried",
                 "AuditActionSystemQueueTaskDeleted",
                 "AuditActionSystemQueueTaskRunNow",
@@ -24559,6 +24593,10 @@ const docTemplate = `{
                         }
                     ]
                 },
+                "slug": {
+                    "description": "Slug is the unique human key of the workspace (OIDC group mapping); nil when unset.",
+                    "type": "string"
+                },
                 "status": {
                     "description": "Status",
                     "type": "string"
@@ -28115,6 +28153,25 @@ const docTemplate = `{
                 "last_active_tenant_id": {
                     "description": "LastActiveTenantID lets clients persist \"after a fresh login,\ndrop me back into this workspace\" across devices. The SPA sends\nthis after every tenant switch; POST /auth/switch-tenant records\nthe same preference server-side. Send a positive workspace id to\nset / replace, or 0 to clear. Membership is validated at next\nlogin, not here. Nil = field omitted from the PATCH and stays\nuntouched.",
                     "type": "integer"
+                }
+            }
+        },
+        "internal_handler.updateTenantRequest": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string",
+                    "maxLength": 512
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 128,
+                    "minLength": 1
+                },
+                "slug": {
+                    "description": "Slug is system-admin only; \"\" clears it.",
+                    "type": "string",
+                    "maxLength": 64
                 }
             }
         },

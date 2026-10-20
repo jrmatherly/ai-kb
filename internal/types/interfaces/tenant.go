@@ -17,6 +17,10 @@ type TenantService interface {
 	// query. Returns a map keyed by tenant ID for O(1) lookup at the
 	// call site; missing tenants are simply absent from the map.
 	GetTenantsByIDs(ctx context.Context, ids []uint64) (map[uint64]*types.Tenant, error)
+	// GetTenantBySlug returns the live tenant with that slug, or (nil, nil) when none has it.
+	GetTenantBySlug(ctx context.Context, slug string) (*types.Tenant, error)
+	// SetTenantSlug writes the slug column alone; nil clears it.
+	SetTenantSlug(ctx context.Context, id uint64, slug *string) error
 	// ListTenants lists all tenants
 	ListTenants(ctx context.Context) ([]*types.Tenant, error)
 	// UpdateTenant updates a tenant
@@ -48,6 +52,10 @@ type TenantRepository interface {
 	GetTenantByID(ctx context.Context, id uint64) (*types.Tenant, error)
 	// GetTenantsByIDs batches GetTenantByID; see TenantService.GetTenantsByIDs.
 	GetTenantsByIDs(ctx context.Context, ids []uint64) (map[uint64]*types.Tenant, error)
+	// GetTenantBySlug - see TenantService.GetTenantBySlug.
+	GetTenantBySlug(ctx context.Context, slug string) (*types.Tenant, error)
+	// SetTenantSlug - see TenantService.SetTenantSlug.
+	SetTenantSlug(ctx context.Context, id uint64, slug *string) error
 	// ListTenants lists all tenants
 	ListTenants(ctx context.Context) ([]*types.Tenant, error)
 	// SearchTenants searches tenants with pagination and filters

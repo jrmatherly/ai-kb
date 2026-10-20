@@ -30,6 +30,8 @@ type Tenant struct {
 	ID uint64 `yaml:"id"                json:"id"                gorm:"primaryKey"`
 	// Tenant name
 	Name string `yaml:"name"              json:"name"`
+	// Slug is the unique human key of the workspace; nil until a system admin sets one.
+	Slug *string `yaml:"slug,omitempty"    json:"slug,omitempty"`
 	// Tenant description
 	Description string `yaml:"description"       json:"description"`
 	// Tenant status (active, inactive)
@@ -161,7 +163,9 @@ func (c *Client) GetTenant(ctx context.Context, tenantID uint64) (*Tenant, error
 	return &response.Data, nil
 }
 
-// UpdateTenant updates an existing tenant
+// UpdateTenant updates an existing tenant. Slug is sent only when non-nil and
+// only a system administrator may change it, so send a tenant with Slug nil
+// unless that is the intent; a pointer to "" clears the slug.
 func (c *Client) UpdateTenant(ctx context.Context, tenant *Tenant) (*Tenant, error) {
 	path := fmt.Sprintf("/api/v1/tenants/%d", tenant.ID)
 	resp, err := c.doRequest(ctx, http.MethodPut, path, tenant, nil)
