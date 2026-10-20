@@ -29,9 +29,9 @@ To preview in a browser, open `index.html?t=22` for one frame, or `index.html?pl
 gh issue create --title "Asset: AI KB intro video (YYYY-MM-DD)" --body "Hosts the intro video embedded in README.md and the docs homepage. Do not delete." --attach misc/intro-video/ai-kb-intro.mp4
 ```
 
-Take the URL from the issue body, check it without credentials (`curl -sIL <url>` ends in `200` and `video/mp4`), then close and lock the issue. Never delete it: the asset belongs to the issue. A file dragged into a comment box that is never submitted stays private to the uploader and returns 404 to everyone else.
+Take the URL from the issue body, check it without credentials with a ranged GET (`curl -sL -r 0-0 -o /dev/null -w '%{http_code} %{content_type}\n' <url>` prints `206 video/mp4`; a HEAD request gets `403` from the storage redirect), then close and lock the issue. Never delete it: the asset belongs to the issue. A file dragged into a comment box that is never submitted stays private to the uploader and returns 404 to everyone else.
 
-Videos over 10 MB need a paid GitHub plan on the repository owner. To fit under 10 MB, re-encode:
+The current 12.9 MB asset uploaded and serves on this repository. If GitHub rejects an upload for size, re-encode to fit under 10 MB:
 
 ```bash
 ffmpeg -i ai-kb-intro.mp4 -c:v libx264 -preset slow -crf 24 -pix_fmt yuv420p -movflags +faststart ai-kb-intro-lite.mp4

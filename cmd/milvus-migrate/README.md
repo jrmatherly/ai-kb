@@ -21,6 +21,8 @@ go run ./cmd/milvus-migrate \
   --target aikb_embeddings_multilingual
 ```
 
+For a Milvus server with authentication or a non-default database, add `--username`, `--password` and `--database` (or `MILVUS_USERNAME`, `MILVUS_PASSWORD` and `MILVUS_DB_NAME`).
+
 To double-check the metric, pass the source collection's `--metric-type` (or the `MILVUS_METRIC_TYPE` environment variable). The value must match the source index, or the migration fails.
 
 After the migration, set AI KB's `MILVUS_COLLECTION` to the target prefix and restart the service. **Keep the existing `MILVUS_METRIC_TYPE` unchanged**:
@@ -39,13 +41,13 @@ By default the migration reads 64 rows per batch and reads only the fields neede
 
 AI KB's `internal/utils` parses SQL with `pg_query_go`, which needs CGO. When you run `go run` directly in a session with `CGO_ENABLED=0`, you get `undefined: pg_query.Parse` or `undefined: pg_query.Deparse`.
 
-If you have an MSYS2 GCC (for example under `.local-tools\msys64\ucrt64\bin`), you can enable CGO for the current PowerShell session and then run the migration. These settings affect only the current window and do not change the system-wide Go configuration:
+If you have an MSYS2 GCC (for example in a local, gitignored `.local-tools\msys64\ucrt64\bin` under the project root; the repository does not provide it), you can enable CGO for the current PowerShell session and then run the migration. These settings affect only the current window and do not change the system-wide Go configuration:
 
 ```powershell
 # Make sure the current directory is the project root that contains go.mod
 if (!(Test-Path -LiteralPath '.\go.mod')) { throw 'Change to the AI KB project root first' }
 
-# Use the project's GCC so Go can find a C compiler
+# Point Go at the local MSYS2 GCC
 $compilerBin = Join-Path (Get-Location) '.local-tools\msys64\ucrt64\bin'
 $env:CGO_ENABLED = '1'
 $env:CC = Join-Path $compilerBin 'gcc.exe'
@@ -56,4 +58,4 @@ $env:PATH = "$compilerBin;$env:PATH"
 go run ./cmd/milvus-migrate --address 127.0.0.1:19530 --source aikb_embeddings --target aikb_embeddings_multilingual
 ```
 
-If the project has no `.local-tools\msys64\ucrt64\bin`, install a working GCC first and point `$env:CC` and `$env:CXX` at the absolute paths of its `gcc.exe` and `g++.exe`.
+If you have no such folder, install a working GCC first and point `$env:CC` and `$env:CXX` at the absolute paths of its `gcc.exe` and `g++.exe`.
