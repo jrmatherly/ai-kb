@@ -712,8 +712,9 @@ const clearDocumentFilters = () => {
   updatedTimeRange.value = [];
   handleTagFilterChange([]);
 };
-// Disable any date after today so users cannot filter into the future.
-const disableFutureDate = { after: new Date(new Date().setHours(23, 59, 59, 999)) };
+// TDesign widens `after` to the end of that day; the object is built per render so a tab left
+// open past midnight does not keep yesterday as the last pickable day.
+const disableFutureDate = () => ({ after: new Date().toISOString() });
 const documentSortPanelVisible = ref(false);
 const selectedDocumentSort = ref<DocumentSortValue>(DEFAULT_DOCUMENT_SORT);
 
@@ -2417,7 +2418,7 @@ const handleKBEditorSuccess = (kbIdValue: string) => {
                             <span>{{ $t('knowledgeBase.columnUpdatedAt') }}</span>
                             <t-date-range-picker v-model="updatedTimeRange"
                               :placeholder="[$t('knowledgeBase.updatedTimeFrom'), $t('knowledgeBase.updatedTimeTo')]"
-                              :disable-date="disableFutureDate" clearable allow-input />
+                              :disable-date="disableFutureDate()" clearable allow-input />
                           </div>
                         </div>
                         <div class="doc-filter-tags">

@@ -41,7 +41,6 @@
               row-key="id"
               :data="entries"
               :columns="columns"
-              :filter-row="null"
               size="medium"
               hover
               :loading="loading && !entries.length && !loadedOnce"
@@ -263,6 +262,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onUnmounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import type { RowEventContext, TableRowData } from 'tdesign-vue-next'
 import SettingDrawer from '@/components/settings/SettingDrawer.vue'
 import { AUDIT_ACTION_I18N_ROOTS } from '@/i18n/auditActionRegistry'
 import { auditActionLabel } from '@/i18n/auditActionLabel'
@@ -670,8 +670,8 @@ function detailsJSON(entry: KnowledgeBaseActivity): string {
   }
 }
 
-function openDetail(context: { row: KnowledgeBaseActivity }) {
-  selectedEntry.value = context.row
+function openDetail(context: RowEventContext<TableRowData>) {
+  selectedEntry.value = context.row as KnowledgeBaseActivity
   detailVisible.value = true
 }
 

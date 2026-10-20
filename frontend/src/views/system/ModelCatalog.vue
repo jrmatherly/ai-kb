@@ -83,7 +83,7 @@
         :class="{ 'catalog-table-shell--single-page': filteredRows.length <= PAGE_SIZE }">
         <t-table row-key="key" :data="pageRows" :columns="columns" :pagination="pagination" disable-data-page
           size="medium" hover
-          :row-class-name="rowClassName" @row-click="({ row }: { row: CatalogRow }) => openEdit(row)"
+          :row-class-name="rowClassName" @row-click="({ row }: RowEventContext<TableRowData>) => openEdit(row as CatalogRow)"
           @page-change="(info: { current: number }) => { page = info.current }">
           <template #model="{ row }">
             <div class="catalog-model">
@@ -333,7 +333,7 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { MessagePlugin, type TableProps } from 'tdesign-vue-next'
+import { MessagePlugin, type DropdownOption, type RowEventContext, type TableProps, type TableRowData } from 'tdesign-vue-next'
 import SettingDrawer from '@/components/settings/SettingDrawer.vue'
 import { levelLabelKey } from '@/utils/reasoningEffort'
 import FieldControl from './ModelCatalogFieldControl.vue'
@@ -770,7 +770,7 @@ const moreOptions = computed(() => [
   { content: t('modelCatalog.export'), value: 'export' },
 ])
 
-function onMore(data: { value?: string | number }) {
+function onMore(data: DropdownOption) {
   if (data.value === 'json') openJson()
   else if (data.value === 'history') historyVisible.value = true
   else if (data.value === 'import') fileInput.value?.click()

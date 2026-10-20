@@ -33,7 +33,7 @@
           <div class="parser-control-stack">
             <t-select
               :value="getEngineForGroup(group.extensions) || undefined"
-              @change="(val: string) => handleEngineChange(group.extensions, val)"
+              @change="(val: SelectValue) => handleEngineChange(group.extensions, typeof val === 'string' ? val : '')"
               :style="embedded ? undefined : { width: '280px' }"
               :class="{ 'parser-engine-select--embedded': embedded }"
               :status="hasAvailableEngine(group.extensions) ? 'default' : 'warning'"
@@ -68,6 +68,7 @@
 <script setup lang="ts">
 import { ref, watch, computed, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
+import type { SelectValue } from 'tdesign-vue-next'
 import { type ParserEngineInfo } from '@/api/system'
 import { useEditorResourcesStore } from '@/stores/editorResources'
 import { useUIStore } from '@/stores/ui'

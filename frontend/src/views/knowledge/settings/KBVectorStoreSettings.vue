@@ -95,6 +95,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
+import type { SelectValue } from 'tdesign-vue-next'
 import { useUIStore } from '@/stores/ui'
 import { listVectorStores, type VectorStoreEntity } from '@/api/vector-store'
 import type { VectorStoreSource, VectorStoreStatus } from '@/api/knowledge-base'
@@ -145,10 +146,10 @@ watch(
   },
 )
 
-const handleChange = (val: string | undefined) => {
+const handleChange = (val: SelectValue) => {
   // t-select's clear emits undefined; normalize to empty string so the
   // parent treats both as "use system default".
-  emit('update:vectorStoreId', val || '')
+  emit('update:vectorStoreId', typeof val === 'string' ? val : '')
 }
 
 // Open the global Settings panel directly on the Vector Stores

@@ -209,7 +209,7 @@ const groupedLogs = computed(() => {
             variant="text"
             shape="square"
             :loading="loading"
-            @click="fetchLogs"
+            @click="fetchLogs()"
           >
             <template #icon><t-icon name="refresh" /></template>
           </t-button>

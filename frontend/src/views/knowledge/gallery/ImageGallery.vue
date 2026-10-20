@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import type { InputValue } from 'tdesign-vue-next'
 import {
   listGalleryImages,
   fetchGalleryConfig,
@@ -788,8 +789,8 @@ watch(
                     :value="keywordsInputValue(attr.id)"
                     clearable
                     :placeholder="t(`${NS}.keywordsPlaceholder`)"
-                    @change="(v: string) => onKeywordsInput(attr.id, v)"
-                    @enter="(v: string) => onKeywordsInput(attr.id, v)"
+                    @change="(v: InputValue) => onKeywordsInput(attr.id, String(v))"
+                    @enter="(v: InputValue) => onKeywordsInput(attr.id, String(v))"
                   />
                 </div>
               </div>

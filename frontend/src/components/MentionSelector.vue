@@ -40,7 +40,7 @@
         <t-popup
           v-for="(item, index) in kbItems"
           :key="item.id"
-          placement="right-start"
+          placement="right-top"
           trigger="hover"
           :show-arrow="false"
           :delay="[320, 80]"
@@ -119,7 +119,7 @@
         <t-popup
           v-for="(item, index) in group.items"
           :key="`${item.type}:${item.id}`"
-          placement="right-start"
+          placement="right-top"
           trigger="hover"
           :show-arrow="false"
           :delay="[320, 80]"
@@ -199,7 +199,7 @@
         <t-popup
           v-for="(item, index) in fileItems"
           :key="item.id"
-          placement="right-start"
+          placement="right-top"
           trigger="hover"
           :show-arrow="false"
           :delay="[320, 80]"

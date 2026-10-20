@@ -611,7 +611,7 @@
 
 <script setup lang="ts">
 import { ref, watch, computed, onUnmounted, nextTick } from 'vue'
-import { MessagePlugin, DialogPlugin } from 'tdesign-vue-next'
+import { MessagePlugin, DialogPlugin, type FormRules, type SelectValue } from 'tdesign-vue-next'
 import {
   checkOllamaModels, checkRemoteModel, testEmbeddingModel, checkRerankModel, checkASRModel, listOllamaModels,
   downloadOllamaModel, getDownloadProgress, checkOllamaStatus, resolveModelCatalog,
@@ -1331,7 +1331,7 @@ const formData = ref<ModelFormData>({
   appSecret: '',
 })
 
-const rules = computed(() => ({
+const rules = computed<FormRules<ModelFormData>>(() => ({
   modelName: [
     { required: true, message: t('model.editor.validation.modelNameRequired') },
     {
@@ -1342,7 +1342,7 @@ const rules = computed(() => ({
         if (val.trim().length > 100) {
           return { result: false, message: t('model.editor.validation.modelNameMax') }
         }
-        return { result: true }
+        return { result: true, message: '' }
       },
       trigger: 'blur'
     }
@@ -1361,7 +1361,7 @@ const rules = computed(() => ({
         // Simple URL format check
         try {
           new URL(val.trim())
-          return { result: true }
+          return { result: true, message: '' }
         } catch {
           return { result: false, message: t('model.editor.validation.baseUrlInvalid') }
         }
@@ -1673,7 +1673,7 @@ const resetModelSelectionForVendor = () => {
   dimensionMessage.value = ''
 }
 
-const handleProviderChange = (value: string) => {
+const handleProviderChange = (value: SelectValue) => {
   const provider = providerOptions.value.find(opt => opt.value === value)
   // Older catalogs omit inherited type URLs. Mirror GetDefaultURL's chat
   // fallback, preserving an explicitly empty URL and never the previous vendor's.

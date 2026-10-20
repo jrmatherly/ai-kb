@@ -319,7 +319,7 @@
 <script setup lang="ts">
 import { ref, reactive, nextTick, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { MessagePlugin } from 'tdesign-vue-next'
+import { MessagePlugin, type FormRules } from 'tdesign-vue-next'
 import { useRoleLabel } from '@/composables/useRoleLabel'
 import { notifyLoginSuccess } from '@/utils/loginNotify'
 import { canRegister } from './registrationPolicy'
@@ -430,7 +430,7 @@ const registerData = reactive<{ [key: string]: any }>({
 })
 
 // Login form validation rules
-const formRules = computed(() => ({
+const formRules = computed<FormRules<typeof formData>>(() => ({
   email: [
     { required: true, message: t('auth.emailRequired'), type: 'error' },
     { email: true, message: t('auth.emailInvalid'), type: 'error' }
@@ -443,7 +443,7 @@ const formRules = computed(() => ({
 }))
 
 // Register form validation rules
-const registerRules = computed(() => ({
+const registerRules = computed<FormRules<typeof registerData>>(() => ({
   username: [
     { required: true, message: t('auth.usernameRequired'), type: 'error' },
     { min: 2, message: t('auth.usernameMinLength'), type: 'error' },

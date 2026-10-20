@@ -296,7 +296,7 @@
                           <t-switch :key="`${entry.id}-${entry.is_enabled}`" size="small" :value="entry.is_enabled"
                             :loading="!!entryStatusLoading[entry.id]"
                             :disabled="!!entryStatusLoading[entry.id] || !canEdit" @click.stop
-                            @change="(value: boolean) => handleEntryStatusChange(entry, value)" />
+                            @change="(value: SwitchValue) => handleEntryStatusChange(entry, value === true)" />
                         </div>
                       </t-tooltip>
                     </div>
@@ -761,7 +761,7 @@ import { ref, reactive, watch, onMounted, computed, nextTick, onUnmounted, h } f
 import KnowledgeTagFilter from './KnowledgeTagFilter.vue'
 import { MessagePlugin, Icon as TIcon } from 'tdesign-vue-next'
 import { useConfirmDelete } from '@/components/settings/useConfirmDelete'
-import type { FormRules, FormInstanceFunctions } from 'tdesign-vue-next'
+import type { DropdownOption, FormRules, FormInstanceFunctions, SwitchValue } from 'tdesign-vue-next'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
@@ -899,7 +899,7 @@ const faqCreateOptions = computed(() => {
 })
 
 // Handle FAQ actions
-const handleFaqAction = (data: { value: string }) => {
+const handleFaqAction = (data: DropdownOption) => {
   switch (data.value) {
     case 'create':
       openEditor()
@@ -2111,7 +2111,7 @@ const exampleData: FAQEntryPayload[] = [
 ]
 
 // Download an example file
-const handleDownloadExample = (data: { value: string }) => {
+const handleDownloadExample = (data: DropdownOption) => {
   const { value } = data
   switch (value) {
     case 'json':

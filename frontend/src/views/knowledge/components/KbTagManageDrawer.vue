@@ -68,7 +68,7 @@
                   class="tag-tile__input"
                   :placeholder="$t('knowledgeBase.tagNamePlaceholder')"
                   @enter="submitCreateTag"
-                  @keydown="(_v: string, ctx?: { e?: KeyboardEvent }) => onEditKeydown(ctx, cancelCreateTag)"
+                  @keydown="(_v: InputValue, ctx?: { e?: KeyboardEvent }) => onEditKeydown(ctx, cancelCreateTag)"
                 />
               </div>
               <div class="tag-tile__actions">
@@ -116,7 +116,7 @@
                     class="tag-tile__input"
                     :placeholder="$t('knowledgeBase.tagNamePlaceholder')"
                     @enter="submitEditTag"
-                    @keydown="(_v: string, ctx?: { e?: KeyboardEvent }) => onEditKeydown(ctx, cancelEditTag)"
+                    @keydown="(_v: InputValue, ctx?: { e?: KeyboardEvent }) => onEditKeydown(ctx, cancelEditTag)"
                   />
                 </div>
                 <div class="tag-tile__actions">
@@ -208,7 +208,7 @@
 <script setup lang="ts">
 import { ref, watch, nextTick, computed, type ComponentPublicInstance } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { MessagePlugin } from 'tdesign-vue-next';
+import { MessagePlugin, type InputValue } from 'tdesign-vue-next';
 import SettingDrawer from '@/components/settings/SettingDrawer.vue';
 import {
   listKnowledgeTags,

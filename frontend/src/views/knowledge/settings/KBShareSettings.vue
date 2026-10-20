@@ -4,7 +4,7 @@
       <div class="share-panel-header-row">
         <div class="share-panel-titlewrap">
           <h2 class="share-panel-title">{{ $t('organization.share.title') }}</h2>
-          <t-popup placement="bottom-start" trigger="hover" overlay-class-name="wk-popover share-hint-popup-overlay"
+          <t-popup placement="bottom-left" trigger="hover" overlay-class-name="wk-popover share-hint-popup-overlay"
             :overlay-inner-style="shareHintPopupInnerStyle">
             <button type="button" class="share-hint-trigger-btn" :aria-label="$t('knowledgeEditor.share.hintTitle')"
               :title="$t('knowledgeEditor.share.hintTitle')">
@@ -38,7 +38,7 @@
               </template>
             </t-input>
           </div>
-          <t-popup v-if="canShare" v-model="addPopupVisible" trigger="click" placement="bottom-end" destroy-on-close
+          <t-popup v-if="canShare" v-model="addPopupVisible" trigger="click" placement="bottom-right" destroy-on-close
             overlay-class-name="share-add-popup-overlay">
             <t-button theme="primary" variant="outline" shape="square" size="small" class="share-panel-add-btn"
               :title="$t('knowledgeEditor.share.addShare')" :aria-label="$t('knowledgeEditor.share.addShare')">
@@ -103,7 +103,7 @@
           <template #permission="{ row }">
             <div class="share-permission-cell">
               <t-select v-if="canShare" :value="row.permission" size="small" class="share-permission-select"
-                @change="(val: string) => handleUpdatePermission(row, val)">
+                @change="(val: SelectValue) => handleUpdatePermission(row, typeof val === 'string' ? val : '')">
                 <t-option value="viewer" :label="$t('organization.share.permissionReadonly')" />
                 <t-option value="editor" :label="$t('organization.share.permissionEditable')" />
               </t-select>
@@ -137,7 +137,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import { MessagePlugin } from 'tdesign-vue-next'
+import { MessagePlugin, type SelectValue } from 'tdesign-vue-next'
 import { useI18n } from 'vue-i18n'
 import { useOrganizationStore } from '@/stores/organization'
 import { listKBShares } from '@/api/organization'

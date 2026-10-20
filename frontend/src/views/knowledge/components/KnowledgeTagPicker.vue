@@ -14,7 +14,7 @@
           <template v-if="editingId === tag.id">
             <t-input v-model="editingName" autofocus :maxlength="40" size="small" :disabled="busy"
               :aria-label="$t('knowledgeBase.tagEditAction')" @enter="saveName(tag)"
-              @keydown="(_v: string, ctx: { e: KeyboardEvent }) => { if (ctx.e.key === 'Escape') cancelEdit() }" />
+              @keydown="(_v: InputValue, ctx: { e: KeyboardEvent }) => { if (ctx.e.key === 'Escape') cancelEdit() }" />
             <t-button variant="text" shape="square" size="small" :loading="busy" :aria-label="$t('common.save')" @click="saveName(tag)"><t-icon name="check" size="14px" /></t-button>
             <t-button theme="default" variant="text" shape="square" size="small" :disabled="busy" :aria-label="$t('common.cancel')" @click="cancelEdit"><t-icon name="close" size="14px" /></t-button>
           </template>
@@ -55,6 +55,7 @@
 import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { MessagePlugin } from 'tdesign-vue-next';
+import type { InputValue } from 'tdesign-vue-next';
 import { listKnowledgeTags, createKnowledgeBaseTag, updateKnowledgeBaseTag, deleteKnowledgeBaseTag } from '@/api/knowledge-base';
 
 type Tag = { id: string; seq_id: number; name: string; knowledge_count?: number; chunk_count?: number };

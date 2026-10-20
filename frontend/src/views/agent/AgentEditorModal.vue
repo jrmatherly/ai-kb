@@ -1840,6 +1840,7 @@ import { resolveBuiltinDefaultModelId, selectInitialModelId } from '@/utils/mode
 import { hydrateAgentPromptRefs, serializeAgentPrompts } from '@/utils/agentPromptTemplates';
 import { copyWithToast } from '@/utils/clipboard';
 import { MessagePlugin } from 'tdesign-vue-next';
+import type { SelectValue } from 'tdesign-vue-next';
 import { useModalShell } from '@/composables/useModalShell'
 import SettingsModalShell from '@/components/SettingsModalShell.vue'
 import {
@@ -3401,7 +3402,9 @@ const applyAgentTypePreset = (preset: AgentTypePreset | null) => {
 };
 
 // The user switches the type manually → apply the preset
-const onAgentTypeChange = (val: AgentType) => {
+const onAgentTypeChange = (value: SelectValue) => {
+  // Option values are agentTypePresets ids.
+  const val = value as AgentType;
   // Before switching, capture whether the name/description can be safely overwritten
   // User input that has been edited (not equal to any preset default) is never overwritten
   const canOverrideName = isNameSystemGenerated(formData.value.name);

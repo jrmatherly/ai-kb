@@ -169,7 +169,7 @@
             :placeholder="$t('knowledgeEditor.advanced.tableMetadataInstructions.placeholder')"
             :maxlength="4000"
             :autosize="{ minRows: 3, maxRows: 8 }"
-            @change="(value: string) => emit('update:tableMetadataInstructions', value)"
+            @change="(value: TextareaValue) => emit('update:tableMetadataInstructions', String(value))"
           />
         </div>
       </div>
@@ -180,6 +180,7 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue'
+import type { TextareaValue } from 'tdesign-vue-next'
 import ModelSelector from '@/components/ModelSelector.vue'
 
 interface QuestionGenerationConfig {

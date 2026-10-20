@@ -256,6 +256,7 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { MessagePlugin } from 'tdesign-vue-next'
+import type { DropdownOption } from 'tdesign-vue-next'
 import { useAuthStore } from '@/stores/auth'
 import { copyWithToast } from '@/utils/clipboard'
 import { useApiBaseUrlDisplay } from '@/composables/useApiBaseUrlDisplay'
@@ -547,7 +548,7 @@ function menuOptions(ep: McpEndpoint) {
   ]
 }
 
-function handleMenuClick(option: { value?: string | number }, ep: McpEndpoint) {
+function handleMenuClick(option: DropdownOption, ep: McpEndpoint) {
   switch (option?.value) {
     case 'connect':
       openEdit(ep, 1)

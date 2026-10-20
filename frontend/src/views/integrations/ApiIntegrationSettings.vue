@@ -685,7 +685,7 @@
 
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
-import { DialogPlugin, MessagePlugin } from 'tdesign-vue-next'
+import { DialogPlugin, MessagePlugin, type RadioValue, type SwitchValue } from 'tdesign-vue-next'
 import { useI18n } from 'vue-i18n'
 import { copyWithToast } from '@/utils/clipboard'
 import { BUILTIN_SMART_REASONING_ID, type CustomAgent } from '@/api/agent'
@@ -1241,13 +1241,13 @@ function handlePlaygroundDrawerCancel() {
   playgroundDrawerVisible.value = false
 }
 
-function handlePrincipalModeChange(mode: APIPrincipalMode) {
-  form.mode = mode
+function handlePrincipalModeChange(mode: RadioValue) {
+  form.mode = mode as APIPrincipalMode
   void saveIfNeeded()
 }
 
-function handleRequireDirectHeaderChange(checked: boolean) {
-  form.require_direct_header = checked
+function handleRequireDirectHeaderChange(checked: SwitchValue) {
+  form.require_direct_header = checked === true
   void saveIfNeeded()
 }
 
@@ -1416,7 +1416,7 @@ async function loadDesktopApiPrefs() {
   }
 }
 
-const onDesktopBindPublicChange = async (value: boolean) => {
+const onDesktopBindPublicChange = async (value: SwitchValue) => {
   const next = value === true
   const fn = (window as AIKBDesktopWindow).go?.main?.App?.SetDesktopHTTPBindPublicSetting
   if (typeof fn !== 'function') return

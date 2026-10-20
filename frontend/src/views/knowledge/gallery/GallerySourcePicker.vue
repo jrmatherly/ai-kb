@@ -2,6 +2,7 @@
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { MessagePlugin } from 'tdesign-vue-next'
+import type { InputValue } from 'tdesign-vue-next'
 import { listKnowledgeFiles } from '@/api/knowledge-base'
 
 // GallerySourcePicker is the "filter by source document" panel of the image
@@ -219,7 +220,7 @@ function formatTime(raw: string): string {
       :placeholder="t(`${NS}.sourceFilterSearch`)"
       :aria-label="t(`${NS}.sourceFilterSearch`)"
       class="gsp-search"
-      @change="(v: string) => onKeywordChange(String(v ?? ''))"
+      @change="(v: InputValue) => onKeywordChange(String(v ?? ''))"
     >
       <template #prefix-icon><t-icon name="search" size="16px" /></template>
     </t-input>

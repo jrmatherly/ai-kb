@@ -13,6 +13,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import type { DropdownOption } from 'tdesign-vue-next'
 import type { CustomAgent } from '@/api/agent'
 
 const props = defineProps<{
@@ -46,8 +47,8 @@ const options = computed(() => [
   })),
 ])
 
-function onSelect(data: { value?: string }) {
-  emit('update:modelValue', data?.value || '')
+function onSelect(data: DropdownOption) {
+  emit('update:modelValue', typeof data?.value === 'string' ? data.value : '')
 }
 </script>
 

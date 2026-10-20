@@ -72,7 +72,7 @@
           <t-popup
             v-model="addVisible"
             trigger="click"
-            placement="bottom-end"
+            placement="bottom-right"
             destroy-on-close
             overlay-class-name="memory-add-popup-overlay"
           >
@@ -382,7 +382,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { MessagePlugin } from 'tdesign-vue-next'
+import { MessagePlugin, type SwitchValue } from 'tdesign-vue-next'
 import { useI18n } from 'vue-i18n'
 import {
   clearMemoryItems,
@@ -745,9 +745,9 @@ const handlePageChange = async (current: number) => {
   await loadList()
 }
 
-const handleEnabledChange = async (value: boolean) => {
+const handleEnabledChange = async (value: SwitchValue) => {
   try {
-    const response = await updateMemoryEnabled(value)
+    const response = await updateMemoryEnabled(value === true)
     settings.value = response.data
     userEnabled.value = response.data.user_enabled
     MessagePlugin.success(

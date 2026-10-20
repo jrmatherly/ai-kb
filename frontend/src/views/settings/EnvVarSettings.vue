@@ -3,7 +3,7 @@
     <div class="section-header">
       <div class="section-header__titlewrap">
         <h2>{{ envText('title') }}</h2>
-        <t-popup placement="bottom-start" trigger="hover" :overlay-inner-style="{ maxWidth: '380px' }">
+        <t-popup placement="bottom-left" trigger="hover" :overlay-inner-style="{ maxWidth: '380px' }">
           <button type="button" class="hint-trigger" :aria-label="envText('helpAria')">
             <t-icon name="help-circle" size="16px" />
           </button>

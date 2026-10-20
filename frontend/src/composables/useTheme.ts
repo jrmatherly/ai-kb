@@ -69,7 +69,7 @@ function applyTheme(mode: ThemeMode) {
 }
 
 export function useTheme() {
-  function setTheme(mode: ThemeMode): boolean {
+  function setTheme(mode: unknown): boolean {
     if (mode !== 'light' && mode !== 'dark' && mode !== 'system') return false
     currentTheme.value = mode
     savePreference(THEME_KEY, mode)

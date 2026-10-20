@@ -15,6 +15,10 @@ import { notifyLoginSuccess } from '@/utils/loginNotify'
 import { renderWorkspaceNotifyContent } from '@/utils/workspaceNotifyContent'
 
 import enUSConfig from 'tdesign-vue-next/esm/locale/en_US'
+import type { GlobalConfigProvider } from 'tdesign-vue-next'
+
+// The locale module is typed with readonly tuples that GlobalConfigProvider declares as mutable.
+const globalConfig = enUSConfig as unknown as GlobalConfigProvider
 
 const { t, tm } = useI18n()
 const { formatRole, roleIcon } = useRoleLabel()
@@ -265,7 +269,7 @@ onUnmounted(() => {
 
 </script>
 <template>
-  <t-config-provider :globalConfig="enUSConfig">
+  <t-config-provider :globalConfig="globalConfig">
     <div id="app">
       <RouterView />
       <ManualKnowledgeEditor v-if="manualEditorUsed" />

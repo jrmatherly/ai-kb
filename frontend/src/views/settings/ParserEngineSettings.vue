@@ -441,8 +441,11 @@ const ENGINE_DOC_LINKS: Record<string, string> = {
   paddleocr_vl_cloud: 'https://aistudio.baidu.com/paddleocr',
 }
 
+// The server may send null for a flag; loadConfig coalesces every field, so the form never holds one.
+type ParserForm = { [K in keyof ParserEngineConfig]: Exclude<ParserEngineConfig[K], null> }
+
 /** Parser engine config defaults (matching the DocReader/Python side) */
-const DEFAULT_PARSER_CONFIG: ParserEngineConfig = {
+const DEFAULT_PARSER_CONFIG: ParserForm = {
   docreader_addr: '',
   docreader_transport: 'grpc',
   mineru_endpoint: '',
@@ -477,7 +480,7 @@ const connected = ref(false)
 const loading = ref(true)
 const error = ref('')
 
-const config = ref<ParserEngineConfig>({ ...DEFAULT_PARSER_CONFIG })
+const config = ref<ParserForm>({ ...DEFAULT_PARSER_CONFIG })
 const saving = ref(false)
 const saveMessage = ref('')
 const saveSuccess = ref(false)
