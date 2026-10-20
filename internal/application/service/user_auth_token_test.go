@@ -123,6 +123,8 @@ func (s *stubUserRepoForAuth) ListSystemAdmins(context.Context, int, int) ([]*ty
 	return nil, 0, nil
 }
 
+func (s *stubUserRepoForAuth) GrantSystemAdmin(context.Context, string) error { return nil }
+
 func (s *stubUserRepoForAuth) RevokeSystemAdmin(context.Context, string, string) (*types.User, error) {
 	return nil, nil
 }

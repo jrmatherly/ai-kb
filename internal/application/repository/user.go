@@ -289,6 +289,14 @@ func (r *userRepository) SetUserActive(ctx context.Context, userID, actorID stri
 //     surfaced `user` is the unchanged DB row.
 //   - (nil, ErrCannotRevokeSelf | ErrLastSystemAdmin | ErrUserNotFound | …):
 //     hard rejection; no row written.
+//
+// GrantSystemAdmin writes the flag alone: the OIDC group sync calls it with a row loaded at sign-in, and a
+// full-struct save would write every other stale column along with it.
+func (r *userRepository) GrantSystemAdmin(ctx context.Context, userID string) error {
+	return r.db.WithContext(ctx).Model(&types.User{}).Where("id = ?", userID).
+		UpdateColumn("is_system_admin", true).Error
+}
+
 func (r *userRepository) RevokeSystemAdmin(ctx context.Context, userID, actorID string) (*types.User, error) {
 	if userID == actorID {
 		return nil, ErrCannotRevokeSelf
