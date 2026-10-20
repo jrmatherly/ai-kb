@@ -93,6 +93,17 @@ func TestUpdateTenant_SlugRequiresSystemAdmin(t *testing.T) {
 	assert.Equal(t, "Renamed", svc.updated.Name)
 }
 
+func TestUpdateTenant_UnchangedSlugIsNotASlugChange(t *testing.T) {
+	svc := newSlugService()
+	home := "home"
+	svc.tenant.Slug = &home
+	w := putTenant(t, slugTestEngine(svc, false), `{"name":"Renamed","slug":"home"}`)
+	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Empty(t, svc.setCalls)
+	require.NotNil(t, svc.updated)
+	assert.Equal(t, "Renamed", svc.updated.Name)
+}
+
 func TestUpdateTenant_SlugRejectsInvalid(t *testing.T) {
 	svc := newSlugService()
 	w := putTenant(t, slugTestEngine(svc, true), `{"slug":"Home KB"}`)
@@ -127,6 +138,8 @@ func TestUpdateTenant_SlugIsSavedOnTheTenant(t *testing.T) {
 
 func TestUpdateTenant_SlugClearStoresNull(t *testing.T) {
 	svc := newSlugService()
+	home := "home"
+	svc.tenant.Slug = &home
 	w := putTenant(t, slugTestEngine(svc, true), `{"slug":""}`)
 	assert.Equal(t, http.StatusOK, w.Code)
 	require.Len(t, svc.setCalls, 1)

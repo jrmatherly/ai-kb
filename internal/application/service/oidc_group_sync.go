@@ -164,10 +164,19 @@ func (s *userService) syncOIDCGroups(
 		switch {
 		case wanted && !member:
 			if _, err := s.memberService.AddMember(ctx, user.ID, id, want, nil); err != nil {
-				if errors.Is(err, ErrMembershipAlreadyExists) {
-					continue
+				if !errors.Is(err, ErrMembershipAlreadyExists) {
+					return res, fmt.Errorf("add member %d: %w", id, err)
 				}
-				return res, fmt.Errorf("add member %d: %w", id, err)
+				// Joined between ListByUser and here (an invitation, a concurrent sign-in): apply the role.
+				if err := s.memberService.UpdateRole(ctx, user.ID, id, want); err != nil {
+					if errors.Is(err, ErrLastOwner) {
+						res.Skipped = append(res.Skipped, fmt.Sprintf("last_owner:%d", id))
+						continue
+					}
+					return res, fmt.Errorf("update role %d: %w", id, err)
+				}
+				res.RoleChanged = append(res.RoleChanged, id)
+				continue
 			}
 			res.Added = append(res.Added, id)
 		case wanted && got != want:

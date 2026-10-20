@@ -617,10 +617,17 @@ func (s *userService) applyOIDCGroups(
 		}
 	}
 	if res == nil {
-		logger.Warnf(ctx,
-			"OIDC group mapping is configured but the sign-in of %s carried no %q claim; "+
-				"add groups to OIDC_AUTH_SCOPES",
-			user.ID, settings.Claim)
+		if _, present := claims[settings.Claim]; present {
+			logger.Warnf(ctx,
+				"OIDC group mapping is configured but the %q claim of %s is neither a list of strings nor a "+
+					"comma-separated string; no groups were applied",
+				settings.Claim, user.ID)
+		} else {
+			logger.Warnf(ctx,
+				"OIDC group mapping is configured but the sign-in of %s carried no %q claim; "+
+					"add groups to OIDC_AUTH_SCOPES",
+				user.ID, settings.Claim)
+		}
 	}
 	return res
 }

@@ -222,13 +222,15 @@ func TestSyncOIDCGroups_LastOwnerKept(t *testing.T) {
 	assert.Empty(t, res.Removed)
 }
 
-func TestSyncOIDCGroups_AlreadyMemberIsNoop(t *testing.T) {
+func TestSyncOIDCGroups_AlreadyMemberGetsTheRole(t *testing.T) {
 	svc, _, _, members := syncFixture(t)
 	members.addErr = ErrMembershipAlreadyExists
 	res, err := svc.syncOIDCGroups(context.Background(), &types.User{ID: "u1"}, claims("eng"), mapped)
 	require.NoError(t, err)
 	assert.Empty(t, res.Added)
 	assert.Empty(t, res.Skipped)
+	assert.Equal(t, []uint64{10}, res.RoleChanged)
+	assert.Contains(t, members.calls, memberCall{"update", 10, types.TenantRoleAdmin})
 }
 
 func TestSyncOIDCGroups_UnknownWorkspaceIsSkipped(t *testing.T) {

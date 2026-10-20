@@ -654,11 +654,18 @@ func (h *TenantHandler) UpdateTenant(c *gin.Context) {
 	var slug *string
 	if req.Slug != nil {
 		trimmed := strings.TrimSpace(*req.Slug)
-		if err := checkSlugChange(ctx, trimmed); err != nil {
-			_ = c.Error(err)
-			return
+		current := ""
+		if existing.Slug != nil {
+			current = *existing.Slug
 		}
-		slug = &trimmed
+		// A client that round-trips the tenant sends the slug back unchanged; only a change is gated.
+		if trimmed != current {
+			if err := checkSlugChange(ctx, trimmed); err != nil {
+				_ = c.Error(err)
+				return
+			}
+			slug = &trimmed
+		}
 	}
 
 	logger.Infof(ctx, "Updating tenant, ID: %d, Name: %s", id, secutils.SanitizeForLog(existing.Name))
