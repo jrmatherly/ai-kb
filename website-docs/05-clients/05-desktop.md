@@ -177,7 +177,7 @@ Notes:
 - `build:tags` is `desktop`. Only a program built with this tag contains the Lite host sandbox. Tags passed with `wails build -tags ...` are merged with it.
 - `frontend:dir` points to the repository's `frontend/`. `wailsjsdir` points to `frontend/src`, so the bindings Wails generates land in `frontend/src/wailsjs/` (`go/main/App.js`, `App.d.ts` and `runtime/`).
 - **Frontend build**: the packaging script builds the frontend separately, and the Wails configuration sets no `frontend:build`. The WebView reaches the embedded backend through the reverse proxy.
-- `cmd/desktop/build/` contains `appicon.png` (application icon), `darwin/Info.plist` (a Go template for the macOS bundle that declares `CFBundleIdentifier` <span v-pre>`com.wails.{{.Name}}`</span>, minimum system version 10.13, Retina support and more) and the Windows installer template `windows/installer/project.nsi` (which also installs the third-party license files). `wails build` writes its output to `cmd/desktop/build/bin/`.
+- `cmd/desktop/build/` contains `appicon.png` (application icon), `darwin/Info.plist` (a Go template for the macOS bundle that declares `CFBundleIdentifier` <span v-pre>`com.wails.{{.Name}}`</span>, minimum system version 10.13, Retina support and more) and the Windows installer template `windows/installer/project.nsi`, which also installs the third-party license bundle from `windows/installer/bundle/`: run `scripts/copy-licenses.sh cmd/desktop/build/windows/installer/bundle` before `wails build -nsis`, or makensis fails on the missing files. `wails build` writes its output to `cmd/desktop/build/bin/`.
 
 ## How the frontend detects the desktop environment
 

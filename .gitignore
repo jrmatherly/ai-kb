@@ -36,6 +36,7 @@ logs/
 ai-kb
 ai-kb-lite
 cmd/desktop/build/bin/
+cmd/desktop/build/windows/installer/bundle/
 /models/
 test/data/mswag.txt
 data/files/

@@ -7,11 +7,9 @@ backend and desktop packages. `scripts/copy-licenses.sh` adds checksum-verified
 source archives at packaging time; they are not stored in this Git repository.
 The app image includes the complete bundle in `/app`. The Lite archive and the
 Linux desktop archive include it at their top level, and the macOS application in
-`Contents/Resources`. The ui, docreader and sandbox images carry no bundle; the
-sections below say what they ship. The Windows installer copies `LICENSE`, this
-file and the repository's `licenses/` directory next to the installed executable.
-That directory holds no source archives, so the Windows installer does not carry
-`licenses/sources/mysql-v1.10.1.zip`; obtain it from the links below.
+`Contents/Resources` and the Windows installer next to the installed executable.
+The ui, docreader and sandbox images carry no bundle; the sections below say what
+they ship.
 
 ## Go MySQL Driver
 
@@ -23,8 +21,8 @@ That directory holds no source archives, so the Windows installer does not carry
   `AUTHORS` are preserved in the accompanying source archive.
 - Modifications by AI KB: none. Dialer configuration is in separate AI KB files.
 - Corresponding source, available under MPL-2.0, is included in the app image, the
-  Lite and Linux desktop archives and the macOS application as
-  `licenses/sources/mysql-v1.10.1.zip` (not in the Windows installer). Everyone can obtain it from the
+  Lite and Linux desktop archives, the macOS application and the Windows installer as
+  `licenses/sources/mysql-v1.10.1.zip`. Everyone can obtain it from the
   [Go module proxy](https://proxy.golang.org/github.com/go-sql-driver/mysql/@v/v1.10.1.zip)
   and [upstream repository](https://github.com/go-sql-driver/mysql/tree/v1.10.1).
 

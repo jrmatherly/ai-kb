@@ -299,6 +299,12 @@ jobs:
           go build -p 1 -buildvcs=false -tags "desktop,sqlite_fts5,production" -o _prebuild_tmp.exe . || true
           rm -f _prebuild_tmp.exe
 
+      # The NSIS template packs this bundle; the other platforms run copy-licenses.sh at packaging time.
+      - name: 📜 Stage license bundle (Windows)
+        if: runner.os == 'Windows'
+        shell: bash
+        run: bash ./scripts/copy-licenses.sh cmd/desktop/build/windows/installer/bundle
+
       - name: 🏗️ Build desktop app
         shell: bash
         run: |

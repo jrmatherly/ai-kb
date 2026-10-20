@@ -90,11 +90,12 @@ Section
 
     !insertmacro wails.files
 
-    ; Paths are relative to cmd/desktop/build/windows/installer.
-    File "..\..\..\..\..\LICENSE"
-    File "..\..\..\..\..\THIRD_PARTY_NOTICES.md"
+    ; bundle\ is written by scripts/copy-licenses.sh before the build (notices plus the
+    ; verified source archives); makensis fails here when it was not staged.
+    File "bundle\LICENSE"
+    File "bundle\THIRD_PARTY_NOTICES.md"
     SetOutPath "$INSTDIR\licenses"
-    File /r "..\..\..\..\..\licenses\*"
+    File /r "bundle\licenses\*"
     SetOutPath $INSTDIR
 
     CreateShortcut "$SMPROGRAMS\${INFO_PRODUCTNAME}.lnk" "$INSTDIR\${PRODUCT_EXECUTABLE}"
