@@ -50,7 +50,7 @@ Beyond the three modes:
 - **Memory and curation**: cross-session long-term memory keeps the profile, preferences and facts a user has confirmed. Folder uploads keep their directory tree, and retrieval chunks can be edited, diffed and rolled back.
 - **Data sources and formats**: auto-sync from Feishu wiki / Feishu Drive / Confluence / GitLab / Tencent IMA / Notion / Yuque / DingTalk Docs / Seafile / RSS, with more on the way. 10+ document formats including PDF, Word, images, Excel and XMind; Office files are parsed in-process by anydoc.
 - **Channels and integrations**: Q&A in WeCom, Feishu, Slack, Telegram and other IM apps; an embed widget for external websites; a built-in MCP Server for Cursor, Claude and other AI tools; scoped API keys with a principal model for programmatic access.
-- **Models**: 30 built-in provider definitions with a generated model catalog, including OpenAI, Anthropic, DeepSeek, Qwen (Alibaba Cloud), Zhipu, Hunyuan, Gemini, MiniMax, NVIDIA and LiteLLM, plus Ollama for local models.
+- **Models**: 30 built-in provider definitions (WeKnoraCloud among them, opt-in with `AIKB_WEKNORACLOUD_ENABLED=true`) with a generated model catalog, including OpenAI, Anthropic, DeepSeek, Qwen (Alibaba Cloud), Zhipu, Hunyuan, Gemini, MiniMax, NVIDIA and LiteLLM, plus Ollama for local models.
 - **Permissions and operations**: multi-workspace RBAC (four roles, per-resource ownership, per-workspace audit log), several storage instances per workspace, a runtime task-queue dashboard with worker-pool governance, and Langfuse tracing for agent steps, token usage and pipelines.
 - **Deployment**: LLMs, vector databases and storage backends are all swappable. Deploy locally or on a private cloud and keep the data in your own environment.
 
@@ -225,7 +225,7 @@ A modular pipeline from document parsing, vectorization and retrieval to LLM inf
 
 | Component | Options |
 | ----------- | --------- |
-| [LLMs](https://ai-kb.matherly.net/docs/03-features/06-models) | 30 built-in providers plus Ollama, including OpenAI / Azure OpenAI / Anthropic / DeepSeek / Qwen / Zhipu / Hunyuan / Doubao / Gemini / MiniMax / NVIDIA / SiliconFlow / OpenRouter / LiteLLM |
+| [LLMs](https://ai-kb.matherly.net/docs/03-features/06-models) | 30 built-in providers (one, WeKnoraCloud, opt-in) plus Ollama, including OpenAI / Azure OpenAI / Anthropic / DeepSeek / Qwen / Zhipu / Hunyuan / Doubao / Gemini / MiniMax / NVIDIA / SiliconFlow / OpenRouter / LiteLLM |
 | Embeddings | Ollama for local models, and OpenAI-compatible remote APIs from the provider catalog (Zhipu, Jina, Cohere, Qwen and others) |
 | Vector databases | PostgreSQL (pgvector) / Elasticsearch / OpenSearch / Milvus / Weaviate / Qdrant / Apache Doris / Tencent VectorDB |
 | [Object storage](https://ai-kb.matherly.net/docs/03-features/19-storage-backends) | Local / Tencent Cloud COS / MinIO / AWS S3 / Volcengine TOS / Alibaba Cloud OSS / Kingsoft Cloud KS3 / Huawei Cloud OBS |
@@ -299,7 +299,7 @@ The documentation site and product homepage are built from [`website-docs/`](./w
 
 ## Contributing
 
-Welcome to submit [Issues](https://github.com/jrmatherly/ai-kb/issues) or Pull Requests.
+[Issues](https://github.com/jrmatherly/ai-kb/issues) and pull requests are welcome.
 
 - **Process:** Fork → Create branch → Commit changes → Open PR
 - **Standards:** Format code with `gofmt`, follow [Conventional Commits](https://www.conventionalcommits.org/) (`feat:` / `fix:` / `docs:` / `test:` / `refactor:`)

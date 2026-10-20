@@ -38,7 +38,7 @@ All notable changes to this project will be documented in this file.
 - **CHANGED**: Extension releases no longer claim the GitHub "Latest" flag, so the desktop updater resolves to a product release; the extension page links to a release search that returns results.
 - **CHANGED**: The CLI reports its version from product `v*` tags only; DuckDuckGo web search queries the worldwide region.
 
-### Fixes
+### Bug Fixes
 
 - **FIXED**: `ai-kb-lite` loads its own `config/config.yaml` by explicit path (`AIKB_CONFIG_FILE`), so an `aikb` CLI profile at `~/.config/aikb/config.yaml` no longer makes the server panic at start.
 - **FIXED**: The API Integration page warns instead of erroring when signed-token mode is chosen before an HMAC secret exists; the audit empty states say where rows went.
