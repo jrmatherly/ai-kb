@@ -229,6 +229,8 @@ func TestProcessChunksSkipsEmbeddingFailureWriteWhenSourceReplaced(t *testing.T)
 // A KB with vector and keyword indexing both off never resolves an embedder,
 // so the guard above must not fire for it.
 func TestProcessChunksSkipsEmbeddingModelWhenIndexingDisabled(t *testing.T) {
+	// A shell with RETRIEVE_DRIVER set gives the tenant default engines, which need a registry this test does not wire.
+	t.Setenv("RETRIEVE_DRIVER", "")
 	knowledge := &types.Knowledge{
 		ID:              "knowledge-1",
 		TenantID:        1,
