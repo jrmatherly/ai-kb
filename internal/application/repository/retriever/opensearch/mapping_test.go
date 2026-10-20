@@ -1,24 +1,16 @@
 package opensearch
 
 import (
-	"encoding/json"
+	"strings"
 	"testing"
-
-	osapi "github.com/opensearch-project/opensearch-go/v4/opensearchapi"
 )
 
-// Decodes through the SDK type, since opensearch-go v4.7 moved the index map
-// behind GetIndices and its own UnmarshalJSON.
-func TestExtractMappingFingerprintFromResp(t *testing.T) {
+func TestExtractMappingFingerprintFromBody(t *testing.T) {
 	body := `{"kb_a":{"mappings":{"properties":{"embedding":{"type":"knn_vector","dimension":768,
 		"method":{"name":"hnsw","engine":"faiss","space_type":"innerproduct",
 		"parameters":{"m":16,"ef_construction":128}}}}}}}`
-	var resp osapi.MappingGetResp
-	if err := json.Unmarshal([]byte(body), &resp); err != nil {
-		t.Fatal(err)
-	}
 
-	got, err := extractMappingFingerprintFromResp(&resp, "kb_a")
+	got, err := extractMappingFingerprintFromBody(strings.NewReader(body), "kb_a")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -27,7 +19,10 @@ func TestExtractMappingFingerprintFromResp(t *testing.T) {
 		t.Fatalf("got %+v, want %+v", got, want)
 	}
 
-	if _, err := extractMappingFingerprintFromResp(&resp, "kb_missing"); err == nil {
+	if _, err := extractMappingFingerprintFromBody(strings.NewReader(body), "kb_missing"); err == nil {
 		t.Fatal("missing index: want error")
+	}
+	if _, err := extractMappingFingerprintFromBody(nil, "kb_a"); err == nil {
+		t.Fatal("empty body: want error")
 	}
 }

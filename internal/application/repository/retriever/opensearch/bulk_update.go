@@ -8,7 +8,7 @@ import (
 	"io"
 	"sort"
 
-	osapi "github.com/opensearch-project/opensearch-go/v4/opensearchapi"
+	osapi "github.com/opensearch-project/opensearch-go/v5/opensearchapi"
 )
 
 // BatchUpdateChunkEnabledStatus flips is_enabled for the given chunks. The
@@ -88,13 +88,10 @@ func (r *Repository) updateByQueryScript(
 	if err != nil {
 		return fmt.Errorf("opensearch: marshal update_by_query body: %w", err)
 	}
-	// Q2: UpdateByQueryParams.Refresh is *bool - the wire value "wait_for" is
-	// not expressible via the typed SDK, so we force an immediate refresh.
-	refresh := true
-	resp, err := r.client.UpdateByQuery(ctx, osapi.UpdateByQueryReq{
-		Indices: []string{r.baseIndex + "_*"},
-		Body:    bytes.NewReader(body),
-		Params:  osapi.UpdateByQueryParams{Refresh: &refresh},
+	resp, err := r.client.UpdateByQuery(ctx, &osapi.UpdateByQueryReq{
+		Indices:    []string{r.baseIndex + "_*"},
+		BodyReader: bytes.NewReader(body),
+		Params:     &osapi.UpdateByQueryParams{Refresh: "true"},
 	})
 	if err != nil {
 		return wrapTransport(err)

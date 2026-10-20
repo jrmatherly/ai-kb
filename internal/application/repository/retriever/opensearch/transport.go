@@ -6,8 +6,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/opensearch-project/opensearch-go/v4"
-	osapi "github.com/opensearch-project/opensearch-go/v4/opensearchapi"
+	"github.com/opensearch-project/opensearch-go/v5"
+	"github.com/opensearch-project/opensearch-go/v5/errmask"
+	osapi "github.com/opensearch-project/opensearch-go/v5/opensearchapi"
 
 	"github.com/jrmatherly/ai-kb/internal/types"
 	secutils "github.com/jrmatherly/ai-kb/internal/utils"
@@ -39,15 +40,38 @@ func NewOpenSearchClient(cfg *types.ConnectionConfig) (*osapi.Client, error) {
 	if err := secutils.ValidateURLForSSRF(cfg.Addr); err != nil {
 		return nil, fmt.Errorf("opensearch: address failed SSRF validation: %w", err)
 	}
+	return osapi.NewClient(buildClientConfig(cfg))
+}
+
+// buildClientConfig is the client configuration NewOpenSearchClient hands
+// to the SDK, kept separate so tests can pin the discovery and
+// partial-failure settings without a cluster.
+func buildClientConfig(cfg *types.ConnectionConfig) osapi.Config {
 	transport := buildHTTPTransport(cfg.InsecureSkipVerify)
-	return osapi.NewClient(osapi.Config{
-		Client: opensearch.Config{
-			Addresses: []string{cfg.Addr},
-			Username:  cfg.Username,
-			Password:  cfg.Password,
-			Transport: &secutils.SSRFValidatingRoundTripper{Base: transport},
-		},
+	return pinnedClientConfig(opensearch.Config{
+		Addresses: []string{cfg.Addr},
+		Username:  cfg.Username,
+		Password:  cfg.Password,
+		Transport: &secutils.SSRFValidatingRoundTripper{Base: transport},
 	})
+}
+
+// pinnedClientConfig turns off the SDK behaviour this driver must not
+// inherit. Tests build their clients through it too, so a test server sees
+// only the requests the code under test sends.
+func pinnedClientConfig(client opensearch.Config) osapi.Config {
+	// Explicit false: nil inherits on-start discovery from OPENSEARCH_GO_ROUTER.
+	client.DiscoverNodesOnStart = new(false)
+	// Negative disables rediscovery: requests go only to the address the
+	// operator configured and the SSRF transport validated.
+	client.DiscoverNodesInterval = -1
+	return osapi.Config{
+		Client: client,
+		// Partial failures stay in the response body: inspectBulkResponse and
+		// inspectByQueryResult reject them, copyScanBatch fails on a failed
+		// shard, and search logs one. Unmasked, every partial search would error.
+		Errors: errmask.New(errmask.All),
+	}
 }
 
 // buildHTTPTransport constructs the TLS-hardened, pool-tuned

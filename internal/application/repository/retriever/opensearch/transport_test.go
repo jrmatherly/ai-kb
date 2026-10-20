@@ -5,6 +5,8 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/opensearch-project/opensearch-go/v5/errmask"
+
 	"github.com/jrmatherly/ai-kb/internal/types"
 )
 
@@ -133,5 +135,23 @@ func TestBuildHTTPTransport_PoolTuning(t *testing.T) {
 	}
 	if tr.ExpectContinueTimeout == 0 {
 		t.Error("ExpectContinueTimeout must be set (avoids 100-continue stalls)")
+	}
+}
+
+// TestBuildClientConfig_DisablesDiscovery pins the v5 defaults we turn
+// off: node discovery would send requests to publish addresses the
+// operator never configured, and a nil error mask would turn partial
+// failures into errors where the driver reads them from the body.
+func TestBuildClientConfig_DisablesDiscovery(t *testing.T) {
+	t.Parallel()
+	cfg := buildClientConfig(&types.ConnectionConfig{Addr: "https://opensearch.example.com:9200"})
+	if cfg.Client.DiscoverNodesOnStart == nil || *cfg.Client.DiscoverNodesOnStart {
+		t.Fatalf("DiscoverNodesOnStart must be an explicit false, got %v", cfg.Client.DiscoverNodesOnStart)
+	}
+	if cfg.Client.DiscoverNodesInterval >= 0 {
+		t.Fatalf("DiscoverNodesInterval must be negative (disabled), got %v", cfg.Client.DiscoverNodesInterval)
+	}
+	if cfg.Errors == nil || *cfg.Errors != errmask.All {
+		t.Fatalf("Errors must mask every partial-failure category, got %v", cfg.Errors)
 	}
 }

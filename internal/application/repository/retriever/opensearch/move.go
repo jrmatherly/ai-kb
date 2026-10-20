@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"io"
 
-	osapi "github.com/opensearch-project/opensearch-go/v4/opensearchapi"
+	osapi "github.com/opensearch-project/opensearch-go/v5/opensearchapi"
 )
 
 // MoveKnowledgeIndices changes every vector for the source document, including
@@ -33,10 +33,9 @@ func (r *Repository) MoveKnowledgeIndices(
 	if err != nil {
 		return fmt.Errorf("opensearch: marshal move: %w", err)
 	}
-	refresh := true
-	resp, err := r.client.UpdateByQuery(ctx, osapi.UpdateByQueryReq{
-		Indices: []string{r.baseIndex + "_*"}, Body: bytes.NewReader(body),
-		Params: osapi.UpdateByQueryParams{Refresh: &refresh},
+	resp, err := r.client.UpdateByQuery(ctx, &osapi.UpdateByQueryReq{
+		Indices: []string{r.baseIndex + "_*"}, BodyReader: bytes.NewReader(body),
+		Params: &osapi.UpdateByQueryParams{Refresh: "true"},
 	})
 	if err != nil {
 		return wrapTransport(err)

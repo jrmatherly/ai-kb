@@ -16,6 +16,8 @@ func TestConnection(ctx context.Context, cfg *types.ConnectionConfig) error {
 	if err != nil {
 		return err
 	}
+	// A v5 client polls the cluster until it is closed.
+	defer func() { _ = client.Client.Close() }()
 	if err := probeVersion(ctx, client); err != nil {
 		return err
 	}

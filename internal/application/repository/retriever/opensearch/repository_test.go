@@ -15,8 +15,8 @@ import (
 	"sync/atomic"
 	"testing"
 
-	"github.com/opensearch-project/opensearch-go/v4"
-	osapi "github.com/opensearch-project/opensearch-go/v4/opensearchapi"
+	"github.com/opensearch-project/opensearch-go/v5"
+	osapi "github.com/opensearch-project/opensearch-go/v5/opensearchapi"
 
 	"github.com/jrmatherly/ai-kb/internal/types"
 	"github.com/jrmatherly/ai-kb/internal/types/interfaces"
@@ -36,15 +36,14 @@ func newTestClient(t *testing.T, url string) *osapi.Client {
 	// its own pool so parallel server cleanup cannot interrupt its requests.
 	transport := http.DefaultTransport.(*http.Transport).Clone()
 	t.Cleanup(transport.CloseIdleConnections)
-	c, err := osapi.NewClient(osapi.Config{
-		Client: opensearch.Config{
-			Addresses: []string{url},
-			Transport: transport,
-		},
-	})
+	c, err := osapi.NewClient(pinnedClientConfig(opensearch.Config{
+		Addresses: []string{url},
+		Transport: transport,
+	}))
 	if err != nil {
 		t.Fatalf("newTestClient: %v", err)
 	}
+	t.Cleanup(func() { _ = c.Client.Close() })
 	return c
 }
 
@@ -79,7 +78,16 @@ func TestNewTestClient_IsolatesTransportFromOtherServers(t *testing.T) {
 // caller supplies the http handler that simulates the cluster.
 func newTestRepo(t *testing.T, handler http.HandlerFunc) (*Repository, *httptest.Server) {
 	t.Helper()
-	ts := httptest.NewServer(handler)
+	// The v5 transport probes GET / asynchronously on a new client; answer
+	// it here so handlers see only the calls under test.
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodGet && r.URL.Path == "/" {
+			_, _ = w.Write([]byte(`{"name":"test","cluster_name":"test",` +
+				`"version":{"number":"3.9.0","distribution":"opensearch"}}`))
+			return
+		}
+		handler(w, r)
+	}))
 	client := newTestClient(t, ts.URL)
 	repo := &Repository{
 		client:    client,
@@ -846,7 +854,7 @@ func TestProbeVersion_HandlesPreReleaseSuffix(t *testing.T) {
 // probeKNNPlugin - multi-node coverage
 // ============================================================================
 
-func pluginsHandler(rows []osapi.CatPluginResp) http.HandlerFunc {
+func pluginsHandler(rows []catPluginRow) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		_ = json.NewEncoder(w).Encode(rows)
@@ -855,7 +863,7 @@ func pluginsHandler(rows []osapi.CatPluginResp) http.HandlerFunc {
 
 func TestProbeKNNPlugin_AllNodesPresent(t *testing.T) {
 	t.Parallel()
-	ts := httptest.NewServer(pluginsHandler([]osapi.CatPluginResp{
+	ts := httptest.NewServer(pluginsHandler([]catPluginRow{
 		{Name: "node-1", Component: "opensearch-knn"},
 		{Name: "node-1", Component: "opensearch-sql"},
 		{Name: "node-2", Component: "opensearch-knn"},
@@ -869,7 +877,7 @@ func TestProbeKNNPlugin_AllNodesPresent(t *testing.T) {
 
 func TestProbeKNNPlugin_OneNodeMissing(t *testing.T) {
 	t.Parallel()
-	ts := httptest.NewServer(pluginsHandler([]osapi.CatPluginResp{
+	ts := httptest.NewServer(pluginsHandler([]catPluginRow{
 		{Name: "node-1", Component: "opensearch-knn"},
 		{Name: "node-2", Component: "opensearch-sql"}, // missing knn
 		{Name: "node-3", Component: "opensearch-knn"},
@@ -886,7 +894,7 @@ func TestProbeKNNPlugin_OneNodeMissing(t *testing.T) {
 
 func TestProbeKNNPlugin_EmptyResponse(t *testing.T) {
 	t.Parallel()
-	ts := httptest.NewServer(pluginsHandler([]osapi.CatPluginResp{}))
+	ts := httptest.NewServer(pluginsHandler([]catPluginRow{}))
 	defer ts.Close()
 	err := probeKNNPlugin(context.Background(), newTestClient(t, ts.URL))
 	if !errors.Is(err, ErrConfigInvalid) {

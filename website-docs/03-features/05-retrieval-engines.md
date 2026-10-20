@@ -159,7 +159,7 @@ The engine type constants are in `internal/types/retriever.go`: `postgres`, `ela
 - **Vector retrieval**: the k-NN plugin `knn` query (`query.go buildKNNQuery`). The k-NN `COSINESIMIL` space type returns `(1+cosine)/2`. The driver pushes the threshold down as `min_score = (1+threshold)/2` and converts results back to cosine similarity (`2*score-1`), the same scale as the other engines.
 - **Keyword retrieval**: `match` on content (BM25). Hybrid retrieval does not use the native OS hybrid pipeline; fusion is left to the RRF layer above (stated in a `query.go` comment).
 - **Indexing**: `mapping.go` declares the mapping (a `knn_vector` field with method and engine parameters); at startup the mapping fingerprint is checked and drift reports `ErrConfigInvalid`; alias management plus `copy.go` support reindex; index creation and reindex events go to the audit log through the AuditSink.
-- Configuration includes `OPENSEARCH_INSECURE_SKIP_VERIFY` and an SSRF-validating transport layer (`transport.go`).
+- Configuration includes `OPENSEARCH_INSECURE_SKIP_VERIFY` and an SSRF-validating transport layer (`transport.go`). Node discovery is off, so requests go only to `OPENSEARCH_ADDR`. The client polls `GET /_nodes/_local/stats` every few seconds; set `OPENSEARCH_GO_NODE_STATS_INTERVAL=-1` to turn that off, for example under a role without `cluster:monitor/nodes/stats`.
 
 #### Qdrant
 
