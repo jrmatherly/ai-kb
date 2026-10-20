@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Features
+
+- **CHANGED**: The Browser Extension page's "Get the extension" button opens the Chrome Web Store listing, live since extension 1.0.2; the release packages for Edge and manual installs stay linked in the footer.
+
 ### Bug Fixes
 
 - **FIXED**: The IM Integration page describes only the platforms `AIKB_IM_PLATFORMS` allows, a new channel starts on the first allowed platform with that platform's mode and credential defaults, and Add Channel is disabled when the allow-list is empty (previously the form defaulted to WeCom, which the server refused).

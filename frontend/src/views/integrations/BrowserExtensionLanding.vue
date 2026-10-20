@@ -7,7 +7,7 @@
       <IntegrationExternalCta
         :label="$t('integrations.browser.installCta')"
         :hint="$t('integrations.browser.installHint')"
-        @click="openExternal(EXTENSION_RELEASES_URL)"
+        @click="openExternal(EXTENSION_STORE_URL)"
       >
         <template #icon>
           <t-icon name="extension" size="18px" />
@@ -90,6 +90,9 @@
     <template #footer>
       <div class="landing-footer-bar" role="note">
         <p class="landing-footer-bar__note">{{ $t('integrations.browser.footerNote') }}</p>
+        <a :href="EXTENSION_RELEASES_URL" target="_blank" rel="noopener noreferrer" class="landing-meta">
+          {{ $t('integrations.browser.releases') }}
+        </a>
         <a :href="docsUrl('browserExtension')" target="_blank" rel="noopener noreferrer" class="landing-meta">
           {{ $t('integrations.browser.docs') }}
         </a>
@@ -100,7 +103,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { EXTENSION_RELEASES_URL } from '@/config/integrations'
+import { EXTENSION_RELEASES_URL, EXTENSION_STORE_URL } from '@/config/integrations'
 import { useApiBaseUrlDisplay } from '@/composables/useApiBaseUrlDisplay'
 import { copyWithToast } from '@/utils/clipboard'
 import { docsUrl } from '@/utils/docsUrl'

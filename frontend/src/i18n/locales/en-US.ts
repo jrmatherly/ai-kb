@@ -7328,7 +7328,7 @@ export default {
       title: 'AI KB browser extension',
       subtitle: 'Ask your knowledge bases about the page you are reading, and clip pages, selections and notes into a knowledge base from Chrome or Edge.',
       installCta: 'Get the extension',
-      installHint: 'Opens the release page in a new tab',
+      installHint: 'Opens the Chrome Web Store in a new tab',
       featuresTitle: 'What it does',
       features: {
         qa: {
@@ -7378,6 +7378,7 @@ export default {
       copy: 'Copy',
       copySuccess: 'Server URL copied',
       footerNote: 'Sign-in through your identity provider needs the extension return URLs in OIDC_AUTH_EXTENSION_RETURN_URLS on the server.',
+      releases: 'Release packages for Edge and manual installs',
       docs: 'Browser extension documentation'
     },
     claw: {
