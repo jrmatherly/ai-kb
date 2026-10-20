@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Features
+
+- **ADDED**: Developer ID signing and notarization for the macOS desktop DMGs: `scripts/sign-mac-app.sh` signs the app with the hardened runtime and then the DMG, and notarizes and staples the DMG when an App Store Connect API key is set. The Release Lite workflow imports the repository secrets `MACOS_CERT_P12` and `MACOS_CERT_PASSWORD` into a temporary keychain and passes `APPLE_API_KEY_ID`, `APPLE_API_ISSUER_ID` and `APPLE_API_KEY_P8`; without the certificate secret the DMGs ship unsigned as before. `scripts/package-mac-app.sh` signs the local `.app` when the keychain holds a Developer ID identity. The Lite tarballs and the CLI archives stay unsigned.
+
 ## [2026.10.20.1] - 2026-10-20
 
 ### Bug Fixes
