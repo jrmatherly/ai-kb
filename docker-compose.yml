@@ -806,7 +806,7 @@ services:
   # Data persists in the doris_fe_meta / doris_be_storage volumes.
   # ---------------------------------------------------------------------------
   doris-fe:
-    image: apache/doris:fe-4.1.4.1
+    image: apache/doris:fe-4.1.5@sha256:bd0149d76fd02429ee4ab751f34c16948fbf761a886070489fdebf7b2069305c
     container_name: ai-kb-doris-fe
     hostname: doris-fe
     environment:
@@ -830,7 +830,7 @@ services:
       - doris
 
   doris-be:
-    image: apache/doris:be-4.1.4.1
+    image: apache/doris:be-4.1.5@sha256:10d282e1bd685f8c0d71b3b42bbd0841bbb20909de2cd847923f00378b6b9a11
     container_name: ai-kb-doris-be
     hostname: doris-be
     environment:
