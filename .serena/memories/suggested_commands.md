@@ -20,7 +20,7 @@ Validate
 Release
 
 - `make bump-version [VERSION=YYYY.M.D[.MICRO]]` (also raises the Helm chart patch version, so each product release publishes a chart pinning its image tag), `make bump-lib LIB=dsh-ai-kb|extension|mcp-server|helm-chart PART=patch|minor|major`, `make check-version`.
-- Cut a product release: `make bump-version`, push, `git tag -s v<ver> -m "v<ver>"` and push the tag (signed), then `gh workflow run release-lite.yml -R jrmatherly/ai-kb -f tag=v<ver>`; the run publishes the Lite tarballs, desktop apps and `aikb` archives with attestations, and its `update-tap` job rewrites the tap `jrmatherly/homebrew-ai-kb` (no hand sync). Extension releases never take the Latest flag. Latest product release: v2026.10.18.1 (2026-10-18).
+- Cut a product release: `make bump-version`, push, `git tag -s v<ver> -m "v<ver>"` and push the tag (signed), then `gh workflow run release-lite.yml -R jrmatherly/ai-kb -f tag=v<ver>`; the run publishes the Lite tarballs, desktop apps and `aikb` archives with attestations, signs the macOS DMGs with the Developer ID certificate secrets and notarizes them once the Apple API key secrets exist (`scripts/sign-mac-app.sh`; secret names under "Signing and notarization" in `website-docs/05-clients/05-desktop.md`), and its `update-tap` job rewrites the tap `jrmatherly/homebrew-ai-kb` (no hand sync). Extension releases never take the Latest flag. Latest product release: v2026.10.20.1 (2026-10-20).
 
 Upstream and English-only
 
