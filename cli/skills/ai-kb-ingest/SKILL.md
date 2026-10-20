@@ -2,7 +2,7 @@
 name: ai-kb-ingest
 description: Use when adding material to an AI KB knowledge base through the `aikb` CLI - uploading local files or directories, importing a web page or remote file by URL, writing a Markdown note as a knowledge entry, and waiting for parsing to finish before searching.
 metadata:
-  tested_against: v2026.10.17.1
+  tested_against: v2026.10.18.1
   openclaw:
     requires:
       bins: [aikb]

@@ -2,7 +2,7 @@
 name: ai-kb-shared
 description: Use whenever an agent runs the `aikb` CLI against an AI KB server - connecting with an API key, picking a knowledge base, reading the JSON envelope and exit codes, handling the exit-10 confirmation gate, previewing writes with --dry-run, or managing knowledge bases, documents, sessions, agents and models. Load this first; the other ai-kb-* skills assume it.
 metadata:
-  tested_against: v2026.10.13
+  tested_against: v2026.10.18.1
   openclaw:
     requires:
       bins: [aikb]
