@@ -1,7 +1,7 @@
 import { createApp, h } from 'vue'
 import { createPinia } from 'pinia'
 import { createRouter, createWebHistory, RouterView } from 'vue-router'
-import TDesign, { ConfigProvider, type GlobalConfigProvider } from 'tdesign-vue-next'
+import { ConfigProvider, type GlobalConfigProvider } from 'tdesign-vue-next'
 import enUSConfig from 'tdesign-vue-next/esm/locale/en_US'
 import 'tdesign-vue-next/es/style/index.css'
 import '@/assets/theme/theme.css'
@@ -29,7 +29,6 @@ const app = createApp({
   render: () => h(ConfigProvider, { globalConfig: enUSConfig as unknown as GlobalConfigProvider }, () => [h(RouterView), h(ProtectedResourcePreview)]),
 })
 
-app.use(TDesign)
 app.use(createPinia())
 app.use(router)
 app.use(i18n)

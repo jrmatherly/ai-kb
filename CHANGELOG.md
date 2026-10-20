@@ -99,7 +99,7 @@ All notable changes to this project will be documented in this file.
 ### Changes
 
 - **CHANGED**: The documentation lives at `ai-kb.matherly.net/docs/`, path-mounted on the application host; every link in the app, the extension, the README and the packages points there.
-- **CHANGED**: The main web app (not the embed entry) registers TDesign components per template (`unplugin-vue-components`) and bundles the ones in use into one `vendor-tdesign` chunk instead of installing the whole library at startup: the knowledge list's cold load on Fast 4G goes from about 2.9 s to 2.5 s LCP behind the production nginx.
+- **CHANGED**: Both web entries register TDesign components per template (`unplugin-vue-components`) instead of installing the whole library at startup, and each entry's bundle carries only the components its templates use: the embed page's startup JavaScript drops from 483 to 290 KiB gzipped and the main app's from 514 to 384 KiB.
 - **CHANGED**: The compose default time zone is UTC (`TZ` in `.env` overrides it).
 - **CHANGED**: The compose redis service has a healthcheck and app, langfuse-web and langfuse-worker wait for it.
 - **CHANGED**: `dataset/` is a uv project (`pyproject.toml`, `uv.lock`, 7-day release cooldown); its tests and `qa_dataset.py` run through `uv run --project dataset --locked`.
