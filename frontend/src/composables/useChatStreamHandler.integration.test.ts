@@ -131,6 +131,20 @@ for (const mode of ['ordinary', 'quick-timeline', 'agent'] as const) {
     assert.equal(h.message.artifacts[0].file_name, 'chart.png')
   })
 
+  test(`${mode}: a stream error before any answer marks the turn as failed`, async t => {
+    const h = setup(t, mode)
+    h.send('error', 'no chat model ID available', true)
+    await h.flush()
+    // A plain stream appends the error as answer text; agent timelines carry no
+    // text, so the flag is what the bubble renders there.
+    const flagged = mode === 'ordinary' ? undefined : 'no chat model ID available'
+    assert.equal(h.message.stream_error, flagged)
+    assert.equal(h.message.content, 'no chat model ID available')
+    assert.equal(h.message.is_completed, true)
+    assert.equal(h.isReplying.value, false)
+    assert.deepEqual(h.errors, flagged ? [flagged] : [])
+  })
+
   test(`${mode}: persistence failure preserves the streamed answer and timeline`, async t => {
     const h = setup(t, mode)
     h.send('answer', h.answer, false, { event_id: 'answer' })

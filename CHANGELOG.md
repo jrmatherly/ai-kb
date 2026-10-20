@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file.
 
 ### Bug Fixes
 
+- **FIXED**: An agent turn that ends in a stream error (for example the wiki fix assistant with no chat model configured) now shows the error in the conversation instead of a three-second toast and an empty bubble; a failed save of the answer shows the same row.
 - **FIXED**: The IM Integration page describes only the platforms `AIKB_IM_PLATFORMS` allows, a new channel starts on the first allowed platform with that platform's mode and credential defaults, and Add Channel is disabled when the allow-list is empty (previously the form defaulted to WeCom, which the server refused).
 
 ## [2026.10.18.1] - 2026-10-18

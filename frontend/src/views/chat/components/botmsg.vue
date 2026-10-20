@@ -43,6 +43,10 @@
                     @render-complete-change="emit('render-complete-change', $event)" />
             </template>
             <deepThink :deepSession="session" v-if="session.showThink && !session.isAgentMode"></deepThink>
+            <div v-if="turnError" class="turn-error" role="alert">
+                <t-icon name="error-circle" />
+                <span>{{ turnError }}</span>
+            </div>
         </div>
         <!-- The classic markdown rendering shows only outside Agent mode -->
         <div ref="parentMd" v-if="!session.hideContent && !session.isAgentMode">
@@ -402,6 +406,14 @@ const answerFullyRendered = computed(() =>
 useProtectedImageRecovery(() => parentMd.value, () => protectedFileAccess.value,
     () => !props.session?.isAgentMode && !props.session?.persistence_error && answerFullyRendered.value);
 
+// A plain turn already shows a stream error as its answer body; an agent turn
+// renders only timeline events, so its error needs this row or nothing shows.
+const turnError = computed(() => {
+    const s = props.session;
+    if (!s) return '';
+    return String(s.persistence_error || (s.isAgentMode ? s.stream_error || '' : ''));
+});
+
 watch(
     answerFullyRendered,
     (ready) => {
@@ -548,6 +560,16 @@ onBeforeUnmount(() => {
 // Content wrapper, styled like the Agent mode answer
 .content-wrapper {
     padding: 2px 0;
+}
+
+.turn-error {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    margin: 4px 0;
+    color: var(--td-error-color);
+    font-size: var(--app-text-sm);
+    line-height: 1.5;
 }
 
 .markdown-content {

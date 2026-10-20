@@ -881,6 +881,7 @@ export function useChatStreamHandler(options: UseChatStreamHandlerOptions) {
           if (responseType === 'error' && !toolName) {
             const errorMsg = String(data.content || t('chat.processError'))
             message.content = errorMsg
+            message.stream_error = errorMsg
             message.is_completed = true
             isReplying.value = false
             loading.value = false
@@ -892,6 +893,7 @@ export function useChatStreamHandler(options: UseChatStreamHandlerOptions) {
         } else if (responseType === 'error') {
           const errorMsg = String(data.content || t('chat.processError'))
           message.content = errorMsg
+          message.stream_error = errorMsg
           message.is_completed = true
           isReplying.value = false
           loading.value = false
