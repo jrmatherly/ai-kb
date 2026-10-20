@@ -106,6 +106,8 @@ services:
       # - AIKB_TRUSTED_PROXIES=${AIKB_TRUSTED_PROXIES:-}
       # Run database migrations automatically at startup; false disables it. Enabled by default
       - AUTO_MIGRATE=${AUTO_MIGRATE:-true}
+      # Exit at startup when a migration fails instead of logging and serving
+      - AIKB_MIGRATE_FAIL_FAST=${AIKB_MIGRATE_FAIL_FAST:-false}
       # Externally reachable URL for image and file links in IM channels. To show knowledge base images in IM, do one of:
       # make the storage backend publicly reachable (for example a public MINIO_ENDPOINT), or set this variable to serve <APP_EXTERNAL_URL>/r/<token> (needs nginx to proxy /r/).
       # The default internal MinIO deployment and the local backend need this variable.
@@ -148,6 +150,7 @@ services:
       - DB_USER=${DB_USER:-}
       - DB_PASSWORD=${DB_PASSWORD:-}
       - DB_NAME=${DB_NAME:-}
+      - DB_SSLMODE=${DB_SSLMODE:-disable}
       # Used with the SQLite driver (DB_DRIVER=sqlite); ignored by the postgres driver
       # - DB_PATH=${DB_PATH:-}
       # ========== Langfuse (optional observability) ==========

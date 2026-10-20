@@ -8,7 +8,7 @@ The main application connects to its database through GORM, and the environment 
 
 | `DB_DRIVER` | Description |
 | --- | --- |
-| `postgres` | Standard mode. Works with plain PostgreSQL (+pgvector) and with **ParadeDB** (a PostgreSQL distribution with built-in `pg_search`/BM25; the Compose files default to `paradedb/paradedb:v0.26.1-pg18`). The GORM DSN is built from `DB_HOST/DB_PORT/DB_USER/DB_PASSWORD/DB_NAME` and forces `sslmode=disable` and `TimeZone=UTC` |
+| `postgres` | Standard mode. Works with plain PostgreSQL (+pgvector) and with **ParadeDB** (a PostgreSQL distribution with built-in `pg_search`/BM25; the Compose files default to `paradedb/paradedb:v0.26.1-pg18`). The GORM DSN is built from `DB_HOST/DB_PORT/DB_USER/DB_PASSWORD/DB_NAME` with `sslmode` from `DB_SSLMODE` (default `disable`) and `TimeZone=UTC` |
 | `sqlite` | Lite mode. The path comes from `DB_PATH` (default `./data/aikb.db`), the DSN appends `_journal_mode=WAL&_busy_timeout=5000&_foreign_keys=on`, and the `sqlite-vec` extension is loaded (`sqlite_vec.Auto()`) for vector retrieval |
 | Any other value | Fails immediately with `unsupported database driver` |
 
@@ -355,7 +355,7 @@ The migration tool is **golang-migrate/migrate v4** (`go.mod`: `github.com/golan
 
 - When `AUTO_MIGRATE != "false"` (**on by default**), it calls `database.RunMigrationsWithOptions(migrateDSN, opts)`.
 - When `AUTO_RECOVER_DIRTY != "false"` (**on by default**), it sets `MigrationOptions.AutoRecoverDirty = true` and tries to recover from a dirty state automatically.
-- A failed migration **only logs a Warn and does not stop startup** (on the assumption that migrations may be managed externally). Always check the startup log when troubleshooting.
+- By default a failed migration **only logs a Warn and does not stop startup** (migrations may be managed externally); with `AIKB_MIGRATE_FAIL_FAST=true` startup exits with an error instead. Always check the startup log when troubleshooting.
 - The postgres migrate DSN appends `options=-c app.skip_embedding=<true|false>` (depending on whether `RETRIEVE_DRIVER` includes `postgres`), which decides whether the `embeddings` migrations actually create the table and indexes.
 
 The path selection in `internal/database/migration.go`:
@@ -423,7 +423,7 @@ The application has `AUTO_RECOVER_DIRTY` on by default (`container.go`) and trie
 
 ### Migration "succeeded" but the table is missing
 
-Check the startup log: a failed automatic migration is only a Warn (`Database migration failed ... Continuing with application startup`) and does not stop the process. Also, the `embeddings` objects are gated by `app.skip_embedding`. If `RETRIEVE_DRIVER` does not include `postgres`, the `embeddings` indexes are not built, and that is expected.
+Check the startup log: a failed automatic migration is only a Warn (`Database migration failed ... Continuing with application startup`) and does not stop the process unless `AIKB_MIGRATE_FAIL_FAST` is set. Also, the `embeddings` objects are gated by `app.skip_embedding`. If `RETRIEVE_DRIVER` does not include `postgres`, the `embeddings` indexes are not built, and that is expected.
 
 ### Connection fails because of special characters in the password
 

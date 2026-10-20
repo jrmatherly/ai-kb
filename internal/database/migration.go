@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"net/url"
 	"os"
 	"strings"
 	"sync"
@@ -298,29 +299,42 @@ func recoverFromDirtyState(ctx context.Context, m *migrate.Migrate, dirtyVersion
 	return nil
 }
 
-// GetMigrationVersion returns the current migration version
-func GetMigrationVersion() (uint, bool, error) {
-	dbURL := fmt.Sprintf(
-		"postgres://%s:%s@%s:%s/%s?sslmode=disable",
-		os.Getenv("DB_USER"),
-		os.Getenv("DB_PASSWORD"),
+// SSLMode returns DB_SSLMODE, "disable" when unset, or an error for a value the drivers do not share:
+// lib/pq, which golang-migrate opens the URL with, rejects "allow" and "prefer".
+func SSLMode() (string, error) {
+	mode := os.Getenv("DB_SSLMODE")
+	switch mode {
+	case "":
+		return "disable", nil
+	case "disable", "require", "verify-ca", "verify-full":
+		return mode, nil
+	}
+	return "", fmt.Errorf("invalid DB_SSLMODE %q: expected disable, require, verify-ca or verify-full", mode)
+}
+
+// PostgresGormDSN is the key-value DSN GORM opens, from the DB_* variables. The password is
+// quoted so spaces and quotes survive pgx's keyword/value parser.
+func PostgresGormDSN(sslMode string) string {
+	password := strings.NewReplacer(`\`, `\\`, `'`, `\'`).Replace(os.Getenv("DB_PASSWORD"))
+	return fmt.Sprintf(
+		"host=%s port=%s user=%s password='%s' dbname=%s sslmode=%s TimeZone=UTC",
 		os.Getenv("DB_HOST"),
 		os.Getenv("DB_PORT"),
+		os.Getenv("DB_USER"),
+		password,
 		os.Getenv("DB_NAME"),
+		sslMode,
 	)
+}
 
-	migrationsPath := "file://migrations/versioned"
-
-	m, err := migrate.New(migrationsPath, dbURL)
-	if err != nil {
-		return 0, false, fmt.Errorf("failed to create migrate instance: %w", err)
+// PostgresMigrateURL is the URL DSN golang-migrate opens, from the DB_* variables.
+func PostgresMigrateURL(sslMode string) string {
+	u := url.URL{
+		Scheme:   "postgres",
+		User:     url.UserPassword(os.Getenv("DB_USER"), os.Getenv("DB_PASSWORD")),
+		Host:     os.Getenv("DB_HOST") + ":" + os.Getenv("DB_PORT"),
+		Path:     "/" + os.Getenv("DB_NAME"),
+		RawQuery: "sslmode=" + sslMode,
 	}
-	defer m.Close()
-
-	version, dirty, err := m.Version()
-	if err != nil {
-		return 0, false, err
-	}
-
-	return version, dirty, nil
+	return u.String()
 }
