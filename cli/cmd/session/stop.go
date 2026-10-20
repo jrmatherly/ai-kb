@@ -77,7 +77,7 @@ Symmetric with 'session resume': both key on (session_id, message_id).`,
 		},
 	}
 	cmd.Flags().StringVarP(&opts.MessageID, "message", "m", "",
-		"Assistant message id to stop (the assistant_message_id `chat` returns, or `aikb message list`)")
+		"Assistant message id to stop (the assistant_message_id that chat returns, or see aikb message list)")
 	_ = cmd.MarkFlagRequired("message")
 	cmdutil.AddFormatFlag(cmd, stopFields...)
 	cmdutil.AddDryRunFlag(cmd, &opts.DryRun)

@@ -88,9 +88,9 @@ applying the change.`,
 		},
 	}
 	cmd.Flags().StringVar(&opts.ChatModel, "chat-model", "", "Chat / LLM model id or name for generation & summary "+
-		"(required) - see `aikb model list`")
+		"(required) - see aikb model list")
 	cmd.Flags().StringVar(&opts.EmbeddingModel, "embedding-model", "", "Embedding model id or name for retrieval "+
-		"(required) - see `aikb model list`")
+		"(required) - see aikb model list")
 	cmdutil.AddFormatFlag(cmd, kbConfigFields...)
 	cmdutil.AddDryRunFlag(cmd, &opts.DryRun)
 	cmdutil.SetRisk(cmd, action)

@@ -110,7 +110,7 @@ silently treated as NDJSON.`,
 		},
 	}
 	cmd.Flags().StringVarP(&opts.MessageID, "message", "m", "",
-		"Assistant message ID to resume (the assistant_message_id `chat` returns, or `aikb message list`)")
+		"Assistant message ID to resume (the assistant_message_id that chat returns, or see aikb message list)")
 	_ = cmd.MarkFlagRequired("message")
 	cmdutil.AddFormatFlag(cmd, resumeFields...)
 	cmdutil.SetAgentHelp(cmd, cmdutil.AgentHelp{
