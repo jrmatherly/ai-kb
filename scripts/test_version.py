@@ -141,6 +141,7 @@ class VersionTest(unittest.TestCase):
                 "helm/README.md",
                 "miniprogram/package-lock.json",
                 "miniprogram/package.json",
+                "misc/intro-video/index.html",
                 "website-docs/05-clients/04-miniprogram.md",
                 "website-docs/VERSION",
                 "website-docs/homepage/package-lock.json",
@@ -149,7 +150,7 @@ class VersionTest(unittest.TestCase):
                 "website-docs/package.json",
             ],
         )
-        self.assertTrue(all(line.startswith(("1\t1\t", "2\t2\t")) for line in changed), changed)
+        self.assertTrue(all(line.startswith(("1\t1\t", "2\t2\t", "3\t3\t")) for line in changed), changed)
         self.assertEqual(self.run_tool("check").returncode, 0)
 
     def test_default_bump_takes_todays_date_then_micro_past_local_and_remote_tags(self):
@@ -197,7 +198,7 @@ class VersionTest(unittest.TestCase):
         before, version = self.head(), self.text("VERSION")
         r = self.run_tool("bump", self.next_version(1))
         self.assertEqual(r.returncode, 2)
-        self.assertIn("restored 17 file(s) to their original bytes", r.stderr)
+        self.assertIn("restored 18 file(s) to their original bytes", r.stderr)
         self.assertEqual(self.head(), before)
         self.assertEqual(self.text("VERSION"), version)
         self.assertEqual(sh("git", "status", "--porcelain", cwd=self.repo), "")
