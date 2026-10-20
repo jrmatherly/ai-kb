@@ -238,7 +238,7 @@ export class ApiClient {
           } catch {
             return;
           }
-          if (event.response_type === 'complete' || event.response_type === 'error') ended = true;
+          if (event.response_type === 'complete' || event.response_type === 'error' || event.response_type === 'stop') ended = true;
           handlers.onEvent(event);
         },
         // The library retries unless onerror throws; every failure here is final.
