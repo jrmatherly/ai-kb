@@ -52,6 +52,7 @@ def check():
                 return 204;
             }
             location /api/ { return 200 "$http_host"; }
+            location = /api/proto { return 200 "$http_x_forwarded_proto"; }
             location /mcp/ {
                 default_type application/json;
                 if ($http_authorization != "Bearer test-token") { return 401; }
@@ -114,6 +115,9 @@ def check():
                     assert b"embed entry" not in response.read()
             with request("/api/probe") as response:
                 assert response.read().decode() == f"127.0.0.1:{port}", "proxy lost public port"
+            for sent, want in (({"X-Forwarded-Proto": "https"}, "https"), ({}, "http")):
+                with request("/api/proto", headers=sent) as response:
+                    assert response.read().decode() == want, ("X-Forwarded-Proto", sent)
             for method in ("POST", "GET", "DELETE"):
                 with request("/mcp/test-endpoint?probe=1", method, {
                     "Authorization": "Bearer test-token",
