@@ -233,6 +233,58 @@ The credentials still come from the chart Secret (`secrets.dbUser`, `secrets.dbP
 `secrets.dbName`, `secrets.redisPassword`) or from `secrets.existingSecret`. The render
 fails when a bundled component is off and its external address is missing.
 
+### Bring your own services
+
+A deployment that runs PostgreSQL, Redis and Neo4j outside the chart and keeps every
+credential in one pre-created Secret:
+
+```yaml
+# values-external-services.yaml
+postgresql:
+  enabled: false
+externalDatabase:
+  host: db.example.internal
+  sslMode: require          # disable, allow, prefer, require, verify-ca or verify-full
+
+redis:
+  enabled: false
+externalRedis:
+  addr: cache.example.internal:6379
+  db: 3
+
+externalNeo4j:
+  uri: bolt://graph.example.internal:7687   # sets NEO4J_ENABLE=true; leave neo4j.enabled false
+neo4j:
+  username: neo4j                           # credentials for the external Neo4j too
+  password: ""                              # from existingSecret below
+
+secrets:
+  # Holds the required keys plus NEO4J_USERNAME and NEO4J_PASSWORD, and optionally
+  # GRPC_AUTH_TOKEN (app to docreader) and SYSTEM_SIGNING_KEY (presigned URLs).
+  existingSecret: ai-kb-secrets
+
+app:
+  extraEnvFrom:
+    - secretRef:
+        name: ai-kb-provider-keys
+  startupProbe:
+    failureThreshold: 120   # allow 10 minutes for the first boot's migrations
+
+docreader:
+  extraEnv:
+    - name: LOG_LEVEL
+      value: DEBUG
+```
+
+`app.startupProbe` holds off the liveness probe until `/health` answers, so the versioned
+migrations that run at boot (`AUTO_MIGRATE`) do not get the Pod killed. The default
+allows 5 minutes (`periodSeconds: 5`, `failureThreshold: 60`), and the chart sets
+`AIKB_MIGRATE_FAIL_FAST=true` so a failed boot migration restarts the Pod instead of
+serving a half-migrated schema (override through `app.env`). Without
+`secrets.existingSecret`, the chart Secret takes `neo4j.username` and `neo4j.password`
+(required for the external Neo4j as for the bundled one), `secrets.grpcAuthToken` and
+`secrets.systemSigningKey`.
+
 ## Configuration
 
 ### Service names
@@ -307,6 +359,10 @@ pre-existing Service name does not automatically transfer its ownership to Helm.
 | `app.resources` | Resource limits | See values.yaml |
 | `app.env` | Environment variables | See values.yaml |
 | `app.extraEnv` | Additional env vars | `[]` |
+| `app.extraEnvFrom` | Additional `envFrom` sources (ConfigMaps or Secrets loaded whole) | `[]` |
+| `app.startupProbe` | Startup probe; holds off liveness while boot migrations run | `httpGet /health`, `periodSeconds: 5`, `failureThreshold: 60` |
+| `app.livenessProbe` | Liveness probe | `httpGet /health`, `initialDelaySeconds: 30` |
+| `app.readinessProbe` | Readiness probe | `httpGet /health`, `initialDelaySeconds: 10` |
 | `app.extraVolumes` | Additional pod volumes | `[]` |
 | `app.extraVolumeMounts` | Additional App container volume mounts | `[]` |
 
@@ -341,6 +397,7 @@ frontend, so the docs share the application's host (`https://<ingress.host>/docs
 | `docreader.replicaCount` | Number of replicas | `1` |
 | `docreader.image.repository` | Image repository | `ghcr.io/jrmatherly/ai-kb-docreader` |
 | `docreader.image.tag` | Image tag | `""` (uses appVersion) |
+| `docreader.extraEnv` | Additional env vars | `[]` |
 
 ### PostgreSQL (ParadeDB)
 
@@ -362,13 +419,16 @@ frontend, so the docs share the application's host (`https://<ingress.host>/docs
 | `redis.persistence.enabled` | Enable persistence | `true` |
 | `redis.persistence.size` | PVC size | `1Gi` |
 
-### External Database and Redis
+### External Database, Redis and Neo4j
 
 | Parameter | Description | Default |
 | ----------- | ------------- | --------- |
 | `externalDatabase.host` | Database host, required when `postgresql.enabled` is false | `""` |
 | `externalDatabase.port` | Database port, read when `postgresql.enabled` is false | `5432` |
+| `externalDatabase.sslMode` | PostgreSQL `sslmode` (`DB_SSLMODE`: `disable`, `require`, `verify-ca`, `verify-full`), read when `postgresql.enabled` is false; the bundled database uses `disable` | `disable` |
 | `externalRedis.addr` | Redis `host:port`, required when `redis.enabled` is false | `""` |
+| `externalRedis.db` | Redis logical database (`REDIS_DB`), read when `redis.enabled` is false; the bundled Redis uses `0` | `0` |
+| `externalNeo4j.uri` | Bolt URI of a Neo4j run outside the chart; setting it enables GraphRAG. The render fails if `neo4j.enabled` is also true | `""` |
 
 ### Ingress
 
@@ -391,6 +451,8 @@ frontend, so the docs share the application's host (`https://<ingress.host>/docs
 | `secrets.redisPassword` | Redis password | `""` (required) |
 | `secrets.jwtSecret` | JWT signing secret | `""` (required) |
 | `secrets.systemAesKey` | 32-byte AES key for database field encryption | `""` (generated) |
+| `secrets.systemSigningKey` | Key for presigned file URLs; empty falls back to `SYSTEM_AES_KEY` and is never generated | `""` |
+| `secrets.grpcAuthToken` | Token the app sends and docreader enforces on gRPC; empty leaves the channel unauthenticated | `""` |
 | `secrets.existingSecret` | Use existing secret | `""` |
 
 Set `secrets.systemAesKey` explicitly in production. When it is empty, the chart
@@ -400,11 +462,16 @@ generated and data encrypted with the old one cannot be decrypted.
 
 An `existingSecret` must contain `DB_USER`, `DB_PASSWORD`, `DB_NAME`,
 `REDIS_USERNAME`, `REDIS_PASSWORD`, `JWT_SECRET` and `SYSTEM_AES_KEY`, plus
-`NEO4J_USERNAME` and `NEO4J_PASSWORD` when `neo4j.enabled` is true.
+`NEO4J_USERNAME` and `NEO4J_PASSWORD` when `neo4j.enabled` is true or
+`externalNeo4j.uri` is set. `SYSTEM_SIGNING_KEY` and `GRPC_AUTH_TOKEN` are optional
+and read when present; `GRPC_AUTH_TOKEN` reaches both the app and docreader.
 
 The App Pod carries a `checksum/secret` annotation hashed from the `secrets` and Neo4j
-credential values, so changing one restarts the App on upgrade. The chart cannot see an
+credential values (bundled and external), so changing one restarts the App on upgrade. The chart cannot see an
 `existingSecret`'s contents, so restarting the App after rotating it is up to you.
+DocReader carries a `checksum/grpc-auth-token` annotation, so changing `secrets.grpcAuthToken`
+restarts it with the App; with an `existingSecret`, restart it yourself
+(`kubectl rollout restart deployment/<release>-ai-kb-docreader`).
 
 ### Data Files
 
@@ -418,12 +485,14 @@ credential values, so changing one restarts the App on upgrade. The chart cannot
 ### Neo4j (GraphRAG)
 
 Equivalent to the `neo4j` docker-compose profile. Enabling it sets `NEO4J_ENABLE=true` on the app.
+For a Neo4j run outside the chart, set `externalNeo4j.uri` instead (see
+[External Database, Redis and Neo4j](#external-database-redis-and-neo4j)).
 
 | Parameter | Description | Default |
 | ----------- | ------------- | --------- |
 | `neo4j.enabled` | Enable Neo4j | `false` |
-| `neo4j.username` | Neo4j username | `neo4j` |
-| `neo4j.password` | Neo4j password | `""` (required if enabled) |
+| `neo4j.username` | Neo4j username, bundled or external (`NEO4J_USERNAME` in the chart Secret) | `neo4j` |
+| `neo4j.password` | Neo4j password, bundled or external (`NEO4J_PASSWORD`) | `""` (required when enabled or `externalNeo4j.uri` is set) |
 | `neo4j.persistence.size` | PVC size | `10Gi` |
 
 The chart has no MinIO or Qdrant components. Run them separately and configure

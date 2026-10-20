@@ -116,6 +116,9 @@ app:
     STORAGE_TYPE: local
     LOCAL_STORAGE_BASE_DIR: /data/files
     AUTO_RECOVER_DIRTY: "true"
+    # A failed boot migration fails the Pod (the startup probe then restarts it) instead of
+    # serving on a half-migrated schema. The app's own default is to warn and keep serving.
+    AIKB_MIGRATE_FAIL_FAST: "true"
     STREAM_MANAGER_TYPE: redis
     CONCURRENCY_POOL_SIZE: "5"
     TZ: UTC
@@ -128,6 +131,11 @@ app:
   extraEnv: []
   # - name: OLLAMA_BASE_URL
   #   value: "http://ollama:11434"
+
+  # -- Additional envFrom sources for the app container (ConfigMaps or Secrets loaded whole)
+  extraEnvFrom: []
+  # - secretRef:
+  #     name: ai-kb-provider-keys
 
   # -- Additional volumes for the app pod
   extraVolumes: []
@@ -148,6 +156,16 @@ app:
     name: ""
     type: ClusterIP
     port: 8080
+
+  # -- Startup probe configuration. Holds off liveness while boot runs the versioned
+  # migrations (AUTO_MIGRATE), up to 5 minutes at these defaults. Values merge, so a
+  # different handler needs `httpGet: null` beside it.
+  startupProbe:
+    httpGet:
+      path: /health
+      port: http
+    periodSeconds: 5
+    failureThreshold: 60
 
   # -- Liveness probe configuration
   livenessProbe:
@@ -324,6 +342,10 @@ docreader:
     capabilities:
       drop: ["ALL"]
 
+  # -- Additional environment variables for the docreader container
+  extraEnv: []
+  # - name: LOG_LEVEL
+  #   value: "DEBUG"
 
   # -- Service configuration
   service:
@@ -474,11 +496,22 @@ externalDatabase:
   host: ""
   # -- Database port
   port: 5432
+  # -- PostgreSQL sslmode: disable, require, verify-ca or verify-full
+  sslMode: disable
 
 # -- Required when redis.enabled is false
 externalRedis:
   # -- Redis address as host:port
   addr: ""
+  # -- Redis logical database number
+  db: 0
+
+# -- Neo4j run outside the chart, for GraphRAG. Setting uri enables the knowledge graph;
+# it cannot be combined with neo4j.enabled. Credentials come from neo4j.username and
+# neo4j.password (or the existing Secret) in both cases.
+externalNeo4j:
+  # -- Bolt URI, for example bolt://neo4j.example.internal:7687
+  uri: ""
 
 # -----------------------------------------------------------------------------
 # Data Files Storage
@@ -559,10 +592,17 @@ secrets:
   # key becomes UNRECOVERABLE (the UI will display ciphertext like "enc:v1:..."
   # instead of plaintext).
   systemAesKey: ""
+  # -- Key for presigned file URLs. Empty writes nothing and the app signs with SYSTEM_AES_KEY;
+  # the chart never generates one.
+  systemSigningKey: ""
+  # -- Shared token the app sends and docreader enforces on its gRPC calls. Empty leaves the
+  # docreader channel unauthenticated.
+  grpcAuthToken: ""
 
   # -- Use existing secret instead of creating one
   # The secret must contain keys: DB_USER, DB_PASSWORD, DB_NAME, REDIS_USERNAME, REDIS_PASSWORD, JWT_SECRET, SYSTEM_AES_KEY,
-  # plus NEO4J_USERNAME and NEO4J_PASSWORD when neo4j.enabled is true
+  # plus NEO4J_USERNAME and NEO4J_PASSWORD when neo4j.enabled is true or externalNeo4j.uri is set.
+  # Optional keys, read when present: SYSTEM_SIGNING_KEY, GRPC_AUTH_TOKEN.
   existingSecret: ""
 
 # -----------------------------------------------------------------------------
