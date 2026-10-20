@@ -58,8 +58,8 @@ The product UI is rebuilt in HTML rather than screenshotted, so the text stays s
 
 ## When to update
 
-- **Version:** the release shown in the browser scene (`v2026.10.13`) and the text typed into the form.
-- **Counts:** the model provider count in the ecosystem scene ("29 providers").
+- **Version:** the release shown in the browser scene and typed into the form; `make bump-version` rewrites it (`scripts/version.py` rows).
+- **Counts:** the model provider count in the ecosystem scene ("30 providers"); check it against the model catalog.
 - **Lists:** the data sources and channels, when integrations are added or removed.
 
 `assets/logo-light.png` (black lettering, for paper backgrounds) and `assets/logo-dark.png` (white lettering, for navy backgrounds) come from `node scripts/brand/generate.mjs` at the repository root.

@@ -32,7 +32,7 @@
 [AI KB](https://ai-kb.matherly.net/docs/) is an open-source, LLM-powered knowledge framework for enterprise document understanding, semantic retrieval and reasoning. It brings a team's documents together so they can be searched, reasoned over and kept up to date. AI KB is an independent copy of [Tencent/WeKnora](https://github.com/Tencent/WeKnora), maintained by [jrmatherly](https://github.com/jrmatherly).
 
 <!-- markdownlint-disable-next-line no-bare-urls -->
-https://github.com/user-attachments/assets/6e6f5950-e479-4268-a3eb-76f69b93af63
+https://github.com/user-attachments/assets/9f07fd45-2a94-41cd-b72e-3444ecd0eea2
 
 <p align="center"><sub>1:52 · 1080p · No narration, English on-screen text</sub></p>
 
