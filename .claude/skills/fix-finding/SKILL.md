@@ -1,6 +1,6 @@
 ---
 name: fix-finding
-description: Fix one CODE-BUG row from the docs verification log (private/findings/2026-10-12-website-docs.md) - reproduce with a failing test, fix at the root, update the doc page and the row. Use for "fix finding 374", "work the CODE-BUG rows", "fix the bugs the docs pass found".
+description: Fix one CODE-BUG row from the docs verification log (private/findings/2026-10-12-website-docs.md) - reproduce with a failing test, fix at the root, update the doc page and the row.
 argument-hint: "<row number>"
 disable-model-invocation: true
 ---

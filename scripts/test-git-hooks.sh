@@ -154,4 +154,17 @@ if post_edit "$md/bad.md" 2> "$fixture/post-edit.log"; then
 fi
 grep -q 'bad.md:2:1 error MD018/' "$fixture/post-edit.log"
 
+# guard-generated hook: a generated file is refused (exit 2 names the generator), any other file and a
+# file outside the project pass; the worktree prefix is stripped so a worktree's copy is guarded too.
+guard() { printf '{"tool_input":{"file_path":"%s"}}' "$1" | CLAUDE_PROJECT_DIR="$repo_root" "$repo_root/.claude/hooks/guard-generated.sh"; }
+for f in docs/swagger.json frontend/src/components.d.ts go.sum frontend/package-lock.json .claude/worktrees/wt/docs/swagger.json; do
+  if guard "$repo_root/$f" 2> "$fixture/guard.log"; then
+    echo "guard-generated let $f through" >&2
+    exit 1
+  fi
+  grep -q 'is generated; regenerate it with' "$fixture/guard.log"
+done
+guard "$repo_root/README.md" || { echo "guard-generated refused README.md" >&2; exit 1; }
+guard "$fixture/repo/a.md" || { echo "guard-generated refused a file outside the project" >&2; exit 1; }
+
 echo 'Git hook coverage checks passed'

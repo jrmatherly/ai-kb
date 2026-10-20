@@ -1,6 +1,6 @@
 ---
 name: validate
-description: Run the right checks for what changed in this repo (Go mod tidy/vet/test/lint/build, cli, client, frontend and its UI image, docreader, model catalog, git hooks, shellcheck, start-all, tap, license bundle, anydoc, helm, mcp-server, dsh plugin, extension, dataset, miniprogram, website-docs, markdownlint, and the always-run English-only, em dash and version gates) via scripts/validate.sh. Use before every commit, after a cherry-pick batch, after a translation or rebrand batch, and whenever asked "does it pass", "run the tests", "validate", "check my changes" or "is CI green" (CI in .github/workflows/ runs the same commands per area; this script is the local equivalent).
+description: Run the checks for what changed in this repo through scripts/validate.sh, the local equivalent of the per-area CI workflows (`--list` prints the areas a change touches; the English-only, em dash and version gates always run). Use before every commit, after a cherry-pick batch, after a translation or rebrand batch, and whenever asked "does it pass", "run the tests", "validate", "check my changes" or "is CI green".
 argument-hint: "[--base <rev>] [--list] [--area <name>]"
 allowed-tools: Bash(scripts/validate.sh *)
 ---
