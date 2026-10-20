@@ -12,6 +12,7 @@ and this project follows [Semantic Versioning](https://semver.org/).
 
 ### Removed
 - `create_model` no longer takes `is_default`. The server's create-model request has no such field, so the flag was always ignored.
+- `create_session` no longer takes `kb_id`, `max_rounds`, `enable_rewrite`, `fallback_response` or `summary_model_id`. The server's create-session request accepts only `title` and `description`; sessions are not bound to a knowledge base, so the knowledge bases go to `chat`.
 
 ## [1.1.2] - 2026-10-15
 

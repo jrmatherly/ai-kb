@@ -386,7 +386,7 @@ Both should return `200`: the first is HTML containing `swagger-ui`, the second 
 
 ### Database and migration debugging
 
-- `AUTO_MIGRATE=false` turns off the automatic migration at startup. `AUTO_RECOVER_DIRTY` (on by default, `false` turns it off) controls automatic recovery from a dirty state (`internal/container/container.go`). A failed migration only logs a warning and does not stop startup; look for `Database migration failed` in the startup log.
+- `AUTO_MIGRATE=false` turns off the automatic migration at startup. `AUTO_RECOVER_DIRTY` (on by default, `false` turns it off) controls automatic recovery from a dirty state (`internal/container/container.go`). A failed migration only logs a warning and does not stop startup unless `AIKB_MIGRATE_FAIL_FAST=true`; look for `Database migration failed` in the startup log.
 - `make migrate-version` shows the schema version quickly.
 
 ### LLM tracing (Langfuse)

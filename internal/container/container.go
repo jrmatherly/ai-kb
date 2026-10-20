@@ -10,7 +10,6 @@ import (
 	"fmt"
 	"io"
 	"net"
-	"net/url"
 	"os"
 	"path/filepath"
 	"slices"
@@ -787,6 +786,12 @@ func initRedisClient() (*redis.Client, error) {
 	return client, nil
 }
 
+// envFlag reports whether the variable holds a true value as strconv.ParseBool reads it ("true", "1", ...).
+func envFlag(name string) bool {
+	v, _ := strconv.ParseBool(os.Getenv(name))
+	return v
+}
+
 // initDatabase initializes database connection
 // Creates and configures database connection based on environment configuration
 // Supports multiple database backends (PostgreSQL)
@@ -802,22 +807,11 @@ func initDatabase(cfg *config.Config) (*gorm.DB, error) {
 	var sqliteDBPath string
 	switch os.Getenv("DB_DRIVER") {
 	case "postgres":
-		// DSN for GORM (key-value format)
-		gormDSN := fmt.Sprintf(
-			"host=%s port=%s user=%s password=%s dbname=%s sslmode=%s TimeZone=UTC",
-			os.Getenv("DB_HOST"),
-			os.Getenv("DB_PORT"),
-			os.Getenv("DB_USER"),
-			os.Getenv("DB_PASSWORD"),
-			os.Getenv("DB_NAME"),
-			"disable",
-		)
-		dialector = postgres.Open(gormDSN)
-
-		// DSN for golang-migrate (URL format)
-		// URL-encode password to handle special characters like !@#
-		dbPassword := os.Getenv("DB_PASSWORD")
-		encodedPassword := url.QueryEscape(dbPassword)
+		sslMode, err := database.SSLMode()
+		if err != nil {
+			return nil, err
+		}
+		dialector = postgres.Open(database.PostgresGormDSN(sslMode))
 
 		// Check if postgres is in RETRIEVE_DRIVER to determine skip_embedding
 		retrieveDriver := strings.Split(os.Getenv("RETRIEVE_DRIVER"), ",")
@@ -827,22 +821,15 @@ func initDatabase(cfg *config.Config) (*gorm.DB, error) {
 		}
 		logger.Infof(context.Background(), "Skip embedding: %s", skipEmbedding)
 
-		migrateDSN = fmt.Sprintf(
-			"postgres://%s:%s@%s:%s/%s?sslmode=disable&options=-c%%20app.skip_embedding=%s",
-			os.Getenv("DB_USER"),
-			encodedPassword, // Use encoded password
-			os.Getenv("DB_HOST"),
-			os.Getenv("DB_PORT"),
-			os.Getenv("DB_NAME"),
-			skipEmbedding,
-		)
+		migrateDSN = database.PostgresMigrateURL(sslMode) + "&options=-c%20app.skip_embedding=" + skipEmbedding
 
 		// Debug log (don't log password)
-		logger.Infof(context.Background(), "DB Config: user=%s host=%s port=%s dbname=%s",
+		logger.Infof(context.Background(), "DB Config: user=%s host=%s port=%s dbname=%s sslmode=%s",
 			os.Getenv("DB_USER"),
 			os.Getenv("DB_HOST"),
 			os.Getenv("DB_PORT"),
 			os.Getenv("DB_NAME"),
+			sslMode,
 		)
 	case "sqlite":
 		dbPath := os.Getenv("DB_PATH")
@@ -894,9 +881,7 @@ func initDatabase(cfg *config.Config) (*gorm.DB, error) {
 		}
 	}
 
-	// Run database migrations automatically (optional, can be disabled via env var)
-	// To disable auto-migration, set AUTO_MIGRATE=false
-	// To enable auto-recovery from dirty state, set AUTO_RECOVER_DIRTY=true
+	// AUTO_MIGRATE and AUTO_RECOVER_DIRTY are both on unless set to "false".
 	if os.Getenv("AUTO_MIGRATE") != "false" {
 		logger.Infof(context.Background(), "Running database migrations...")
 
@@ -909,7 +894,10 @@ func initDatabase(cfg *config.Config) (*gorm.DB, error) {
 		// Run base migrations (all versioned migrations including embeddings)
 		// The embeddings migration will be conditionally executed based on skip_embedding parameter in DSN
 		if err := database.RunMigrationsWithOptions(migrateDSN, migrationOpts); err != nil {
-			// Log warning but don't fail startup - migrations might be handled externally
+			if envFlag("AIKB_MIGRATE_FAIL_FAST") {
+				return nil, fmt.Errorf("database migration failed (AIKB_MIGRATE_FAIL_FAST is set): %w", err)
+			}
+			// Migrations may be run externally, so a failure is only a warning by default.
 			logger.Warnf(context.Background(), "Database migration failed: %v", err)
 			logger.Warnf(
 				context.Background(),
@@ -1796,11 +1784,11 @@ func NewDuckDB() (*sql.DB, error) {
 	// Try to install and load the excel extension (read_xlsx, with type
 	// inference per sheet) unless explicitly disabled.
 	//
-	// INSTALL hits extensions.duckdb.org (public internet). In locked-down
-	// runtimes with no egress, set DUCKDB_SKIP_EXTENSION_LOAD=1 to avoid a
-	// startup hang; xlsx ingest may fail later without the extension.
-	if strings.EqualFold(os.Getenv("DUCKDB_SKIP_EXTENSION_LOAD"), "true") ||
-		os.Getenv("DUCKDB_SKIP_EXTENSION_LOAD") == "1" {
+	// The app image pre-bakes the extension under ~/.duckdb, so INSTALL there
+	// needs no egress. Elsewhere INSTALL downloads from extensions.duckdb.org;
+	// in runtimes with no egress, set DUCKDB_SKIP_EXTENSION_LOAD=1 to avoid a
+	// startup hang (xlsx ingest may fail later without the extension).
+	if envFlag("DUCKDB_SKIP_EXTENSION_LOAD") {
 		logger.Infof(context.Background(),
 			"[DuckDB] Skipping excel extension install/load "+
 				"(DUCKDB_SKIP_EXTENSION_LOAD is set; xlsx ingest may fail without it)")

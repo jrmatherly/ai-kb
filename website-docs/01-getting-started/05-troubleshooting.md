@@ -37,7 +37,7 @@ After editing `.env`, recreate the affected container with `docker compose up -d
 
 ## Database migration failures {#database-migrations}
 
-The application runs migrations at startup by default. After a failure it may still start, so "the page opens" does not mean the schema upgrade succeeded. The migration version, dirty flag and error in System Information, together with the app startup log, are the entry points.
+The application runs migrations at startup by default. After a failure it may still start (unless `AIKB_MIGRATE_FAIL_FAST` is set), so "the page opens" does not mean the schema upgrade succeeded. The migration version, dirty flag and error in System Information, together with the app startup log, are the entry points.
 
 **Do not assume a failed migration was fully rolled back.** The real state depends on the transaction boundaries of the SQL and where it failed. Before recovering, keep the logs, back up the database, and compare the migration file for the failed version with the actual schema. Do not skip the error by deleting the data volume or editing the version number by hand.
 

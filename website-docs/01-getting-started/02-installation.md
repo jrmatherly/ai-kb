@@ -246,6 +246,8 @@ helm install ai-kb oci://ghcr.io/jrmatherly/ai-kb/charts/ai-kb --version 0.4.2 -
 
 To use an existing PostgreSQL (with the ParadeDB extensions) or Redis, set `postgresql.enabled=false` with `externalDatabase.host` / `externalDatabase.port`, or `redis.enabled=false` with `externalRedis.addr` (`host:port`).
 
+`externalDatabase.sslMode` (default `disable`) sets the PostgreSQL `sslmode` and `externalRedis.db` (default `0`) the Redis database number; both apply only to the external services. For a Neo4j run outside the chart, set `externalNeo4j.uri` instead of `neo4j.enabled` (credentials stay in `neo4j.username` and `neo4j.password`); setting both fails the render. The chart README's "Bring your own services" section shows these together with `secrets.existingSecret`, its optional `GRPC_AUTH_TOKEN` and `SYSTEM_SIGNING_KEY` keys, `app.extraEnvFrom`, `docreader.extraEnv` and `app.startupProbe`.
+
 ## Desktop (Lite mode / desktop application)
 
 The desktop options target local machines and low-resource environments. Both run the same Lite runtime (one process + SQLite + in-memory queue) and differ only in distribution and startup: the **single binary** (started from the command line, also usable as a background service) and the **desktop application** (GUI, started by double-click). Knowledge base and question answering features are identical. Login without registration, the local OS sandbox and binding a local project directory exist only in the desktop application.

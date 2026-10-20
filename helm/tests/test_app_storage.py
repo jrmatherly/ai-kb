@@ -38,26 +38,32 @@ def render(values=None, secrets=("--set", "secrets.existingSecret=fixture-secret
         )
 
 
-class AppStorageTests(unittest.TestCase):
+def readme_values(filename):
+    blocks = re.findall(r"```yaml\n(.*?)\n```", (CHART / "README.md").read_text(), re.S)
+    return yaml.safe_load(next(block for block in blocks if block.startswith(f"# {filename}\n")))
+
+
+class RenderMixin:
     def documents(self, values=None, **kwargs):
         result = render(values, **kwargs)
         self.assertEqual(result.returncode, 0, result.stderr)
         return [doc for doc in yaml.safe_load_all(result.stdout) if doc]
 
+    def deployment(self, documents, component):
+        return next(doc for doc in documents if doc["kind"] == "Deployment"
+                    and doc["metadata"]["name"] == f"audit-ai-kb-{component}")
+
     def app(self, documents):
-        return next(doc for doc in documents
-                    if doc["kind"] == "Deployment"
-                    and doc["metadata"]["name"] == "audit-ai-kb-app")
+        return self.deployment(documents, "app")
+
+
+class AppStorageTests(RenderMixin, unittest.TestCase):
 
     def assert_data_claim(self, app, name):
         volumes = app["spec"]["template"]["spec"]["volumes"]
         volume = next(v for v in volumes if v["name"] == "data-files")
         self.assertEqual(volume["persistentVolumeClaim"]["claimName"], name)
 
-    def readme_values(self, filename):
-        blocks = re.findall(r"```yaml\n(.*?)\n```", (CHART / "README.md").read_text(), re.S)
-        return yaml.safe_load(next(block for block in blocks
-                                   if block.startswith(f"# {filename}\n")))
 
     def env(self, values):
         app = self.app(self.documents(values))
@@ -159,7 +165,7 @@ class AppStorageTests(unittest.TestCase):
         self.assertIn("app.strategy.type must be RollingUpdate or Recreate", result.stderr)
 
     def test_production_example_uses_single_replica_rwo_and_recreate(self):
-        documents = self.documents(self.readme_values("values-production.yaml"))
+        documents = self.documents(readme_values("values-production.yaml"))
         app = self.app(documents)
         self.assertEqual(app["spec"]["replicas"], 1)
         self.assertEqual(app["spec"]["strategy"], {"type": "Recreate"})
@@ -172,8 +178,8 @@ class AppStorageTests(unittest.TestCase):
         self.assertIn({"name": "STORAGE_TYPE", "value": "local"}, env)
 
     def test_shared_storage_example_references_existing_claim(self):
-        values = self.readme_values("values-production.yaml")
-        override = self.readme_values("values-shared-storage.yaml")
+        values = readme_values("values-production.yaml")
+        override = readme_values("values-shared-storage.yaml")
         documents = self.documents([values, override])
         app = self.app(documents)
         self.assertEqual(app["spec"]["replicas"], 3)

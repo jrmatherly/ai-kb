@@ -70,7 +70,7 @@ if has 'scripts/git-hooks/*' scripts/test-git-hooks.sh scripts/check-english-onl
 if has scripts/start_all.sh scripts/test-start-all.sh; then areas+=(start-all); fi
 if has '*.sh' 'scripts/git-hooks/*'; then areas+=(shell); fi
 if has scripts/update_tap.py scripts/test_update_tap.py .github/workflows/release-lite.yml; then areas+=(tap); fi
-if has 'licenses/*' 'scripts/*license*' LICENSE THIRD_PARTY_NOTICES.md go.mod; then areas+=(licenses); fi
+if has 'licenses/*' 'scripts/*license*' LICENSE THIRD_PARTY_NOTICES.md go.mod frontend/package-lock.json docreader/uv.lock; then areas+=(licenses); fi
 if has 'third_party/anydoc-go/*' scripts/build-anydoc-lib.sh 'internal/infrastructure/docparser/*'; then areas+=(anydoc); fi
 if has 'helm/*'; then areas+=(helm); fi
 if has 'mcp-server/*'; then areas+=(mcp-server); fi

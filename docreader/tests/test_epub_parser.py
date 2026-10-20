@@ -206,7 +206,7 @@ class EPUBParserTest(unittest.TestCase):
                 parser = EPUBParser(file_name="literal-paths.epub", file_type="epub")
                 if use_fallback:
                     with patch(
-                        "docreader.parser.epub_parser.epub.read_epub",
+                        "docreader.parser.epub_parser.Epub",
                         side_effect=ValueError("exercise ZIP fallback"),
                     ):
                         document = parser.parse(content)
@@ -258,7 +258,7 @@ class EPUBParserTest(unittest.TestCase):
                     "pic.png", root_image_first=root_image_first
                 )
                 with patch(
-                    "docreader.parser.epub_parser.epub.read_epub",
+                    "docreader.parser.epub_parser.Epub",
                     side_effect=ValueError("exercise ZIP fallback"),
                 ):
                     document = EPUBParser(

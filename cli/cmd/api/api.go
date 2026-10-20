@@ -149,7 +149,8 @@ Examples:
 	}
 	cmd.Flags().StringVarP(&opts.Method, "method", "X", "", "HTTP method (default: GET, or POST when a body is supplied via -d/--input). Any non-empty method is accepted.")
 	cmd.Flags().StringVarP(&opts.Data, "data", "d", "", "Inline JSON request body (e.g. -d '{\"name\":\"x\"}'). Mutually exclusive with --input.")
-	cmd.Flags().StringVar(&opts.Input, "input", "", "Read JSON request body from file (use `-` for stdin). Mutually exclusive with -d/--data.")
+	cmd.Flags().StringVar(&opts.Input, "input", "",
+		"Read JSON request body from file (\"-\" for stdin). Mutually exclusive with -d/--data.")
 	cmd.Flags().StringArrayVarP(&opts.Fields, "field", "F", nil, "Add a key=value to a JSON object body (repeatable; e.g. -F name=foo -F enabled=true). true/false/null and numbers are typed; everything else is a string. Flat keys only. Mutually exclusive with -d/--input.")
 	cmd.Flags().Bool("paginate", false, "Follow offset-based pagination (?page=N&page_size=M), merging all pages into a single {data, total} JSON response.")
 	cmdutil.AddFormatFlag(cmd, apiFields...)

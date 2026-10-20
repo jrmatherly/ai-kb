@@ -7,11 +7,9 @@ backend and desktop packages. `scripts/copy-licenses.sh` adds checksum-verified
 source archives at packaging time; they are not stored in this Git repository.
 The app image includes the complete bundle in `/app`. The Lite archive and the
 Linux desktop archive include it at their top level, and the macOS application in
-`Contents/Resources`. The ui, docreader and sandbox images carry no bundle; the
-sections below say what they ship. The Windows installer copies `LICENSE`, this
-file and the repository's `licenses/` directory next to the installed executable.
-That directory holds no source archives, so the Windows installer does not carry
-`licenses/sources/mysql-v1.10.1.zip`; obtain it from the links below.
+`Contents/Resources` and the Windows installer next to the installed executable.
+The ui, docreader and sandbox images carry no bundle; the sections below say what
+they ship.
 
 ## Go MySQL Driver
 
@@ -23,8 +21,8 @@ That directory holds no source archives, so the Windows installer does not carry
   `AUTHORS` are preserved in the accompanying source archive.
 - Modifications by AI KB: none. Dialer configuration is in separate AI KB files.
 - Corresponding source, available under MPL-2.0, is included in the app image, the
-  Lite and Linux desktop archives and the macOS application as
-  `licenses/sources/mysql-v1.10.1.zip` (not in the Windows installer). Everyone can obtain it from the
+  Lite and Linux desktop archives, the macOS application and the Windows installer as
+  `licenses/sources/mysql-v1.10.1.zip`. Everyone can obtain it from the
   [Go module proxy](https://proxy.golang.org/github.com/go-sql-driver/mysql/@v/v1.10.1.zip)
   and [upstream repository](https://github.com/go-sql-driver/mysql/tree/v1.10.1).
 
@@ -55,6 +53,24 @@ That directory holds no source archives, so the Windows installer does not carry
   [npm package](https://registry.npmjs.org/@novnc/novnc/-/novnc-1.7.0.tgz) and the
   [upstream repository](https://github.com/novnc/noVNC/tree/v1.7.0).
 
+## elkjs
+
+- Component: `elkjs`, version `0.9.3` (`frontend/package-lock.json`).
+- Used by mermaid's ELK layout. It ships as a lazily loaded chunk of the frontend
+  build: the ui image, the Lite archive's `web/` directory and the desktop applications.
+- License: Eclipse Public License 2.0, reproduced in
+  [`licenses/elkjs-EPL-2.0.txt`](licenses/elkjs-EPL-2.0.txt).
+- Copyright: the Eclipse Layout Kernel contributors.
+- Modifications by AI KB: none. The package is used as published on npm.
+- Corresponding source, available under EPL-2.0: the
+  [npm package](https://registry.npmjs.org/elkjs/-/elkjs-0.9.3.tgz) and the
+  [upstream repository](https://github.com/kieler/elkjs/tree/v0.9.3).
+
+Frontend packages published under a choice of licenses (dompurify, jszip) are used
+under their permissive option and are not listed. khroma `2.1.0`, a mermaid
+dependency, declares no license in its package metadata; its
+[upstream repository](https://github.com/fabiospampinato/khroma) is MIT-licensed.
+
 ## docreader Python packages
 
 The docreader image installs its locked Python environment (`docreader/uv.lock`)
@@ -62,10 +78,6 @@ into `/app/.venv`. Each package's license text ships with it, in that package's
 `*.dist-info` directory under `site-packages`. Packages with copyleft or
 weak-copyleft licenses:
 
-- EbookLib `0.20`, GNU Affero General Public License v3 or later. Used by the EPUB
-  parser (`docreader/parser/epub_parser.py`). Unmodified; source on
-  [PyPI](https://pypi.org/project/EbookLib/0.20/) and in the
-  [upstream repository](https://github.com/aerkalov/ebooklib).
 - certifi `2026.7.22`, Mozilla Public License 2.0. Unmodified; source on
   [PyPI](https://pypi.org/project/certifi/2026.7.22/) and in the
   [upstream repository](https://github.com/certifi/python-certifi).
@@ -94,8 +106,11 @@ When upgrading an MPL module, update its version, license, and SHA-256 pin in
 ZIPs, including their original copyright notices. Verify them with
 `go mod download -json` and the module's `go.sum` entry before updating.
 `scripts/check-license-bundle.sh` checks the pins and notices without downloading
-dependencies. It covers Go modules only (`licenses/sources/modules.tsv`); nothing checks the
-npm and Python components above automatically. `scripts/copy-licenses.sh DESTINATION` obtains the pinned archives
+dependencies. `licenses/components.tsv` lists the reviewed npm and Python components;
+the check requires this file to name each one's version from `frontend/package-lock.json`
+or `docreader/uv.lock`, fails on any other frontend production package whose lockfile
+license is copyleft or missing, and does the same for the docreader runtime set when
+`docreader/.venv` is installed. `scripts/copy-licenses.sh DESTINATION` obtains the pinned archives
 through Go's configured `GOPROXY` and module cache, verifies their SHA-256 hashes,
 and includes them in the destination bundle. Offline packaging requires those
 module archives to be present in the Go module cache beforehand. To verify a

@@ -24,6 +24,9 @@ spec:
       maxUnavailable: 0
   template:
     metadata:
+      annotations:
+        # Docreader enforces the token the app sends, so both roll when it changes.
+        checksum/grpc-auth-token: {{ .Values.secrets.grpcAuthToken | sha256sum }}
       labels:
         {{- include "ai-kb.componentSelectorLabels" (dict "component" "docreader" "context" .) | nindent 8 }}
     spec:
@@ -48,6 +51,15 @@ spec:
           env:
             - name: MAX_FILE_SIZE_MB
               value: {{ .Values.global.maxFileSizeMB | quote }}
+            - name: GRPC_AUTH_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "ai-kb.secretName" . }}
+                  key: GRPC_AUTH_TOKEN
+                  optional: true
+            {{- with .Values.docreader.extraEnv }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
           resources:
             {{- toYaml .Values.docreader.resources | nindent 12 }}
           # The root filesystem is read-only; temp files, the LibreOffice profile and the WebKit caches land here.

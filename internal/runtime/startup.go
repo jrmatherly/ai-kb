@@ -80,10 +80,12 @@ var startupEnvVars = []envVarSpec{
 	// Runtime
 	{name: "GIN_MODE"},
 	{name: "AUTO_MIGRATE"},
+	{name: "AIKB_MIGRATE_FAIL_FAST"},
 	// Database
 	{name: "DB_DRIVER"},
 	{name: "DB_HOST"},
 	{name: "DB_PORT"},
+	{name: "DB_SSLMODE"},
 	{name: "DB_USER"},
 	{name: "DB_NAME"},
 	{name: "DB_PATH"}, // sqlite

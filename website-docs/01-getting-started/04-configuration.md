@@ -148,7 +148,8 @@ The variables below come from the app and docreader `environment` blocks of `doc
 | `DEFAULT_LOCALE` | empty | Default UI language of the frontend container. The UI ships in English only, so `en-US` is the only accepted value; anything else is ignored. It only affects users who have never switched language; precedence: the user's saved choice > this variable > `en-US`. Restart the frontend container after changing it; no image rebuild is needed |
 | `AIKB_LANGUAGE` | empty | Document processing language (question and summary generation). Precedence: this variable > the request's `Accept-Language` > the built-in default. The built-in default is `en-US` in the code (`internal/types/context_helpers.go`). The document processing language is independent of the UI language, for example an English UI processing Korean documents. IM channels with no reply language configured also use this variable (the built-in default when unset) as their default reply language |
 | `AUTO_MIGRATE` | true | Run database migrations at startup |
-| `AUTO_RECOVER_DIRTY` | true | Automatically repair golang-migrate's dirty state (left by an interrupted migration). Set it to false temporarily while investigating a migration problem by hand, otherwise startup rewrites the migration version record; see [Database and migrations](../06-development/02-database-schema.md) |
+| `AIKB_MIGRATE_FAIL_FAST` | false | `true` or `1` stops startup with an error when a migration fails. Otherwise the failure is logged as a warning and the app keeps serving |
+| `AUTO_RECOVER_DIRTY` | true | On unless set to `false`. Automatically repair golang-migrate's dirty state (left by an interrupted migration). Set it to false temporarily while investigating a migration problem by hand, otherwise startup rewrites the migration version record; see [Database and migrations](../06-development/02-database-schema.md) |
 | `AIKB_TRUSTED_PROXIES` | empty | Proxy CIDRs trusted by gin (comma-separated) |
 | `MAX_SKILL_BUNDLE_SIZE_MB` | 256 MiB (never below MAX_FILE_SIZE_MB, capped at 512 MiB) | Limit for skill ZIP uploads and source downloads; the reverse proxy request body limit must be large enough too |
 | `MAX_FILE_SIZE_MB` | 50 | Upload size limit (shared by app, frontend and docreader); Helm deployments use `global.maxFileSizeMB` |
@@ -171,6 +172,7 @@ The four URL forms and how each channel obtains them are described in [External 
 | --- | --- | --- |
 | `DB_DRIVER` | postgres | `postgres` / `sqlite` (Lite) |
 | `DB_HOST` / `DB_PORT` / `DB_USER` / `DB_PASSWORD` / `DB_NAME` | postgres / 5432 / empty / empty / empty | PostgreSQL connection (required) |
+| `DB_SSLMODE` | disable | sslmode for every PostgreSQL connection: `disable`, `require`, `verify-ca` or `verify-full` (`allow` and `prefer` are not shared by both drivers). Any other value fails startup |
 | `DB_PATH` | - | Database file path when `DB_DRIVER=sqlite` |
 | `STREAM_MANAGER_TYPE` | empty (compose effectively uses redis) | `redis` / `memory` |
 | `REDIS_ADDR` / `REDIS_USERNAME` / `REDIS_PASSWORD` / `REDIS_DB` / `REDIS_PREFIX` | redis:6379 / ... | Redis connection |

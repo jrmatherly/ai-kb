@@ -165,7 +165,8 @@ else goes through repeatable --param key=value.`,
 	}
 	cmd.Flags().StringVar(&opts.Type, "type", "", "Model type: "+strings.Join(modelTypeValues, " | ")+" (required; \"chat\" is accepted for KnowledgeQA)")
 	cmd.Flags().StringVar(&opts.Source, "source", "", "Where the model runs: "+strings.Join(createSourceValues, " | ")+" (required; local=Ollama, remote=provider API)")
-	cmd.Flags().StringVar(&opts.Provider, "provider", "", "Remote provider id, required+validated with --source remote (see `aikb api /api/v1/models/providers`)")
+	cmd.Flags().StringVar(&opts.Provider, "provider", "",
+		"Remote provider id, required+validated with --source remote (see aikb api /api/v1/models/providers)")
 	cmd.Flags().StringVar(&opts.DisplayName, "display-name", "", "Human-friendly name (optional)")
 	cmd.Flags().StringVar(&opts.Description, "description", "", "Description (optional)")
 	cmd.Flags().StringVar(&opts.BaseURL, "base-url", "", "Model API base URL (e.g. http://localhost:11434 for Ollama)")

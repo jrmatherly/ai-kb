@@ -452,31 +452,9 @@ class AIKBClient:
         return self._request("GET", f"/models/{model_id}")
 
     # Session Management - Methods for managing chat sessions
-    def create_session(
-        self,
-        kb_id: str,
-        max_rounds: int = 5,
-        enable_rewrite: bool = True,
-        fallback_response: str = "Sorry, I cannot answer this question.",
-        summary_model_id: str = "",
-        title: str = "",
-        description: str = "",
-    ) -> Dict:
-        """Create a new chat session with strategy configuration"""
-        strategy = {
-            "max_rounds": max_rounds,
-            "enable_rewrite": enable_rewrite,
-            "fallback_strategy": "FIXED_RESPONSE",
-            "fallback_response": fallback_response,
-            "embedding_top_k": 10,
-            "keyword_threshold": 0.5,
-            "vector_threshold": 0.7,
-            "summary_model_id": summary_model_id,
-        }
-        data = {
-            "knowledge_base_id": kb_id,
-            "session_strategy": strategy,
-        }
+    def create_session(self, title: str = "", description: str = "") -> Dict:
+        """Create a new chat session"""
+        data: Dict[str, str] = {}
         if title:
             data["title"] = title
         if description:
@@ -909,28 +887,13 @@ def get_model(model_id: str) -> dict:
 
 
 @mcp.tool()
-def create_session(
-    kb_id: str,
-    max_rounds: int = 5,
-    enable_rewrite: bool = True,
-    fallback_response: str = "Sorry, I cannot answer this question.",
-    summary_model_id: str = "",
-    title: str = "",
-    description: str = "",
-) -> dict:
-    """Create a new chat session bound to a knowledge base with a retrieval strategy.
+def create_session(title: str = "", description: str = "") -> dict:
+    """Create a new chat session.
 
-    kb_id may be a UUID or a knowledge-base name (resolved automatically).
+    Sessions are not bound to a knowledge base: pass the knowledge bases to
+    `chat` on each turn.
     """
-    return client.create_session(
-        kb_id=client.resolve_kb_id(kb_id),
-        max_rounds=max_rounds,
-        enable_rewrite=enable_rewrite,
-        fallback_response=fallback_response,
-        summary_model_id=summary_model_id,
-        title=title,
-        description=description,
-    )
+    return client.create_session(title=title, description=description)
 
 
 @mcp.tool()

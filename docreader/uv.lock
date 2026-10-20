@@ -328,7 +328,6 @@ version = "2026.10.18.1"
 source = { virtual = "." }
 dependencies = [
     { name = "beautifulsoup4" },
-    { name = "ebooklib" },
     { name = "grpcio" },
     { name = "grpcio-health-checking" },
     { name = "grpcio-tools" },
@@ -351,10 +350,14 @@ dependencies = [
     { name = "xlrd" },
 ]
 
+[package.dev-dependencies]
+dev = [
+    { name = "ebooklib" },
+]
+
 [package.metadata]
 requires-dist = [
     { name = "beautifulsoup4", specifier = ">=4.14.2" },
-    { name = "ebooklib", specifier = ">=0.18" },
     { name = "grpcio", specifier = ">=1.80.0" },
     { name = "grpcio-health-checking", specifier = ">=1.80.0" },
     { name = "grpcio-tools", specifier = ">=1.80.0" },
@@ -376,6 +379,9 @@ requires-dist = [
     { name = "trafilatura", specifier = ">=2.0.0" },
     { name = "xlrd", specifier = ">=2.0.0" },
 ]
+
+[package.metadata.requires-dev]
+dev = [{ name = "ebooklib", specifier = ">=0.18" }]
 
 [[package]]
 name = "ebooklib"

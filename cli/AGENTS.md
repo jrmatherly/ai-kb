@@ -387,12 +387,12 @@ Text-mode consumers parse the first colon to extract the typed code. The exit co
 | `auth.forbidden` | 3 | no | active profile lacks permission for this resource |
 | `auth.cross_tenant_blocked` | 3 | no | verify tenant profile with `aikb auth status` |
 | `auth.tenant_mismatch` | 3 | no | verify tenant profile with `aikb auth status` |
-| `input.invalid_argument` | 2 (parse) / 5 (value) | no | see `aikb <command> --help` for valid usage |
+| `input.invalid_argument` | 5 (value) / 2 (cobra parse) | no | see `aikb <command> --help` for valid usage |
 | `input.missing_flag` | 5 | no | see `aikb <command> --help` for valid usage |
 | `input.confirmation_required` | 10 | **NO automatic retry** | high-risk write - re-run with `-y/--yes` after the user explicitly approves |
-| `input.unknown_subcommand` | 5 | no | invocation reached a command path with no matching subcommand. Detail includes `available` list; retry with `<path> --help`. |
+| `input.unknown_subcommand` | 5 | no | (no canonical hint; the command path has no such subcommand, the detail carries the `available` list, retry with `<path> --help`) |
 | `resource.not_found` | 4 | no | verify the resource ID and try again |
-| `resource.already_exists` | 1 | no | use a different name or fetch the existing resource |
+| `resource.already_exists` | 1 | no | (no canonical hint; the error names the duplicate: a name, an already-uploaded file's content or a URL) |
 | `resource.locked` | 1 | maybe (transient lock) | (no canonical hint; check resource state) |
 | `server.error` | 7 | yes (with backoff for 5xx) | (no canonical hint) |
 | `server.timeout` | 7 | yes (with backoff) | request timed out; retry, or run `aikb doctor` to check connectivity |
@@ -401,8 +401,8 @@ Text-mode consumers parse the first colon to extract the typed code. The exit co
 | `server.incompatible_version` | 7 | no (upgrade required) | run `aikb doctor` to see version skew details |
 | `network.error` | 7 | yes (with backoff) | check base URL reachability with `aikb doctor` |
 | `operation.timeout` | 124 | yes (raise `--timeout`) | wait timed out; raise `--timeout` or check the underlying job |
-| `operation.failed` | 1 | no (target reached terminal failure) | one or more targets reached a terminal failure (e.g. doc parse_status=failed) |
-| `operation.cancelled` | 1 (main overrides to 130) | no | command interrupted by SIGINT / SIGTERM. The typed code maps to exit 1, but `main` raises the exit to 130 when the root context was signal-cancelled so the user-visible exit follows Unix signal convention. |
+| `operation.failed` | 1 | no (target reached terminal failure) | (no canonical hint; the error names the targets that reached a terminal failure, e.g. doc parse_status=failed) |
+| `operation.cancelled` | 1 (`main` raises it to 130 when the root context was signal-cancelled, the Unix convention) | no | operation cancelled by signal (Ctrl-C / SIGTERM) |
 | `local.config_corrupt` | 1 | no (manual fix) | remove `~/.config/aikb/config.yaml` and re-run `aikb auth login` |
 | `local.profile_not_found` | 1 | no | (no canonical hint; check `aikb profile list`) |
 | `local.file_io` | 1 | no | check file permissions under `$XDG_CONFIG_HOME/aikb/` |
@@ -411,10 +411,10 @@ Text-mode consumers parse the first colon to extract the typed code. The exit co
 | `local.keychain_denied` | 1 | no (system-level) | verify keyring access; falls back to file storage |
 | `local.project_link_corrupt` | 1 | no | remove `.aikb/project.yaml` and run `aikb link` again |
 | `local.sse_stream_aborted` | 1 | yes (rerun chat / session ask) | the streaming answer was cut off mid-flight; retry, or pass `--format json` to buffer the full response |
-| `local.unimplemented` | 1 | no | (planned in a future release) |
+| `local.unimplemented` | 1 | no | (no canonical hint; planned in a future release) |
 | `local.upload_file_not_found` | 1 | no | verify the path is correct and readable |
 | `local.user_aborted` | 1 | no (user said no) | no action taken; pass `-y/--yes` to skip the confirmation prompt |
-| `internal.error` | 1 | no | catch-all for an untyped error that reached the top (a bug or unmapped dependency error); a recurring one is a classification gap worth reporting |
+| `internal.error` | 1 | no | (no canonical hint; an untyped error reached the top, a bug or unmapped dependency error, and a recurring one is a classification gap worth reporting) |
 
 <!-- ERROR_REFERENCE_END -->
 

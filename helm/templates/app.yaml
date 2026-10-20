@@ -7,13 +7,30 @@ AI KB Backend API Server Deployment and Service.
 {{- if .Values.app.enabled }}
 {{- $dbHost := include "ai-kb.serviceName" (dict "component" "postgresql" "context" .) }}
 {{- $dbPort := 5432 }}
+{{- $dbSSLMode := "disable" }}
 {{- if not .Values.postgresql.enabled }}
 {{- $dbHost = required "externalDatabase.host is required when postgresql.enabled is false" .Values.externalDatabase.host }}
 {{- $dbPort = .Values.externalDatabase.port | default $dbPort }}
+{{- $dbSSLMode = .Values.externalDatabase.sslMode | default $dbSSLMode }}
+{{- /* lib/pq, which the migrator uses, has no allow or prefer. */}}
+{{- if not (has $dbSSLMode (list "disable" "require" "verify-ca" "verify-full")) }}
+{{- fail "externalDatabase.sslMode must be one of disable, require, verify-ca, verify-full" }}
+{{- end }}
 {{- end }}
 {{- $redisAddr := printf "%s:6379" (include "ai-kb.serviceName" (dict "component" "redis" "context" .)) }}
+{{- $redisDB := 0 }}
 {{- if not .Values.redis.enabled }}
 {{- $redisAddr = required "externalRedis.addr is required when redis.enabled is false" .Values.externalRedis.addr }}
+{{- $redisDB = .Values.externalRedis.db | default $redisDB }}
+{{- end }}
+{{- /* An upgrade with --reuse-values from a release without externalNeo4j carries no such key. */}}
+{{- $externalNeo4j := .Values.externalNeo4j | default dict }}
+{{- if and .Values.neo4j.enabled $externalNeo4j.uri }}
+{{- fail "set either neo4j.enabled (bundled Neo4j) or externalNeo4j.uri, not both" }}
+{{- end }}
+{{- $neo4jURI := $externalNeo4j.uri }}
+{{- if .Values.neo4j.enabled }}
+{{- $neo4jURI = printf "bolt://%s:7687" (include "ai-kb.serviceName" (dict "component" "neo4j" "context" .)) }}
 {{- end }}
 apiVersion: apps/v1
 kind: Deployment
@@ -80,6 +97,8 @@ spec:
               value: {{ $dbHost | quote }}
             - name: DB_PORT
               value: {{ $dbPort | quote }}
+            - name: DB_SSLMODE
+              value: {{ $dbSSLMode | quote }}
             - name: DB_USER
               valueFrom:
                 secretKeyRef:
@@ -110,7 +129,7 @@ spec:
                   name: {{ include "ai-kb.secretName" . }}
                   key: REDIS_PASSWORD
             - name: REDIS_DB
-              value: "0"
+              value: {{ $redisDB | quote }}
             - name: REDIS_PREFIX
               value: "stream:"
             - name: STREAM_MANAGER_TYPE
@@ -126,6 +145,12 @@ spec:
                 secretKeyRef:
                   name: {{ include "ai-kb.secretName" . }}
                   key: SYSTEM_AES_KEY
+            - name: SYSTEM_SIGNING_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "ai-kb.secretName" . }}
+                  key: SYSTEM_SIGNING_KEY
+                  optional: true
             # Retrieval & Storage
             - name: RETRIEVE_DRIVER
               value: {{ .Values.app.env.RETRIEVE_DRIVER | quote }}
@@ -136,9 +161,18 @@ spec:
             # Document reader
             - name: DOCREADER_ADDR
               value: {{ printf "%s:50051" (include "ai-kb.serviceName" (dict "component" "docreader" "context" .)) | quote }}
+            - name: GRPC_AUTH_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "ai-kb.secretName" . }}
+                  key: GRPC_AUTH_TOKEN
+                  optional: true
             # Processing
             - name: AUTO_RECOVER_DIRTY
               value: {{ .Values.app.env.AUTO_RECOVER_DIRTY | quote }}
+            # A Pod that failed its boot migration restarts instead of serving a half-migrated schema.
+            - name: AIKB_MIGRATE_FAIL_FAST
+              value: {{ .Values.app.env.AIKB_MIGRATE_FAIL_FAST | quote }}
             - name: CONCURRENCY_POOL_SIZE
               value: {{ .Values.app.env.CONCURRENCY_POOL_SIZE | quote }}
             # Docker sandbox is off unless the deployer opts in. A workspace
@@ -146,14 +180,14 @@ spec:
             # whatever Engine API this process can reach (often host root).
             - name: AIKB_SANDBOX_DOCKER_ENABLED
               value: {{ .Values.app.env.AIKB_SANDBOX_DOCKER_ENABLED | default "false" | quote }}
-            {{- if .Values.neo4j.enabled }}
+            {{- if $neo4jURI }}
             # Neo4j configuration (for GraphRAG)
             # NEO4J_ENABLE is the only knowledge graph switch (the Go code reads it, not ENABLE_GRAPH_RAG).
-            # Injected automatically when neo4j.enabled=true, so users need not set it.
+            # Injected automatically with neo4j.enabled or externalNeo4j.uri, so users need not set it.
             - name: NEO4J_ENABLE
               value: "true"
             - name: NEO4J_URI
-              value: {{ printf "bolt://%s:7687" (include "ai-kb.serviceName" (dict "component" "neo4j" "context" .)) | quote }}
+              value: {{ $neo4jURI | quote }}
             - name: NEO4J_USERNAME
               valueFrom:
                 secretKeyRef:
@@ -169,6 +203,10 @@ spec:
             # Additional environment variables
             {{- toYaml . | nindent 12 }}
             {{- end }}
+          {{- with .Values.app.extraEnvFrom }}
+          envFrom:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           volumeMounts:
             - name: data-files
               mountPath: /data/files
@@ -180,6 +218,10 @@ spec:
             {{- end }}
           resources:
             {{- toYaml .Values.app.resources | nindent 12 }}
+          {{- with .Values.app.startupProbe }}
+          startupProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           {{- with .Values.app.livenessProbe }}
           livenessProbe:
             {{- toYaml . | nindent 12 }}
