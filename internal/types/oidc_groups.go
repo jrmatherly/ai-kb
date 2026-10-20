@@ -25,6 +25,7 @@ type OIDCGroupSync struct {
 	Removed     []uint64 `json:"removed"`
 	// Admin is "granted", "revoked" or "unchanged".
 	Admin string `json:"admin"`
-	// Skipped lists what the sync left alone and why: last_owner:<id>, last_admin, unknown_workspace:<key>.
+	// Skipped lists what the sync left alone and why: last_owner:<id>, last_admin, unknown_workspace:<key>,
+	// error (the sync stopped early; the log has the cause).
 	Skipped []string `json:"skipped"`
 }

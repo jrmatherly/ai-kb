@@ -4795,7 +4795,8 @@ export default {
           'system.queue_archived_purged': 'All failed tasks cleared',
           'auth.login_succeeded': 'Login',
           'auth.login_failed': 'Login failed',
-          'auth.logout': 'Logout'
+          'auth.logout': 'Logout',
+          'auth.oidc_group_sync': 'Roles synced from identity provider'
         },
         outcome: {
           success: 'Success',
@@ -7579,6 +7580,7 @@ export default {
         'rbac.invitation_expired': 'Invitation expired',
         'auth.login_succeeded': 'Login',
         'auth.logout': 'Logout',
+        'auth.oidc_group_sync': 'Roles synced from identity provider',
         'tenant_api_key.created': 'API key created',
         'tenant_api_key.updated': 'API key updated',
         'tenant_api_key.deleted': 'API key deleted',

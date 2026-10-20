@@ -139,6 +139,7 @@ const (
 	AuditActionAuthLoginSucceeded       AuditAction = "auth.login_succeeded"
 	AuditActionAuthLoginFailed          AuditAction = "auth.login_failed"
 	AuditActionAuthLogout               AuditAction = "auth.logout"
+	AuditActionOIDCGroupSync            AuditAction = "auth.oidc_group_sync" // what the group mapping changed
 	AuditActionTenantAPIKeyCreated      AuditAction = "tenant_api_key.created"
 	AuditActionTenantAPIKeyUpdated      AuditAction = "tenant_api_key.updated"
 	AuditActionTenantAPIKeyDeleted      AuditAction = "tenant_api_key.deleted"

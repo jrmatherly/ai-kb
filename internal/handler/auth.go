@@ -480,6 +480,7 @@ func (h *AuthHandler) OIDCRedirectCallback(c *gin.Context) {
 		return
 	}
 	h.emitLoginSucceeded(ctx, c, "oidc", resp.User, resp.Tenant, resp.Memberships)
+	h.emitGroupSynced(ctx, c, resp)
 
 	encoded, err := encodeOIDCCallbackPayload(resp)
 	if err != nil {
@@ -630,6 +631,29 @@ func (h *AuthHandler) emitLoginSucceeded(
 		Action: types.AuditActionAuthLoginSucceeded, TargetType: "user", TargetUserID: user.ID,
 		RequestPath: c.FullPath(), RequestMethod: c.Request.Method,
 		Details: changeDetails("login", method),
+	})
+}
+
+// emitGroupSynced records what the OIDC group mapping changed at this sign-in, as the signed-in user, in the
+// workspace the token is scoped to; partial when anything was skipped.
+func (h *AuthHandler) emitGroupSynced(ctx context.Context, c *gin.Context, resp *types.OIDCCallbackResponse) {
+	if resp == nil || resp.User == nil || resp.GroupSync == nil {
+		return
+	}
+	var tenantID uint64
+	if resp.Tenant != nil {
+		tenantID = resp.Tenant.ID
+	}
+	outcome := types.AuditOutcomeSuccess
+	if len(resp.GroupSync.Skipped) > 0 {
+		outcome = types.AuditOutcomePartial
+	}
+	details, _ := json.Marshal(resp.GroupSync)
+	emitAudit(ctx, h.auditSvc, &types.AuditLog{
+		TenantID: tenantID, ActorUserID: resp.User.ID, ActorRole: "user",
+		Action: types.AuditActionOIDCGroupSync, TargetType: "user", TargetUserID: resp.User.ID,
+		RequestPath: c.FullPath(), RequestMethod: c.Request.Method,
+		Outcome: outcome, Details: types.JSON(details),
 	})
 }
 

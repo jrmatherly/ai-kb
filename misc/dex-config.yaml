@@ -19,3 +19,9 @@ oauth2:
     - id_token
     - token
   skipApprovalScreen: true
+connectors:
+  # A fixed user (kilgore@kilgore.trout) whose id_token carries groups ["authors"], for checking the OIDC group
+  # mapping locally; request the groups scope for the claim to arrive.
+  - type: mockCallback
+    id: mock
+    name: 'Mock user with the authors group'

@@ -29,6 +29,7 @@ export const TENANT_MEMBER_AUDIT_ACTIONS = [
   'rbac.invitation_expired',
   'auth.login_succeeded',
   'auth.logout',
+  'auth.oidc_group_sync',
   'tenant_api_key.created',
   'tenant_api_key.updated',
   'tenant_api_key.deleted',
@@ -58,6 +59,7 @@ export const SYSTEM_GLOBAL_AUDIT_ACTIONS = [
   'auth.login_succeeded',
   'auth.login_failed',
   'auth.logout',
+  'auth.oidc_group_sync',
 ] as const
 
 /** Knowledge-base activity feed (KB settings → activity). */

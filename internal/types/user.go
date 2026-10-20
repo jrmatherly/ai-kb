@@ -201,6 +201,9 @@ type OIDCCallbackResponse struct {
 	Token        string       `json:"token,omitempty"`
 	RefreshToken string       `json:"refresh_token,omitempty"`
 	IsNewUser    bool         `json:"is_new_user,omitempty"`
+	// GroupSync is what the OIDC group mapping changed at this sign-in; nil when the claim was absent. The
+	// handler audits it and never returns it to the browser.
+	GroupSync *OIDCGroupSync `json:"-"`
 }
 
 type OIDCUserInfo struct {
