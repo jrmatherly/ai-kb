@@ -163,6 +163,33 @@ var registry = map[string]settingSpec{
 			"tenantless = create only the user, who then accepts an invitation or creates a workspace. Changes " +
 			"affect only newly registered users.",
 	},
+	"oidc.groups_claim": {
+		Type:     "string",
+		EnvName:  "OIDC_AUTH_GROUPS_CLAIM",
+		Default:  "groups",
+		Category: "auth",
+		Description: "Name of the ID token claim that carries the group names. The groups scope must be in " +
+			"OIDC_AUTH_SCOPES for the claim to arrive. Read at each OIDC sign-in.",
+	},
+	"oidc.system_admin_groups": {
+		Type:     "string_list",
+		EnvName:  "OIDC_AUTH_SYSTEM_ADMIN_GROUPS",
+		Default:  []string{},
+		Category: "auth",
+		Description: "Groups whose members are system administrators. At each OIDC sign-in a member of one of them " +
+			"gains the flag and a member of none loses it, except the last active administrator. Empty leaves the " +
+			"flag alone. The group mapping is off while this and oidc.group_role_map are both empty.",
+	},
+	"oidc.group_role_map": {
+		Type:     "string_list",
+		EnvName:  "OIDC_AUTH_GROUP_ROLE_MAP",
+		Default:  []string{},
+		Category: "auth",
+		Description: "group:workspace:role entries; workspace is a workspace slug or numeric id, role is owner, " +
+			"admin, contributor or viewer. In every workspace named here the membership is set from the groups at " +
+			"each OIDC sign-in: added, changed or removed. The feature is off while this and " +
+			"oidc.system_admin_groups are both empty.",
+	},
 	"auth.complex_password_enabled": {
 		Type:     "bool",
 		EnvName:  "AIKB_AUTH_COMPLEX_PASSWORD_ENABLED",
@@ -1385,6 +1412,13 @@ func validateRegistryEntry(key string, rawValue any) error {
 			return err
 		}
 		return utils.ValidateSSRFWhitelistEntries(entries)
+	case oidcGroupRoleMapKey:
+		entries, err := coerceToStringSlice(rawValue)
+		if err != nil {
+			return err
+		}
+		_, err = ParseOIDCGroupMap(entries)
+		return err
 	}
 	return nil
 }

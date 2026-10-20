@@ -4549,6 +4549,11 @@ export default {
           default_tenant_mode: 'Default workspace provisioning',
           complex_password_enabled: 'Require complex password'
         },
+        oidc: {
+          groups_claim: 'OIDC groups claim',
+          system_admin_groups: 'OIDC system administrator groups',
+          group_role_map: 'OIDC group to workspace role map'
+        },
         ssrf: {
           whitelist: 'SSRF protection allowlist'
         },
@@ -4579,6 +4584,11 @@ export default {
           registration_mode: 'Registration mode. Open registration allows anyone to create an account; invitation registration requires a valid invitation link; disabled registration prevents account creation while existing accounts can still accept invitations. Changes take effect immediately.',
           default_tenant_mode: 'Workspace provisioning after public registration. create_personal creates an Owner workspace; tenantless creates only the account until the user accepts an invitation or creates a workspace. Applies to new users only.',
           complex_password_enabled: 'Whether to require complex passwords. When enabled, passwords must contain uppercase and lowercase letters, numbers, and special characters. Changes take effect immediately and only apply to newly registered users or new password changes/resets. Special characters include {specialChars}'
+        },
+        oidc: {
+          groups_claim: 'Name of the ID token claim that carries the group names. Default groups. The groups scope must be in OIDC_AUTH_SCOPES for the claim to arrive.',
+          system_admin_groups: 'Groups whose members become system administrators at each OIDC sign-in; members of none of them lose the flag, except the last active administrator. One group per tag (comma-separated in the environment variable). Empty leaves the flag alone.',
+          group_role_map: 'group:workspace:role entries, one per tag (comma-separated in the environment variable, so a group name cannot contain a comma there). workspace is a workspace slug or numeric id, role is owner, admin, contributor or viewer; when several groups name one workspace the highest role wins. In every workspace named here membership is set from the groups at each OIDC sign-in. The feature is off while this and the administrator groups are both empty.'
         },
         ssrf: {
           whitelist: 'SSRF protection allowlist. Accepts entries such as example.com / *.foo.com / 10.0.0.0/8 / 2001:db8::1. Takes effect immediately after saving. The SSRF_WHITELIST_EXTRA environment variable is still maintained by the deployer and is not overridden here.'

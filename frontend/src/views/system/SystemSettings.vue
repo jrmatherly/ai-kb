@@ -168,6 +168,10 @@
                       @update:model-value="onSsrfWhitelistModelUpdate" />
                   </div>
                 </t-popconfirm>
+                <t-tag-input v-else-if="item.value_type === 'string_list'" v-model="editValues[item.key]"
+                  :placeholder="emptyListPlaceholder" :aria-label="keyLabel(item.key)"
+                  :disabled="savingKey === item.key" class="setting-input setting-input--wide" clearable
+                  @blur="onChange(item)" />
                 <t-input v-else v-model="editValues[item.key]" :placeholder="placeholderFor(item)"
                   :aria-label="keyLabel(item.key)" :disabled="savingKey === item.key" class="setting-input" clearable
                   @blur="onChange(item)" />
@@ -294,6 +298,8 @@ const HIGH_IMPACT_KEYS = new Set<string>([
   'tenant.auto_create_api_key',
   'ssrf.whitelist',
   'sandbox.docker_enabled',
+  'oidc.system_admin_groups',
+  'oidc.group_role_map',
 ])
 
 function isHighRiskKey(key: string): boolean {
@@ -386,6 +392,9 @@ const SETTINGS_SECTION_KEYS: Record<Exclude<SettingsSection, 'other' | 'users'>,
     'auth.registration_mode',
     'auth.complex_password_enabled',
     'auth.default_tenant_mode',
+    'oidc.groups_claim',
+    'oidc.system_admin_groups',
+    'oidc.group_role_map',
     'tenant.self_service_creation_enabled',
     'tenant.max_owned_per_user',
   ],
