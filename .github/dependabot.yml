@@ -129,6 +129,21 @@ updates:
         applies-to: security-updates
         patterns: ["*"]
 
+  - package-ecosystem: npm
+    directory: "/website-docs/homepage"
+    schedule:
+      interval: monthly
+    cooldown:
+      default-days: 7
+    open-pull-requests-limit: 0
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major", "version-update:semver-minor", "version-update:semver-patch"]
+    groups:
+      homepage-security:
+        applies-to: security-updates
+        patterns: ["*"]
+
   - package-ecosystem: uv
     directory: "/docreader"
     schedule:
@@ -171,6 +186,21 @@ updates:
         update-types: ["version-update:semver-major", "version-update:semver-minor", "version-update:semver-patch"]
     groups:
       mcp-demo-security:
+        applies-to: security-updates
+        patterns: ["*"]
+
+  - package-ecosystem: uv
+    directory: "/dataset"
+    schedule:
+      interval: monthly
+    cooldown:
+      default-days: 7
+    open-pull-requests-limit: 0
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major", "version-update:semver-minor", "version-update:semver-patch"]
+    groups:
+      dataset-security:
         applies-to: security-updates
         patterns: ["*"]
 
