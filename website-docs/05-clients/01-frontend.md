@@ -16,7 +16,7 @@ From `frontend/package.json`:
 | --- | --- | --- | --- |
 | Framework | Vue | ^3.5.44 | Composition API, `<script setup>` style |
 | Language | TypeScript | ~6.0.3 | `vue-tsc` type checking (`npm run type-check`) |
-| Build tool | Vite | ^7.3.7 | Plugins: `@vitejs/plugin-vue`, `@vitejs/plugin-vue-jsx`, `unplugin-vue-components` (registers the TDesign components each template uses through `TDesignResolver`; `dts` is off until the 92 template type mismatches are fixed) |
+| Build tool | Vite | ^7.3.7 | Plugins: `@vitejs/plugin-vue`, `@vitejs/plugin-vue-jsx`, `unplugin-vue-components` (registers the TDesign components each template uses through `TDesignResolver` and writes `src/components.d.ts`, which is committed so `vue-tsc` type-checks the templates; any build regenerates it and `scripts/verify_frontend_pr.sh` fails when the build changes it) |
 | UI component library | TDesign (tdesign-vue-next) | ^1.20.10 | With `tdesign-icons-vue-next` 0.4.11 (version locked by overrides) |
 | State management | Pinia | ^4.1.0 | Every store lives in `frontend/src/stores/` |
 | Routing | Vue Router | 5.4.0 | `createWebHistory`, see `frontend/src/router/index.ts` |
@@ -324,7 +324,7 @@ Use this section to run the frontend locally, build the production image and con
 Key points of `frontend/vite.config.ts`:
 
 - **Two build inputs**: `rollupOptions.input` builds both `index.html` (main SPA) and `embed.html` (embed page). In development the custom plugin `embedHtmlDevFallback()` rewrites `/embed/:channelId` requests to `/embed.html`, matching nginx.
-- **Code splitting**: `manualChunks` splits mermaid/dagre/cytoscape, marked/katex and highlight.js into `vendor-mermaid`, `vendor-markdown` and `vendor-highlight`, every TDesign component in use into one `vendor-tdesign` chunk (one file beat 65 per-component chunks under HTTP/1.1: knowledge list cold LCP 2.5 s against 3.0 s), and lodash-es, dompurify and es-toolkit into `vendor-shared`. The embed entry filters the heavy chat chunks out through `modulePreload.resolveDependencies`, so the embed page's first screen loads only the code needed for the token exchange.
+- **Code splitting**: `manualChunks` splits mermaid/dagre/cytoscape, marked/katex and highlight.js into `vendor-mermaid`, `vendor-markdown` and `vendor-highlight`, and lodash-es, dompurify and es-toolkit into `vendor-shared`. TDesign has no shared chunk, so each entry carries only the components its templates use (the embed page's startup JavaScript is 290 KiB gzipped, the main app's 384 KiB). The embed entry filters the heavy chat chunks out through `modulePreload.resolveDependencies`, so the embed page's first screen loads only the code needed for the token exchange.
 - **Version injection**: `__FRONTEND_VERSION__` (the package.json version) and `__FRONTEND_COMMIT__` (`VITE_FRONTEND_COMMIT` / `GITHUB_SHA` / `git rev-parse`) are injected at build time.
 - **Dev proxy**: the dev server (port 5173) and preview (port 4173) both proxy `/api`, `/files` and `/mcp/` to `VITE_DEV_PROXY_TARGET` (or `FRONTEND_BACKEND_URL`, default `http://localhost:8080`). `/api` forwards WebSockets (sandbox terminals and the like) with the timeout raised to 180s. `/mcp/` carries the built-in MCP Server's long-lived Streamable HTTP connections with a 1-hour timeout.
 - **Aliases**: `@` → `frontend/src`, plus entry-file detection for `@vue-office/pptx`.

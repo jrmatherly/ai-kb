@@ -348,7 +348,7 @@ When self-hosting SearXNG, remember to add `127.0.0.1` to `SSRF_WHITELIST`, othe
 | `MCP_SERVER_AUTH_TOKEN` | empty | **Required for the HTTP/SSE transports**; the process refuses to start without it; clients send it as `Authorization: Bearer` |
 | `AIKB_CHAT_TIMEOUT` | 300 | Read timeout in seconds for calls to the AI KB REST API |
 | `AIKB_VERIFY_SSL` | true | Whether to verify the backend TLS certificate; set false for self-signed certificates |
-| `MCP_ALLOWED_UPLOAD_DIRS` | empty | Whitelist of directories allowed for upload (comma-separated); empty disables the file upload tool |
+| `MCP_ALLOWED_UPLOAD_DIRS` | empty | Allowlist of directories local files may be uploaded from (comma-separated); empty allows only the server's working directory |
 
 The full description is in [MCP integration](../03-features/08-mcp.md).
 
