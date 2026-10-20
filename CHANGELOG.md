@@ -23,6 +23,7 @@ All notable changes to this project will be documented in this file.
 - **FIXED**: The Windows installer carries the MPL corresponding-source archive (`licenses/sources/mysql-v1.10.1.zip`) like the other desktop packages; the release workflow stages the verified bundle before the Windows build.
 - **FIXED**: CLI help no longer renders a referenced command as a flag's value name (`--chat-model string`, not `--chat-model aikb model list`) on `kb config set`, `session stop`, `session resume`, `model create`, `api` and the commands that accept an ignored `--kb`; the agent reference's exit and hint columns now match the CLI and are checked by its tests.
 - **FIXED**: The compose files no longer set `GRPC_TLS_SERVER_NAME` on the docreader service, which never read it; the app service keeps it for its gRPC client.
+- **FIXED**: The third-party notices list elkjs (EPL-2.0, mermaid's ELK layout chunk), and `scripts/check-license-bundle.sh` now requires the notices to name the locked version of every reviewed npm and Python component (`licenses/components.tsv`) and fails on any other production package with a copyleft or missing license; the frontend and docreader CI jobs run it.
 - **FIXED**: The IM Integration page describes only the platforms `AIKB_IM_PLATFORMS` allows, a new channel starts on the first allowed platform with that platform's mode and credential defaults, and Add Channel is disabled when the allow-list is empty (previously the form defaulted to WeCom, which the server refused).
 
 ## [2026.10.18.1] - 2026-10-18

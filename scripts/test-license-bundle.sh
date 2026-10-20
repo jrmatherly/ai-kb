@@ -5,11 +5,14 @@ set -euo pipefail
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 fixture="$(mktemp -d)"
 trap 'rm -rf "${fixture}"' EXIT
-mkdir -p "${fixture}/scripts" "${fixture}/bin" "${fixture}/licenses/sources"
+mkdir -p "${fixture}/scripts" "${fixture}/bin" "${fixture}/licenses/sources" "${fixture}/frontend" "${fixture}/docreader"
 cp "${repo_root}/scripts/"{check-license-bundle,copy-licenses}.sh "${fixture}/scripts/"
 cp "${repo_root}/LICENSE" "${repo_root}/THIRD_PARTY_NOTICES.md" "${fixture}/"
-cp "${repo_root}/licenses/"*.txt "${fixture}/licenses/"
+cp "${repo_root}/licenses/"*.txt "${repo_root}/licenses/components.tsv" "${fixture}/licenses/"
 touch "${fixture}/go.sum"
+
+cp "${repo_root}/frontend/package-lock.json" "${fixture}/frontend/"
+cp "${repo_root}/docreader/uv.lock" "${fixture}/docreader/"
 
 checksum() {
     if command -v sha256sum >/dev/null 2>&1; then
@@ -44,7 +47,8 @@ EOF
 chmod +x "${fixture}/bin/go"
 export PATH="${fixture}/bin:${PATH}"
 
-bash "${fixture}/scripts/check-license-bundle.sh"
+bash "${fixture}/scripts/check-license-bundle.sh" > "${fixture}/check.log"
+grep -qx 'skipped: python discovery, docreader/.venv or uv absent' "${fixture}/check.log"
 bash "${fixture}/scripts/copy-licenses.sh" "${fixture}/release with spaces"
 for archive in mysql-v1.10.0 license-fixture-v0.1.0; do
     test -s "${fixture}/release with spaces/licenses/sources/${archive}.zip"
@@ -64,8 +68,17 @@ if bash "${fixture}/scripts/copy-licenses.sh" "${fixture}/corrupt release" > "${
 fi
 test ! -e "${fixture}/corrupt release"
 
+tld_version="$(awk '/^name = "tld"$/ { getline; gsub(/version = |"/, ""); print }' "${fixture}/docreader/uv.lock")"
+sed "s/tld \`${tld_version}\`/tld \`0.0.0\`/" "${repo_root}/THIRD_PARTY_NOTICES.md" > "${fixture}/THIRD_PARTY_NOTICES.md"
+if bash "${fixture}/scripts/check-license-bundle.sh" > "${fixture}/component.log" 2>&1; then
+    echo 'Notice validation accepted a notices file that names a stale component version' >&2; exit 1
+fi
+grep -q "THIRD_PARTY_NOTICES.md does not name tld \`${tld_version}\`" "${fixture}/component.log"
+cp "${repo_root}/THIRD_PARTY_NOTICES.md" "${fixture}/"
+
 printf 'github.com/go-sql-driver/mysql v0.0.0\n' > "${fixture}/go.mod"
 if bash "${fixture}/scripts/check-license-bundle.sh" > "${fixture}/version.log" 2>&1; then
     echo 'Notice validation accepted a stale module version' >&2; exit 1
 fi
+grep -q 'Update the source manifest for github.com/go-sql-driver/mysql' "${fixture}/version.log"
 echo 'License bundle packaging tests passed'

@@ -1,0 +1,5 @@
+npm	@novnc/novnc
+npm	elkjs
+npm	khroma
+python	certifi
+python	tld

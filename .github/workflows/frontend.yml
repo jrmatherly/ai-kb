@@ -50,6 +50,10 @@ jobs:
       - name: 📦 Install dependencies
         run: npm ci --no-audit --no-fund
 
+      - name: 🔎 Third-party notices
+        working-directory: .
+        run: bash scripts/check-license-bundle.sh
+
       - name: 🧪 Run tests
         run: npm test
 
