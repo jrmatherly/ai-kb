@@ -5,9 +5,13 @@ for AI KB's own code does not replace the licenses of third-party components.
 Keep this file, `LICENSE`, and the `licenses/` directory with redistributed
 backend and desktop packages. `scripts/copy-licenses.sh` adds checksum-verified
 source archives at packaging time; they are not stored in this Git repository.
-Container distributions include the complete bundle in `/app`;
-macOS applications include them in `Contents/Resources`.
-Windows installers place them next to the installed executable.
+The app image includes the complete bundle in `/app`. The Lite archive and the
+Linux desktop archive include it at their top level, and the macOS application in
+`Contents/Resources`. The ui, docreader and sandbox images carry no bundle; the
+sections below say what they ship. The Windows installer copies `LICENSE`, this
+file and the repository's `licenses/` directory next to the installed executable.
+That directory holds no source archives, so the Windows installer does not carry
+`licenses/sources/mysql-v1.10.1.zip`; obtain it from the links below.
 
 ## Go MySQL Driver
 
@@ -18,8 +22,9 @@ Windows installers place them next to the installed executable.
 - Copyright: The Go-MySQL-Driver Authors; the original per-file notices and
   `AUTHORS` are preserved in the accompanying source archive.
 - Modifications by AI KB: none. Dialer configuration is in separate AI KB files.
-- Corresponding source, available under MPL-2.0, is included in binary releases
-  as `licenses/sources/mysql-v1.10.1.zip`. Source repository users can obtain it from the
+- Corresponding source, available under MPL-2.0, is included in the app image, the
+  Lite and Linux desktop archives and the macOS application as
+  `licenses/sources/mysql-v1.10.1.zip` (not in the Windows installer). Everyone can obtain it from the
   [Go module proxy](https://proxy.golang.org/github.com/go-sql-driver/mysql/@v/v1.10.1.zip)
   and [upstream repository](https://github.com/go-sql-driver/mysql/tree/v1.10.1).
 
@@ -36,10 +41,43 @@ Windows installers place them next to the installed executable.
   implementation; the upstream Go converter, `liuzl/da`, and GPL-licensed
   `cedar-go` code are not included.
 
+## noVNC
+
+- Component: `@novnc/novnc`, version `1.7.0` (`frontend/package-lock.json`).
+- Used by the sandbox desktop viewer (`frontend/src/composables/useSandboxDesktop.ts`).
+  It ships, bundled and minified, in the frontend build: the ui image, the Lite
+  archive's `web/` directory and the desktop applications.
+- License: Mozilla Public License 2.0, the same text as
+  [`licenses/go-sql-driver-mysql-MPL-2.0.txt`](licenses/go-sql-driver-mysql-MPL-2.0.txt).
+- Copyright: the noVNC authors (`AUTHORS` in the source).
+- Modifications by AI KB: none. The package is used as published on npm.
+- Corresponding source, available under MPL-2.0: the
+  [npm package](https://registry.npmjs.org/@novnc/novnc/-/novnc-1.7.0.tgz) and the
+  [upstream repository](https://github.com/novnc/noVNC/tree/v1.7.0).
+
+## docreader Python packages
+
+The docreader image installs its locked Python environment (`docreader/uv.lock`)
+into `/app/.venv`. Each package's license text ships with it, in that package's
+`*.dist-info` directory under `site-packages`. Packages with copyleft or
+weak-copyleft licenses:
+
+- EbookLib `0.20`, GNU Affero General Public License v3 or later. Used by the EPUB
+  parser (`docreader/parser/epub_parser.py`). Unmodified; source on
+  [PyPI](https://pypi.org/project/EbookLib/0.20/) and in the
+  [upstream repository](https://github.com/aerkalov/ebooklib).
+- certifi `2026.7.22`, Mozilla Public License 2.0. Unmodified; source on
+  [PyPI](https://pypi.org/project/certifi/2026.7.22/) and in the
+  [upstream repository](https://github.com/certifi/python-certifi).
+- tld `0.13.2`, MPL-1.1 OR GPL-2.0-only OR LGPL-2.1-or-later, a dependency of
+  `courlan`. Unmodified; source on [PyPI](https://pypi.org/project/tld/0.13.2/)
+  and in the [upstream repository](https://github.com/barseghyanartur/tld).
+
 ## Build-only component
 
 The Windows installer template in `cmd/desktop/build/windows/installer/project.nsi`
-is based on Wails v2.12.0's MIT-licensed default template, with local changes to
+is based on Wails v2.12.0's MIT-licensed default template (the build uses Wails
+v2.16.0), with local changes to
 install this notice/source bundle. Its license and copyright are reproduced in
 [`licenses/Wails-MIT.txt`](licenses/Wails-MIT.txt).
 
@@ -56,7 +94,8 @@ When upgrading an MPL module, update its version, license, and SHA-256 pin in
 ZIPs, including their original copyright notices. Verify them with
 `go mod download -json` and the module's `go.sum` entry before updating.
 `scripts/check-license-bundle.sh` checks the pins and notices without downloading
-dependencies. `scripts/copy-licenses.sh DESTINATION` obtains the pinned archives
+dependencies. It covers Go modules only (`licenses/sources/modules.tsv`); nothing checks the
+npm and Python components above automatically. `scripts/copy-licenses.sh DESTINATION` obtains the pinned archives
 through Go's configured `GOPROXY` and module cache, verifies their SHA-256 hashes,
 and includes them in the destination bundle. Offline packaging requires those
 module archives to be present in the Go module cache beforehand. To verify a

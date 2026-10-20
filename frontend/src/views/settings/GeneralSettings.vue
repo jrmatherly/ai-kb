@@ -114,6 +114,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import type { RadioValue, SelectValue } from 'tdesign-vue-next'
 import { useSettingsStore } from '@/stores/settings'
 import { useAuthStore } from '@/stores/auth'
 import { useTheme, type ThemeMode } from '@/composables/useTheme'
@@ -188,7 +189,7 @@ const isAutoCheckUpdateEnabled = computed({
   }
 })
 
-const handleThemeChange = (val: ThemeMode) => {
+const handleThemeChange = (val: SelectValue) => {
   if (!setTheme(val)) {
     // Setter rejected the value (validation guard); roll the form back to
     // the canonical state so the UI doesn't drift.
@@ -197,21 +198,21 @@ const handleThemeChange = (val: ThemeMode) => {
   }
 }
 
-const handleSansFontChange = (val: FontKey) => {
+const handleSansFontChange = (val: SelectValue) => {
   if (!setSansFont(val)) {
     localSansFont.value = currentSans.value
     return
   }
 }
 
-const handleMonoFontChange = (val: MonoFontKey) => {
+const handleMonoFontChange = (val: SelectValue) => {
   if (!setMonoFont(val)) {
     localMonoFont.value = currentMono.value
     return
   }
 }
 
-const handleFontSizeChange = (val: FontSizeKey) => {
+const handleFontSizeChange = (val: RadioValue) => {
   if (!setFontSize(val)) {
     localFontSize.value = currentSize.value
     return

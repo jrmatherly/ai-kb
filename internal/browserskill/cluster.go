@@ -167,11 +167,6 @@ func (m *Manager) route(
 		// The owner's text already carries the sentinel prefix.
 		return nil, true, fmt.Errorf("%w: %s", ErrUpstream, strings.TrimPrefix(result.Error, ErrUpstream.Error()+": "))
 	}
-	// An owner from before Kind existed names the store failure by its text only; drop
-	// this fallback one release after Kind ships (every replica then sends it).
-	if result.Error == ErrStore.Error() {
-		return nil, true, ErrStore
-	}
 	if result.Error != "" {
 		return nil, true, errors.New(result.Error)
 	}

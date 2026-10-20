@@ -7,7 +7,7 @@ Dev loop
 
 Validate
 
-- All areas a change touches: `scripts/validate.sh [--base <rev>] [--list] [--area <name>]`; the per-area commands below are what it runs.
+- All areas a change touches: `scripts/validate.sh [--base <rev>] [--list] [--area <name>]`; the commands below are its core. It also runs `go mod tidy -diff` and the govulncheck gate, checks gofmt on changed files (not `make fmt`), runs golangci-lint only for issues new since the base, and for the frontend runs `scripts/verify_frontend_pr.sh` (fails on a changed `src/components.d.ts`) plus a UI image build and `scripts/test_embed_nginx.py`; `check-i18n` is not run on its own (`npm test` covers `localeKeyAudit.test.ts`).
 - Go: `go vet $(go list ./... | grep -v /docreader/) && go test $(go list ./... | grep -v /docreader/)`; `go test -tags desktop ./internal/container`; `go build ./cmd/server`; `golangci-lint run`; `make fmt` (go fmt).
 - Model catalog: `make model-catalog-check` (= `python3 scripts/model-catalog/generate.py --check` + `go test ./internal/models/...`); regenerate with `make model-catalog-generate`.
 - Frontend: `npm --prefix frontend test`, `npm --prefix frontend run type-check`, `npm --prefix frontend run build`; i18n: `npm --prefix frontend run check-i18n`.

@@ -85,7 +85,7 @@
             <t-popup
               v-model="passwordPopupVisible"
               trigger="click"
-              placement="bottom-end"
+              placement="bottom-right"
               destroy-on-close
               overlay-class-name="wk-popover wk-popover--form user-profile-password-popup-overlay"
             >

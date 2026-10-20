@@ -252,6 +252,7 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
 import { DialogPlugin, MessagePlugin } from 'tdesign-vue-next'
+import type { DropdownOption } from 'tdesign-vue-next'
 import { AddIcon } from 'tdesign-icons-vue-next'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
@@ -308,7 +309,7 @@ const canSetDefault = (backend: StorageBackend) => backend.id !== defaultID.valu
 const hasActions = (_backend: StorageBackend) => true
 
 function getBackendOptions(backend: StorageBackend) {
-  const options: { content: string; value: string; theme?: string }[] = []
+  const options: { content: string; value: string; theme?: DropdownOption['theme'] }[] = []
   options.push({ content: t('settings.storageBackend.testConnection'), value: 'test' })
   if (canSetDefault(backend)) options.push({ content: t('settings.storageBackend.setDefault'), value: 'default' })
   if (canEdit(backend)) options.push({ content: t('settings.storageBackend.edit'), value: 'edit' })

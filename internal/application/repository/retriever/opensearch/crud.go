@@ -8,7 +8,7 @@ import (
 	"io"
 	"strings"
 
-	osapi "github.com/opensearch-project/opensearch-go/v4/opensearchapi"
+	osapi "github.com/opensearch-project/opensearch-go/v5/opensearchapi"
 
 	"github.com/jrmatherly/ai-kb/internal/logger"
 	"github.com/jrmatherly/ai-kb/internal/types"
@@ -58,11 +58,11 @@ func (r *Repository) Save(
 		return fmt.Errorf("opensearch: marshal doc: %w", err)
 	}
 	req := osapi.IndexReq{
-		Index:      targetIndex,
-		DocumentID: info.ChunkID, // _id = chunk_id (idempotent)
-		Body:       bytes.NewReader(doc),
+		Index: targetIndex,
+		ID:    info.ChunkID, // _id = chunk_id (idempotent)
+		Body:  bytes.NewReader(doc),
 	}
-	resp, err := r.client.Index(ctx, req)
+	resp, err := r.client.Document.Index(ctx, req)
 	if err != nil {
 		return wrapTransport(err)
 	}
@@ -325,12 +325,9 @@ func extractBatchEmbeddings(params map[string]any, infos []*types.IndexInfo) ([]
 // ErrBatchTooLarge; the async task path that lifts the cap arrives in
 // a later change.
 //
-// Refresh policy: opensearch-go v4's typed Params.Refresh is *bool, so
-// the wire-level "wait_for" value documented in the OpenSearch REST
-// API is not directly expressible. Refresh:&true forces immediate
-// segment flush (read-your-writes guaranteed, but expensive at scale).
-// A follow-up can revisit via a custom raw request if telemetry shows
-// the cost is material at production batch frequencies.
+// Refresh "true" forces an immediate segment flush (read-your-writes,
+// but expensive at scale); "wait_for" is cheaper and can replace it if
+// telemetry shows the cost is material at production batch frequencies.
 func (r *Repository) DeleteByChunkIDList(
 	ctx context.Context, chunkIDs []string, dim int, _ string,
 ) error {
@@ -388,13 +385,12 @@ func (r *Repository) deleteByTerms(
 	if err != nil {
 		return fmt.Errorf("opensearch: marshal delete body: %w", err)
 	}
-	refresh := true
-	req := osapi.DocumentDeleteByQueryReq{
-		Indices: []string{index},
-		Body:    bytes.NewReader(body),
-		Params:  osapi.DocumentDeleteByQueryParams{Refresh: &refresh},
+	req := osapi.DeleteByQueryReq{
+		Indices:    []string{index},
+		BodyReader: bytes.NewReader(body),
+		Params:     &osapi.DeleteByQueryParams{Refresh: "true"},
 	}
-	resp, err := r.client.Document.DeleteByQuery(ctx, req)
+	resp, err := r.client.DeleteByQuery(ctx, &req)
 	if err != nil {
 		return wrapTransport(err)
 	}

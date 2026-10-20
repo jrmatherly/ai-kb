@@ -1,10 +1,8 @@
 # Run the AI KB MCP server with uv
 
-> Prefer the built-in endpoint (Settings → Publish & Integrations → MCP Server). Its connection dialog gives ready-made snippets for Cursor, VS Code, Claude Desktop and Claude Code.
->
-> For this package, we recommend `uv` for running Python-based MCP servers.
->
-> The snippets below run the server from a checkout. To use the PyPI package instead, set `"command": "uvx"` and `"args": ["--from", "ai-kb-mcp", "ai-kb-mcp-server"]`.
+> **Deprecated.** AI KB ships a [built-in MCP server](https://ai-kb.matherly.net/docs/03-features/08-mcp) (Settings → Publish & Integrations → MCP Server). Prefer it: its connection dialog gives ready-made snippets for Cursor, VS Code, Claude Desktop and Claude Code.
+
+For this package, we recommend `uv` for running Python-based MCP servers.
 
 ## 1. Install uv
 
@@ -21,21 +19,20 @@ powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | ie
 
 ## 2. MCP client configuration
 
-### Claude Desktop
+Every client takes the same server entry under `mcpServers`. Put it in the client's config file:
 
-Add this to the Claude Desktop settings:
+- Claude Desktop: `claude_desktop_config.json`
+- Cursor: `~/.cursor/mcp.json` (global) or `.cursor/mcp.json` in the project
+- KiloCode and other MCP clients: their MCP settings file
+
+### From PyPI
 
 ```json
 {
   "mcpServers": {
     "aikb": {
-      "args": [
-        "--directory",
-        "/path/ai-kb/mcp-server",
-        "run",
-        "run_server.py"
-      ],
-      "command": "uv",
+      "command": "uvx",
+      "args": ["--from", "ai-kb-mcp", "ai-kb-mcp-server"],
       "env": {
         "AIKB_API_KEY": "your_api_key_here",
         "AIKB_BASE_URL": "http://localhost:8080/api/v1"
@@ -45,21 +42,14 @@ Add this to the Claude Desktop settings:
 }
 ```
 
-### Cursor
-
-In Cursor, edit `~/.cursor/mcp.json` (global) or `.cursor/mcp.json` in the project:
+### From a checkout
 
 ```json
 {
   "mcpServers": {
     "aikb": {
       "command": "uv",
-      "args": [
-        "--directory",
-        "/path/ai-kb/mcp-server",
-        "run",
-        "run_server.py"
-      ],
+      "args": ["--directory", "/path/to/ai-kb/mcp-server", "run", "run_server.py"],
       "env": {
         "AIKB_API_KEY": "your_api_key_here",
         "AIKB_BASE_URL": "http://localhost:8080/api/v1"
@@ -69,50 +59,4 @@ In Cursor, edit `~/.cursor/mcp.json` (global) or `.cursor/mcp.json` in the proje
 }
 ```
 
-### KiloCode
-
-For KiloCode or other editors that support MCP:
-
-```json
-{
-  "mcpServers": {
-    "aikb": {
-      "command": "uv",
-      "args": [
-        "--directory",
-        "/path/ai-kb/mcp-server",
-        "run",
-        "run_server.py"
-      ],
-      "env": {
-        "AIKB_API_KEY": "your_api_key_here",
-        "AIKB_BASE_URL": "http://localhost:8080/api/v1"
-      }
-    }
-  }
-}
-```
-
-### Other MCP clients
-
-For a generic MCP client:
-
-```json
-{
-  "mcpServers": {
-    "aikb": {
-      "command": "uv",
-      "args": [
-        "--directory",
-        "/path/ai-kb/mcp-server",
-        "run",
-        "run_server.py"
-      ],
-      "env": {
-        "AIKB_API_KEY": "your_api_key_here",
-        "AIKB_BASE_URL": "http://localhost:8080/api/v1"
-      }
-    }
-  }
-}
-```
+`run_server.py` always runs stdio. Both entries launch the server over stdio; to serve it over HTTP or SSE instead, see [Network transports](./README.md#network-transports).

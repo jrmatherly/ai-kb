@@ -69,6 +69,7 @@
 import { ref, computed, h } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { MessagePlugin } from 'tdesign-vue-next'
+import type { DropdownOption } from 'tdesign-vue-next'
 import { AddIcon, FileAddIcon, UploadIcon, FolderAddIcon, LinkIcon, EditIcon } from 'tdesign-icons-vue-next'
 import { filterUploadFiles } from '../utils/uploadSources'
 
@@ -144,7 +145,7 @@ const dropdownOptions = computed(() => {
   return options
 })
 
-const handleActionSelect = (data: { value: string }) => {
+const handleActionSelect = (data: DropdownOption) => {
   switch (data.value) {
     case 'upload':
       fileInputRef.value?.click()

@@ -7,14 +7,18 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	osapi "github.com/opensearch-project/opensearch-go/v4/opensearchapi"
-
 	"github.com/jrmatherly/ai-kb/internal/types"
 )
 
+// catPluginRow is one _cat/plugins row as the cluster serializes it.
+type catPluginRow struct {
+	Name      string `json:"name"`
+	Component string `json:"component"`
+}
+
 // clusterHandler serves both GET / (version info) and /_cat/plugins, so the
 // full TestConnection probe (version + k-NN plugin) can run end to end.
-func clusterHandler(distribution, number string, plugins []osapi.CatPluginResp) http.HandlerFunc {
+func clusterHandler(distribution, number string, plugins []catPluginRow) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		if r.URL.Path == "/_cat/plugins" {
@@ -26,7 +30,7 @@ func clusterHandler(distribution, number string, plugins []osapi.CatPluginResp) 
 }
 
 func TestTestConnection_Success(t *testing.T) {
-	ts := httptest.NewServer(clusterHandler("opensearch", "3.3.2", []osapi.CatPluginResp{
+	ts := httptest.NewServer(clusterHandler("opensearch", "3.3.2", []catPluginRow{
 		{Name: "node-1", Component: "opensearch-knn"},
 	}))
 	defer ts.Close()

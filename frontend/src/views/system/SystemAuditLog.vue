@@ -173,6 +173,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import type { RowEventContext, TableRowData } from 'tdesign-vue-next'
 import {
   listSystemAuditLog,
   type AuditAction,
@@ -520,8 +521,9 @@ const auditDetailDescription = computed(() =>
   selectedAuditEntry.value ? formatAuditDateTime(selectedAuditEntry.value.created_at) : '',
 )
 
-function openAuditDetail(context: { row: AuditLog }) {
-  selectedAuditEntry.value = context.row
+function openAuditDetail(context: RowEventContext<TableRowData>) {
+  // The table renders auditEntries, so every row is an AuditLog.
+  selectedAuditEntry.value = context.row as AuditLog
   auditDetailVisible.value = true
 }
 

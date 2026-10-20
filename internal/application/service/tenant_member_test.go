@@ -299,6 +299,8 @@ func (r *cleanupUserRepo) ListUsers(context.Context, int, int) ([]*types.User, e
 func (r *cleanupUserRepo) ListSystemAdmins(context.Context, int, int) ([]*types.User, int64, error) {
 	return nil, 0, nil
 }
+func (r *cleanupUserRepo) GrantSystemAdmin(context.Context, string) error { return nil }
+
 func (r *cleanupUserRepo) RevokeSystemAdmin(context.Context, string, string) (*types.User, error) {
 	return nil, nil
 }

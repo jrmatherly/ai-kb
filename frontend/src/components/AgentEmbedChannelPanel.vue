@@ -390,7 +390,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { MessagePlugin } from 'tdesign-vue-next'
+import { MessagePlugin, type DropdownOption } from 'tdesign-vue-next'
 import { copyWithToast } from '@/utils/clipboard'
 import { useAuthStore } from '@/stores/auth'
 import SettingDrawer from '@/components/settings/SettingDrawer.vue'
@@ -541,7 +541,7 @@ const channelMenuOptions = (ch: EmbedChannel) => {
   return items
 }
 
-function handleChannelMenuClick(data: { value?: string }, ch: EmbedChannel) {
+function handleChannelMenuClick(data: DropdownOption, ch: EmbedChannel) {
   if (data.value === 'preview') {
     void openPreviewForChannel(ch)
     return

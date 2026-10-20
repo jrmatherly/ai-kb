@@ -2,7 +2,7 @@
 name: ai-kb-rag-search
 description: Use when answering a question from an AI KB knowledge base or pulling source passages out of one with the `aikb` CLI - grounded answers with `chat`, custom-agent answers with `session ask`, raw hybrid retrieval with `search chunks`, finding documents, knowledge bases or sessions by name, continuing a conversation, or stopping and resuming a stream. Read it whenever you are unsure which of those commands fits the task.
 metadata:
-  tested_against: v2026.10.13
+  tested_against: v2026.10.18.1
   openclaw:
     requires:
       bins: [aikb]

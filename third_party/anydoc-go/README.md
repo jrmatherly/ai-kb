@@ -133,7 +133,9 @@ Keep this list current: it is the diff a future upgrade has to re-apply. Items
 1. `Cargo.toml` depends on the published `anydoc = "=0.2.4"` crate instead of
    the workspace path dependency, declares its own empty `[workspace]`, and
    repeats the upstream release profile (`lto`, `strip`), which it would
-   otherwise inherit from the anydoc workspace.
+   otherwise inherit from the anydoc workspace. A `[patch.crates-io]` entry
+   redirects `anydoc` to `patched-anydoc/`, the copy of the pinned crate that
+   the build script materializes, so the build links the patched copy.
 2. `anydoc.go`: every ABI call runs inside `call()`, which pins the goroutine
    with `runtime.LockOSThread` for the duration. The ABI reports the error
    message through a thread-local slot that a *second* call
@@ -206,11 +208,15 @@ The 0.2.4 lockfile removes calamine and five exclusive dependencies, retains
 ([upstream fix](https://github.com/RustCrypto/stream-ciphers/pull/580)); other
 transitive versions are retained.
 
-`cargo audit` on 2026-09-29 reports no vulnerabilities and one allowed warning:
-`ttf-parser` 0.25.1 is
-unmaintained (`RUSTSEC-2026-0192`), pulled in transitively by the PDF stack. It
-is not a vulnerability and nothing here can fix it, so warnings report without
-failing the job.
+When last run, on 2026-09-29, `cargo audit` reported no vulnerabilities and one
+allowed warning: `ttf-parser` 0.25.1 is unmaintained (`RUSTSEC-2026-0192`),
+pulled in transitively by the PDF stack. It is not a vulnerability and nothing
+here can fix it, so warnings report without failing the job. That result
+predates the current `Cargo.toml` and lockfile. To re-run it, install a Rust
+toolchain and `cargo-audit`, run `scripts/build-anydoc-lib.sh` once (it
+materializes `patched-anydoc/`, which the patch entry needs), then `cargo audit`
+in `third_party/anydoc-go`. `scripts/validate.sh --area anydoc` does both when
+`cargo` and `cargo-audit` are installed.
 
 ## Known upstream limitation
 

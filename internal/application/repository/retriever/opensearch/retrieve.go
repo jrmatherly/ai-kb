@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"io"
 
-	osapi "github.com/opensearch-project/opensearch-go/v4/opensearchapi"
+	osapi "github.com/opensearch-project/opensearch-go/v5/opensearchapi"
 
 	"github.com/jrmatherly/ai-kb/internal/logger"
 	"github.com/jrmatherly/ai-kb/internal/types"
@@ -119,7 +119,7 @@ func effectiveTopK(ctx context.Context, p types.RetrieveParams) int {
 }
 
 func (r *Repository) search(ctx context.Context, indexPattern string, body []byte) ([]hit, error) {
-	req := osapi.SearchReq{Indices: []string{indexPattern}, Body: bytes.NewReader(body)}
+	req := osapi.SearchReq{Indices: []string{indexPattern}, BodyReader: bytes.NewReader(body)}
 	resp, err := r.client.Search(ctx, &req)
 	if err != nil {
 		if isNotFound(err) {
@@ -133,7 +133,12 @@ func (r *Repository) search(ctx context.Context, indexPattern string, body []byt
 		}
 	}()
 	// Cap response body at 16MB (search results bounded by max_result_window * doc_size).
-	return parseSearchHits(io.LimitReader(resp.Inspect().Response.Body, 16<<20))
+	hits, failed, err := parseSearchHits(io.LimitReader(resp.Inspect().Response.Body, 16<<20))
+	if failed > 0 {
+		logger.GetLogger(ctx).Warnf("[OpenSearch] %d shard(s) failed searching %s; results are partial",
+			failed, indexPattern)
+	}
+	return hits, err
 }
 
 // hit is the structural shape we pull from each OpenSearch search hit.
@@ -154,16 +159,22 @@ type hit struct {
 	} `json:"_source"`
 }
 
-func parseSearchHits(body io.Reader) ([]hit, error) {
+// parseSearchHits returns the hits and the number of failed shards; the
+// error mask keeps shard failures out of the SDK error, so they are read
+// from the body here.
+func parseSearchHits(body io.Reader) ([]hit, int, error) {
 	var resp struct {
+		Shards struct {
+			Failed int `json:"failed"`
+		} `json:"_shards"`
 		Hits struct {
 			Hits []hit `json:"hits"`
 		} `json:"hits"`
 	}
 	if err := json.NewDecoder(body).Decode(&resp); err != nil {
-		return nil, fmt.Errorf("opensearch: parse search response: %w", ErrTransport)
+		return nil, 0, fmt.Errorf("opensearch: parse search response: %w", ErrTransport)
 	}
-	return resp.Hits.Hits, nil
+	return resp.Hits.Hits, resp.Shards.Failed, nil
 }
 
 // wrapResults converts OpenSearch hits to the upstream IndexWithScore

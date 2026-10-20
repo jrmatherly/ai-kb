@@ -1,6 +1,7 @@
 package types
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -54,4 +55,24 @@ func TestParserEngineConfigToOverridesMapResolvesMinerUParseMethod(t *testing.T)
 
 	legacy := (&ParserEngineConfig{MinerUEnableOCR: &falseValue}).ToOverridesMap()
 	assert.Equal(t, MinerUParseMethodText, legacy["mineru_parse_method"])
+}
+
+func TestValidTenantSlug(t *testing.T) {
+	for _, tc := range []struct {
+		slug string
+		want bool
+	}{
+		{"home", true},
+		{"kb-main", true},
+		{"a1", true},
+		{"a", false},
+		{"12", false},
+		{"Home", false},
+		{"home_kb", false},
+		{"", false},
+		{"a" + strings.Repeat("b", 63), true},
+		{strings.Repeat("a", 65), false},
+	} {
+		assert.Equal(t, tc.want, ValidTenantSlug(tc.slug), tc.slug)
+	}
 }

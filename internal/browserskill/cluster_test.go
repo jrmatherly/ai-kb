@@ -131,8 +131,7 @@ func TestInternalRPCRejectsForgeryAndReplay(t *testing.T) {
 }
 
 // The owning replica names the failure kind so the follower maps it to the same
-// sentinel a local failure produces; a pre-kind owner is matched on the store
-// message, and a transport failure is an upstream error.
+// sentinel a local failure produces, and a transport failure is an upstream error.
 func TestRouteMapsOwnerErrorKindsToSentinels(t *testing.T) {
 	store := testStore(t)
 	scope := Scope{1, "alice"}
@@ -171,7 +170,6 @@ func TestRouteMapsOwnerErrorKindsToSentinels(t *testing.T) {
 			clusterResponse{Error: ErrUpstream.Error() + ": BrowserSkill daemon unavailable", Kind: "upstream"},
 			ErrUpstream,
 		},
-		{"pre-kind owner store message", clusterResponse{Error: ErrStore.Error()}, ErrStore},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			mu.Lock()

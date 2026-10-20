@@ -323,6 +323,14 @@ func (s *stubTenantServiceForModelDelete) BulkSetStorageQuota(context.Context, i
 func (s *stubTenantServiceForModelDelete) SearchTenants(context.Context, string, uint64, int, int) ([]*types.Tenant, int64, error) {
 	return nil, 0, nil
 }
+func (s *stubTenantServiceForModelDelete) GetTenantBySlug(context.Context, string) (*types.Tenant, error) {
+	return nil, nil
+}
+
+func (s *stubTenantServiceForModelDelete) SetTenantSlug(context.Context, uint64, *string) error {
+	return nil
+}
+
 func (s *stubTenantServiceForModelDelete) GetTenantByIDForUser(context.Context, uint64, string) (*types.Tenant, error) {
 	return s.tenant, nil
 }

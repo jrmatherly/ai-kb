@@ -3,6 +3,7 @@ package handler
 import (
 	"context"
 	"encoding/json"
+	stderrors "errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -12,6 +13,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 
+	"github.com/jrmatherly/ai-kb/internal/application/service"
 	"github.com/jrmatherly/ai-kb/internal/config"
 	"github.com/jrmatherly/ai-kb/internal/errors"
 	"github.com/jrmatherly/ai-kb/internal/handler/dto"
@@ -105,6 +107,8 @@ type createTenantRequest struct {
 type updateTenantRequest struct {
 	Name        *string `json:"name"        binding:"omitempty,min=1,max=128"`
 	Description *string `json:"description" binding:"omitempty,max=512"`
+	// Slug is system-admin only; "" clears it.
+	Slug *string `json:"slug"        binding:"omitempty,max=64"`
 }
 
 type apiPrincipalConfigRequest struct {
@@ -588,9 +592,11 @@ func (h *TenantHandler) GetTenant(c *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Param        id       path      int           true  "Workspace ID"
-// @Param        request  body      types.Tenant  true  "Workspace details"
+// @Param        request  body      updateTenantRequest  true  "Name, description, slug (admin only; empty clears)"
 // @Success      200      {object}  map[string]interface{}  "Updated workspace"
-// @Failure      400      {object}  errors.ErrorResponse         "Invalid request parameters"
+// @Failure      400      {object}  errors.ErrorResponse         "Invalid request parameters or slug"
+// @Failure      403      {object}  errors.ErrorResponse         "Slug change by a non system administrator"
+// @Failure      409      {object}  errors.ErrorResponse         "Slug already in use"
 // @Security     Bearer
 // @Router       /tenants/{id} [put]
 func (h *TenantHandler) UpdateTenant(c *gin.Context) {
@@ -645,6 +651,22 @@ func (h *TenantHandler) UpdateTenant(c *gin.Context) {
 	if req.Description != nil {
 		existing.Description = strings.TrimSpace(*req.Description)
 	}
+	var slug *string
+	if req.Slug != nil {
+		trimmed := strings.TrimSpace(*req.Slug)
+		current := ""
+		if existing.Slug != nil {
+			current = *existing.Slug
+		}
+		// A client that round-trips the tenant sends the slug back unchanged; only a change is gated.
+		if trimmed != current {
+			if err := checkSlugChange(ctx, trimmed); err != nil {
+				_ = c.Error(err)
+				return
+			}
+			slug = &trimmed
+		}
+	}
 
 	logger.Infof(ctx, "Updating tenant, ID: %d, Name: %s", id, secutils.SanitizeForLog(existing.Name))
 
@@ -658,6 +680,13 @@ func (h *TenantHandler) UpdateTenant(c *gin.Context) {
 			c.Error(errors.NewInternalServerError("Failed to update workspace").WithDetails(err.Error()))
 		}
 		return
+	}
+	// Written after the rest so a failed update leaves the slug alone; the repository's UpdateTenant omits the column.
+	if slug != nil {
+		if err := h.writeSlug(ctx, updatedTenant, *slug); err != nil {
+			_ = c.Error(err)
+			return
+		}
 	}
 
 	logger.Infof(
@@ -689,6 +718,36 @@ func (h *TenantHandler) ListAPIKeys(c *gin.Context) {
 		resp = append(resp, tenantAPIKeyForResponse(key))
 	}
 	c.JSON(http.StatusOK, gin.H{"success": true, "data": resp})
+}
+
+// checkSlugChange gates a slug change from UpdateTenant. Only a system admin may set or clear one: a workspace
+// owner who could pick any slug could claim one the OIDC group mapping names before the intended workspace
+// does. An empty slug clears the column.
+func checkSlugChange(ctx context.Context, slug string) error {
+	if !types.IsSystemAdminFromContext(ctx) {
+		return errors.NewForbiddenError("Only a system administrator can change the workspace slug")
+	}
+	if slug != "" && !types.ValidTenantSlug(slug) {
+		return errors.NewBadRequestError("Invalid workspace slug")
+	}
+	return nil
+}
+
+// writeSlug stores the slug (or clears it for "") and reflects it on tenant for the response. The partial
+// unique index is the only duplicate check, so there is no window between a read and the write.
+func (h *TenantHandler) writeSlug(ctx context.Context, tenant *types.Tenant, slug string) error {
+	var value *string
+	if slug != "" {
+		value = &slug
+	}
+	if err := h.service.SetTenantSlug(ctx, tenant.ID, value); err != nil {
+		if stderrors.Is(err, service.ErrTenantSlugTaken) {
+			return errors.NewConflictError("Workspace slug already in use")
+		}
+		return errors.NewInternalServerError("Failed to set workspace slug").WithDetails(err.Error())
+	}
+	tenant.Slug = value
+	return nil
 }
 
 func (h *TenantHandler) CreateAPIKey(c *gin.Context) {

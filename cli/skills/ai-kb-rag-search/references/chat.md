@@ -42,7 +42,8 @@ The first line is written by the CLI:
 {"type":"init","session_id":"sess_7d2","kb_id":"3b1e...","profile":"dev"}   // session ask carries agent_id instead of kb_id
 ```
 
-Every following line is a server event. Values of `response_type` you will see:
+Every following line is a server event. The `response_type` values (from
+`internal/types/chat.go`; the list may grow, so ignore types you do not know):
 
 | `response_type` | Meaning |
 | --- | --- |
@@ -51,6 +52,15 @@ Every following line is a server event. Values of `response_type` you will see:
 | `tool_call`, `tool_result` | an agent's tool activity (`session ask`) |
 | `references` | grounding chunks in `knowledge_references` |
 | `answer` | a fragment of the answer in `content`; concatenate in order |
+| `tool_approval_required` | an MCP tool marked dangerous waits for approval; `data.pending_id` is the id for `session tool-approval resolve`, and the run blocks until it is resolved |
+| `tool_approval_resolved` | the approval was granted, rejected or timed out |
+| `mcp_oauth_required`, `mcp_oauth_resolved` | an MCP service needs the user's OAuth authorization, and its outcome |
+| `session_title` | the generated session title |
+| `memory_recalled` | the long-term memories injected into this answer |
+| `context_compacted` | older conversation was summarized to fit the context window |
+| `user_message_injected` | a steered message was accepted into the running turn |
+| `command_output`, `install_output`, `install_prompt` | tool and skill-install progress |
+| `artifacts_pending` | skill or sandbox output is being stored; `complete` carries the file list |
 | `error` | the run failed mid-stream |
 | `complete` | the terminal event |
 

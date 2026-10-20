@@ -327,6 +327,15 @@ test('chatStream: a terminal error event ends the stream without an incomplete r
   assert.deepEqual(errors, []);
 });
 
+test('chatStream: a terminal stop event ends the stream without an incomplete report', async () => {
+  const stop = JSON.stringify({ response_type: 'stop', content: 'Generation stopped by user', done: true });
+  const answer = JSON.stringify({ response_type: 'answer', content: 'a' });
+  const { api, events, errors, handlers } = streamClient([{ kind: 'open', status: 200, events: [answer, stop] }], async () => 'not_bearer');
+  await api.chatStream('knowledge-chat', 's1', {}, handlers, new AbortController().signal);
+  assert.deepEqual(errors, []);
+  assert.equal(events.length, 2);
+});
+
 test('suggestedQuestions returns [] when the reply carries no data', async () => {
   const { api } = client([{ status: 200, body: { success: true } }]);
   assert.deepEqual(await api.suggestedQuestions('ag1'), []);

@@ -13,6 +13,8 @@ case "$rel" in
     gen="make docs (swag over cmd/server/main.go; edit the handler annotations instead)" ;;
   internal/models/catalog/data/models.generated.json)
     gen="make model-catalog-generate (edit seed.json or overrides.json instead)" ;;
+  frontend/src/components.d.ts)
+    gen="any Vite build or dev run (unplugin-vue-components writes it from the templates)" ;;
   docreader/proto/*.pb.go|docreader/proto/*_pb2.py|docreader/proto/*_pb2.pyi|docreader/proto/*_pb2_grpc.py)
     gen="make -C docreader proto (edit docreader/proto/docreader.proto instead)" ;;
   go.sum|*/go.sum|package-lock.json|*/package-lock.json|uv.lock|*/uv.lock|*/Cargo.lock)

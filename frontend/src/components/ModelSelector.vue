@@ -63,6 +63,7 @@ import { ref, computed, watch, onMounted } from 'vue'
 import { type ModelConfig } from '@/api/model'
 import { useChatResourcesStore } from '@/stores/chatResources'
 import { MessagePlugin } from 'tdesign-vue-next'
+import type { SelectValue } from 'tdesign-vue-next'
 import { useI18n } from 'vue-i18n'
 import { filterModelsByType } from './modelSelectorFilter'
 import {
@@ -153,7 +154,9 @@ const loadModels = async () => {
 }
 
 // Handle a model selection change
-const handleModelChange = (value?: string) => {
+const handleModelChange = (selected: SelectValue) => {
+  // The options are model ids; a cleared select arrives as undefined.
+  const value = typeof selected === 'string' ? selected : undefined
   // If the add-model option was picked, emit the add event without changing the selected value
   if (value === '__add_model__') {
     emit('add-model')

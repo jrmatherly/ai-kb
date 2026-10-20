@@ -116,6 +116,7 @@
 
 <script setup lang="ts">
 import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue'
+import type { TextareaValue } from 'tdesign-vue-next'
 import { useI18n } from 'vue-i18n'
 import { embedToast } from '@/utils/embedToast'
 import { isEmbedImageFile } from '@/utils/embedFile'
@@ -265,7 +266,7 @@ const submit = () => {
   uploadedAttachments.value = []
 }
 
-const onKeydown = (_val: string, ctx: { e: KeyboardEvent }) => {
+const onKeydown = (_val: TextareaValue, ctx: { e: KeyboardEvent }) => {
   const e = ctx?.e
   if (!e || e.keyCode !== 13) return
   if (isComposing.value) return

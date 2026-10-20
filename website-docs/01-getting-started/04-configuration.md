@@ -243,6 +243,9 @@ The embedding model name is not set by an environment variable. In the model rec
 | `AIKB_BOOTSTRAP_SYSTEM_ADMIN_EMAIL` | empty | Bootstraps the first system administrator. **It does not create the user**: that email must register first; at the next start, if the deployment has no system administrator yet, that account is promoted. Once an administrator exists the variable has no further effect. See [Workspaces, users and authentication](../03-features/01-tenant-auth.md) |
 | `OIDC_AUTH_ENABLE` and `OIDC_AUTH_*` / `OIDC_USER_INFO_MAPPING_*` | false / empty | The full OIDC single sign-on configuration |
 | `OIDC_AUTH_EXTENSION_RETURN_URLS` | empty | Comma-separated exact return URLs (`https://<extension-id>.chromiumapp.org/oidc`) the browser extension may pass as `return_to` to `/auth/oidc/start`; empty turns extension sign-in off. Each entry must be an absolute `http` or `https` URL without a fragment or credentials, or the server refuses to start. Read at startup. See [Browser extension](../05-clients/06-browser-extension.md#sign-in-with-your-identity-provider) |
+| `OIDC_AUTH_GROUPS_CLAIM` | groups | Claim carrying the group names for the OIDC group mapping; the system setting `oidc.groups_claim` takes precedence. Most providers send it only when `groups` is in `OIDC_AUTH_SCOPES` |
+| `OIDC_AUTH_SYSTEM_ADMIN_GROUPS` | empty | Comma-separated groups whose members are system administrators at OIDC sign-in; the system setting `oidc.system_admin_groups` takes precedence |
+| `OIDC_AUTH_GROUP_ROLE_MAP` | empty | Comma-separated `group:workspace:role` entries (workspace slug or id; owner, admin, contributor or viewer); the system setting `oidc.group_role_map` takes precedence |
 | `SSRF_WHITELIST` / `SSRF_WHITELIST_EXTRA` | empty / `searxng,qdrant,milvus,weaviate,doris-fe,doris-be,minio` (app only) | SSRF whitelist for outbound requests. `SSRF_WHITELIST` is shared by app and docreader; compose only gives app a default for `SSRF_WHITELIST_EXTRA`, docreader's variable of the same name defaults to empty |
 | `SSRF_DNS_WHITELIST_ONLY` | false | Only allow whitelisted outbound hosts (read by both app and docreader). When on, a host outside the whitelist is refused **before any DNS query**, and direct IP access outside the whitelist is refused at URL validation as well; domain names are matched by name only, so a CIDR in the whitelist no longer applies to domain names. The value is parsed as a boolean (`1/t/true` on, `0/f/false` off); **a non-empty value that does not parse counts as on**. See the preparation steps below before enabling it |
 | `IMAGE_HOST_KEEP_URL` | empty | Whitelist of image hosts whose original URL is kept |
@@ -345,7 +348,7 @@ When self-hosting SearXNG, remember to add `127.0.0.1` to `SSRF_WHITELIST`, othe
 | `MCP_SERVER_AUTH_TOKEN` | empty | **Required for the HTTP/SSE transports**; the process refuses to start without it; clients send it as `Authorization: Bearer` |
 | `AIKB_CHAT_TIMEOUT` | 300 | Read timeout in seconds for calls to the AI KB REST API |
 | `AIKB_VERIFY_SSL` | true | Whether to verify the backend TLS certificate; set false for self-signed certificates |
-| `MCP_ALLOWED_UPLOAD_DIRS` | empty | Whitelist of directories allowed for upload (comma-separated); empty disables the file upload tool |
+| `MCP_ALLOWED_UPLOAD_DIRS` | empty | Allowlist of directories local files may be uploaded from (comma-separated); empty allows only the server's working directory |
 
 The full description is in [MCP integration](../03-features/08-mcp.md).
 

@@ -1,14 +1,12 @@
 # AI KB MCP Server
 
-> **⚠️ Deprecated**
->
-> AI KB now ships a built-in MCP server: create endpoints under "Settings → Publish & Integrations → MCP Server", each with its own token, knowledge-base scope and tool list, and connect clients to `/mcp/<endpoint_id>` over Streamable HTTP. Prefer the built-in endpoint; this Python package may be removed in a future release.
+> **Deprecated.** AI KB now ships a [built-in MCP server](https://ai-kb.matherly.net/docs/03-features/08-mcp): create endpoints under "Settings → Publish & Integrations → MCP Server", each with its own token, knowledge-base scope and tool list, and connect clients to `/mcp/<endpoint_id>` over Streamable HTTP. Prefer the built-in endpoint; this Python package may be removed in a future release.
 
 A Model Context Protocol (MCP) server that gives access to the AI KB knowledge management API.
 
 ## Quick start
 
-> We recommend following the [MCP configuration guide](https://github.com/jrmatherly/ai-kb/blob/main/mcp-server/MCP_CONFIG.md) instead of the steps below.
+For MCP client JSON snippets, see the [MCP configuration guide](https://github.com/jrmatherly/ai-kb/blob/main/mcp-server/MCP_CONFIG.md).
 
 ### 1. Install
 
@@ -18,7 +16,7 @@ pip install ai-kb-mcp
 uvx --from ai-kb-mcp ai-kb-mcp-server
 ```
 
-The distribution is **`ai-kb-mcp`**; its command-line entry points are `ai-kb-mcp-server` and `ai-kb-server`.
+The distribution is **`ai-kb-mcp`**; its command-line entry points are `ai-kb-mcp-server` and `ai-kb-server`. `ai-kb-server` always runs stdio and takes no options.
 The MCP packages on PyPI under the upstream project's name belong to that project and read its own variable names, not `AIKB_*`.
 
 ### 2. Set environment variables
@@ -48,7 +46,7 @@ Create the API key under Settings → Publish & Integrations → API Integration
 | `MCP_TRANSPORT` | `stdio` | `stdio`, `sse` or `http` (same as `--transport`) |
 | `MCP_HOST` / `MCP_PORT` | `127.0.0.1` / `8000` | Bind address for `sse` and `http` |
 | `MCP_SERVER_AUTH_TOKEN` | empty | Required for `sse` and `http`; the server refuses to start without it |
-| `MCP_ALLOWED_UPLOAD_DIRS` | working directory | Extra roots for local file uploads (see below) |
+| `MCP_ALLOWED_UPLOAD_DIRS` | working directory | Comma-separated upload roots that replace the working-directory default (see below) |
 
 ### 3. Run the server
 
@@ -82,19 +80,64 @@ pip install .                         # pip install -e . for development
 uvx --from . ai-kb-mcp-server         # without installing
 ```
 
-`python run_server.py`, `python run.py`, `python aikb_mcp_server.py` and `python -m aikb_mcp_server` also start the server.
+`python run.py` takes the same options as `main.py`. `python aikb_mcp_server.py` and `python -m aikb_mcp_server` accept only `--transport`, `--host` and `--port`. `python run_server.py` always runs stdio and ignores options.
 
 ### Build distribution packages
 
 ```bash
-pip install build
-python -m build
+uv build                              # what CI runs; or: pip install build && python -m build
 ```
 
 ### Test the module
 
 ```bash
 python test_module.py
+```
+
+### Add a tool
+
+1. Add the API method to the `AIKBClient` class.
+2. Register a tool function with the `@mcp.tool()` decorator. The parameter type annotations generate the schema and the docstring is the description; the body calls the new client method.
+3. Update the docs and tests.
+
+## Deployment
+
+### Docker
+
+The bundled `Dockerfile` serves Streamable HTTP on port 8000:
+
+```bash
+docker build -t ai-kb-mcp mcp-server
+docker run -e AIKB_API_KEY=your_api_key -e MCP_SERVER_AUTH_TOKEN=change_me -p 8000:8000 ai-kb-mcp
+```
+
+The image defaults to `AIKB_BASE_URL=http://app:8080/api/v1`. The host name `app` resolves only on the AI KB compose network: attach the container with `--network <compose network>` (see `docker network ls`) or pass `-e AIKB_BASE_URL=...`. The compose file also defines this image as the `mcp` service (profile `full`, host port `${MCP_PORT:-8082}`). The MCP endpoint is `http://<host>:8000/mcp`.
+
+### systemd
+
+Create `/etc/systemd/system/ai-kb-mcp.service`, adjusting `User` to an existing account and `ExecStart` to the installed command (`command -v ai-kb-mcp-server`):
+
+```ini
+[Unit]
+Description=AI KB MCP Server
+After=network.target
+
+[Service]
+Type=simple
+User=aikb
+WorkingDirectory=/opt/ai-kb-mcp
+Environment=AIKB_BASE_URL=http://localhost:8080/api/v1
+Environment=AIKB_API_KEY=your_api_key
+Environment=MCP_SERVER_AUTH_TOKEN=change_me
+ExecStart=/usr/local/bin/ai-kb-mcp-server --transport http --host 127.0.0.1 --port 8000
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+```
+
+```bash
+sudo systemctl enable --now ai-kb-mcp
 ```
 
 ## Features
@@ -175,6 +218,7 @@ If you hit import errors, make sure that:
 
 All transports, including stdio, restrict local file uploads to the working
 directory by default. Set `MCP_ALLOWED_UPLOAD_DIRS` to a comma-separated list of
-trusted absolute directories when additional roots are needed. Starting in a
+trusted absolute directories to replace that default; the working directory is
+then allowed only if it is in the list. Starting in a
 filesystem root requires an explicit directory configuration. Paths and symbolic
 links resolving outside the selected roots are rejected.

@@ -474,7 +474,7 @@
                   </div>
                   <div class="setting-control">
                     <t-switch :value="!!formData.credentials.post_to_main" size="small"
-                      @change="(v: boolean) => { formData.credentials.post_to_main = v }" />
+                      @change="(v: SwitchValue) => { formData.credentials.post_to_main = v === true }" />
                   </div>
                 </div>
               </div>
@@ -583,7 +583,7 @@
 <script setup lang="ts">
 import { ref, onMounted, watch, onUnmounted, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { MessagePlugin } from 'tdesign-vue-next';
+import { MessagePlugin, type DropdownOption, type SelectValue, type SwitchValue } from 'tdesign-vue-next';
 import { copyWithToast } from '@/utils/clipboard';
 import { normalizeOptionalString } from '@/utils/optionalString';
 import {
@@ -762,7 +762,7 @@ const channelMenuOptions = (channel: IMChannel | IMChannelOverview) => ([
 ]);
 
 function handleChannelMenuClick(
-  data: { value?: string },
+  data: DropdownOption,
   channel: IMChannel | IMChannelOverview,
 ) {
   if (data.value === 'toggle') {
@@ -826,7 +826,7 @@ const wechatBound = computed(() => {
 });
 
 
-function onPlatformChange(val: string | number | boolean) {
+function onPlatformChange(val: SelectValue) {
   if (editingChannel.value) return;
   formData.value.credentials = defaultCredentials();
   stopWeChatPolling();

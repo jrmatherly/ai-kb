@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"regexp"
 	"strings"
 	"time"
 
@@ -82,12 +83,22 @@ func GetDefaultRetrieverEngines() []RetrieverEngineParams {
 	return result
 }
 
+// TenantSlugPattern is the shape of a workspace slug: lowercase, starts with a letter, so never all digits.
+const TenantSlugPattern = `^[a-z][a-z0-9-]{1,63}$`
+
+var tenantSlugRe = regexp.MustCompile(TenantSlugPattern)
+
+// ValidTenantSlug reports whether s matches TenantSlugPattern.
+func ValidTenantSlug(s string) bool { return tenantSlugRe.MatchString(s) }
+
 // Tenant represents the tenant
 type Tenant struct {
 	// ID
 	ID uint64 `yaml:"id"                  json:"id"                  gorm:"primaryKey"`
 	// Name
 	Name string `yaml:"name"                json:"name"`
+	// Slug is the unique human key of the workspace (OIDC group mapping); nil when unset.
+	Slug *string `yaml:"slug,omitempty"      json:"slug,omitempty"      gorm:"size:64"`
 	// Description
 	Description string `yaml:"description"         json:"description"`
 	// Status

@@ -6,11 +6,19 @@ All notable changes to this project will be documented in this file.
 
 ### Features
 
+- **ADDED**: OIDC groups to roles: the system settings `oidc.groups_claim`, `oidc.system_admin_groups` and `oidc.group_role_map` (environment fallbacks `OIDC_AUTH_GROUPS_CLAIM`, `OIDC_AUTH_SYSTEM_ADMIN_GROUPS`, `OIDC_AUTH_GROUP_ROLE_MAP`) set workspace membership and the system administrator flag from the identity provider's groups at each OIDC sign-in, inside the workspaces the mapping names; the last owner and the last administrator are kept; each sign-in writes an `auth.oidc_group_sync` audit row and Settings > Members shows a banner in a governed workspace.
+- **ADDED**: A unique workspace slug (Settings > Workspace, `PUT /tenants/:id` with `slug`), settable by system administrators only, as the human key the group mapping names.
 - **CHANGED**: The Browser Extension page's "Get the extension" button opens the Chrome Web Store listing, live since extension 1.0.2; the release packages for Edge and manual installs stay linked in the footer.
+- **CHANGED**: The embed entry registers TDesign components per template like the main app, and TDesign is no longer one shared chunk, so each entry carries only the components its templates use: the embed page's startup JavaScript drops from 483 to 290 KiB gzipped and the main app's from 514 to 384 KiB.
+- **CHANGED**: Image pins: the frontend image's nginx moves to 1.30.5 on Alpine 3.24.2 and the sandbox image's uv to 0.13.0, both by index digest; the compose Doris profile moves to 4.1.5 (`fe-4.1.5`, `be-4.1.5`, by digest).
+- **CHANGED**: The OpenSearch retriever uses opensearch-go v5: node discovery is off (requests go only to `OPENSEARCH_ADDR` through the SSRF-validating transport), partial failures are read from the response body as before, a knowledge base copy fails when a shard failed instead of silently dropping documents, and `OPENSEARCH_GO_NODE_STATS_INTERVAL=-1` turns off the client's node-stats poll.
+- **CHANGED**: docreader parses PPTX with markitdown 0.1.8: pictures markitdown inlines are extracted by the Markdown stage and only the pictures it cannot read go through the fallback resolver, which no longer attaches a same-named picture to the wrong placeholder; katex moves to 0.18.11.
 
 ### Bug Fixes
 
 - **FIXED**: An agent turn that ends in a stream error (for example the wiki fix assistant with no chat model configured) now shows the error in the conversation instead of a three-second toast and an empty bubble; a failed save of the answer shows the same row.
+- **FIXED**: Browser extension: a stop requested from another client ends the stream cleanly instead of reading as a cut-off answer, and the recent-captures list is scoped to the connected server and workspace, so a capture from one server no longer shows under another. The smoke script checks Stop and restricted file access.
+- **FIXED**: The web app's templates type-check: `vue-tsc` covers the TDesign components (the generated `src/components.d.ts` is committed), which fixed 98 template contract gaps such as handler signatures narrower than the component event and invalid popup placements.
 - **FIXED**: The IM Integration page describes only the platforms `AIKB_IM_PLATFORMS` allows, a new channel starts on the first allowed platform with that platform's mode and credential defaults, and Add Channel is disabled when the allow-list is empty (previously the form defaulted to WeCom, which the server refused).
 
 ## [2026.10.18.1] - 2026-10-18
@@ -36,7 +44,7 @@ All notable changes to this project will be documented in this file.
 - **CHANGED**: Extension releases no longer claim the GitHub "Latest" flag, so the desktop updater resolves to a product release; the extension page links to a release search that returns results.
 - **CHANGED**: The CLI reports its version from product `v*` tags only; DuckDuckGo web search queries the worldwide region.
 
-### Fixes
+### Bug Fixes
 
 - **FIXED**: `ai-kb-lite` loads its own `config/config.yaml` by explicit path (`AIKB_CONFIG_FILE`), so an `aikb` CLI profile at `~/.config/aikb/config.yaml` no longer makes the server panic at start.
 - **FIXED**: The API Integration page warns instead of erroring when signed-token mode is chosen before an HMAC secret exists; the audit empty states say where rows went.

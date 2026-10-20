@@ -18,7 +18,7 @@ AI KB is an intelligent knowledge base platform that combines:
 - Kubernetes 1.25+
 - Helm 3.10+
 - PV provisioner support in the underlying infrastructure
-- Ingress controller (nginx-ingress recommended) for external access
+- An Ingress controller for external access (see [Ingress annotations](#ingress-annotations))
 
 ## Quick Start
 
@@ -446,9 +446,13 @@ app:
 
 ### Ingress annotations
 
-`ingress.annotations` defaults to ingress-nginx timeouts and
-`proxy-body-size: 100m`. That body limit is independent of
-`global.maxFileSizeMB`; raise both together.
+The defaults target an ingress-nginx compatible controller:
+`ingress.className: nginx`, and `ingress.annotations` holds
+`nginx.ingress.kubernetes.io/*` timeouts and `proxy-body-size: 100m`. The
+Kubernetes project retired the community ingress-nginx controller in March
+2026, so set `ingress.className` and `ingress.annotations` for the controller
+your cluster runs. The body limit is independent of `global.maxFileSizeMB`;
+raise both together.
 
 ## Security Best Practices
 

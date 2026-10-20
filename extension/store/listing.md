@@ -77,6 +77,23 @@ Certifications:
 - The data is not used or transferred to determine creditworthiness or for lending purposes.
 - The extension runs no remote code. Every script is bundled in the package.
 
+## Screenshots
+
+Uploaded from `extension/store/screenshots/`:
+
+- `options.png`, `chat.png` and `capture.png`, 1280x800: the options page, the side panel chat and the capture editor.
+- `promo-small.png`, 440x280: the small promo tile. No script generates it.
+
+To regenerate the 1280x800 shots, build the extension, then run the screenshot script from `extension/` against a Chrome binary:
+
+```bash
+cd extension
+npm run build
+AIKB_SMOKE_CHROME=<chrome binary> node scripts/screenshots.mjs --out <dir>
+```
+
+The script shoots every page signed out and connected to a stub server, and writes them under its own names (`options-connected.png`, `sidepanel-chat.png`, `sidepanel-capture.png`, `sidepanel-editor.png` and others). Copy the matching shots over the files above.
+
 ## Store IDs
 
 Both store items exist; version 1.0.2 went into review on both on 2026-10-18 (Chrome through `extension.yml`, Edge by hand in Partner Center).

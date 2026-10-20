@@ -87,7 +87,7 @@ The side panel has three tabs, **Chat**, **Capture** and **Recent**, and follows
 - **Select clip.** Select clip saves the text you selected. With nothing selected, drag a rectangle over the part of the page you want. Escape cancels.
 - **Quick note.** Quick note opens an empty note titled `Note <date>` with no page attached.
 - **Quick clip.** Turn on the **Quick clip** switch on the options page. When a last used knowledge base is set, the context menu items and the clip shortcuts then save straight to it without opening the editor. Without a last used knowledge base they open the editor. The toolbar popup and the side panel always open the editor. A quick clip always creates a new entry, and the side panel shows the result with **Edit** and **Done**. Each save updates the last used knowledge base.
-- **Recent.** The Recent tab lists your recent captures (up to 50) with their parsing status. Clipping a page you saved before offers to update the existing entry or save a new one.
+- **Recent.** The Recent tab lists your recent captures for the connected server and workspace (up to 50) with their parsing status; switching server or workspace hides the other connection's captures. Clipping a page you saved before offers to update the existing entry or save a new one.
 
 ### Shortcuts and menus
 
@@ -145,7 +145,7 @@ This section maps the messages you may see to their causes.
 
 This section describes what the extension stores and sends. It is the privacy policy for the store listings.
 
-**Stored in your browser.** The extension keeps these in its local storage, in plain text in your browser profile: the server address, your API key or the access and refresh tokens from a sign-in, the workspace ID, the last used knowledge base, the Quick clip setting and the list of your recent captures (title, page address, knowledge base, time and parsing status). Web pages cannot read them, and neither can the extractor the extension runs inside a page. The extension never stores your password. A clip or question waiting for the side panel is kept in session storage and is gone when the browser closes. Sign out or Forget server on the options page removes the credential. Removing the extension removes everything.
+**Stored in your browser.** The extension keeps these in its local storage, in plain text in your browser profile: the server address, your API key or the access and refresh tokens from a sign-in, the workspace ID, the last used knowledge base, the Quick clip setting and the list of your recent captures (title, page address, knowledge base, server and workspace, time and parsing status). Web pages cannot read them, and neither can the extractor the extension runs inside a page. The extension never stores your password. A clip or question waiting for the side panel is kept in session storage and is gone when the browser closes. Sign out or Forget server on the options page removes the credential. Removing the extension removes everything.
 
 **Sent to your server.** The extension sends your credential with every request, the questions you ask, and, when you clip or ask about a page, that page's title, address and the text you save. They go only to the AI KB server you connected to, which you or your organization operate.
 

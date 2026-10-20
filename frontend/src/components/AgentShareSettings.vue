@@ -4,7 +4,7 @@
       <div class="share-panel-header-row">
         <div class="share-panel-titlewrap">
           <h2 class="share-panel-title">{{ $t('organization.share.title') }}</h2>
-          <t-popup placement="bottom-start" trigger="hover" overlay-class-name="wk-popover share-hint-popup-overlay"
+          <t-popup placement="bottom-left" trigger="hover" overlay-class-name="wk-popover share-hint-popup-overlay"
             :overlay-inner-style="shareHintPopupInnerStyle">
             <button type="button" class="share-hint-trigger-btn" :aria-label="$t('agent.shareScope.title')"
               :title="$t('agent.shareScope.title')">
@@ -40,7 +40,7 @@
               </template>
             </t-input>
           </div>
-          <t-popup v-model="addPopupVisible" trigger="click" placement="bottom-end" destroy-on-close
+          <t-popup v-model="addPopupVisible" trigger="click" placement="bottom-right" destroy-on-close
             overlay-class-name="share-add-popup-overlay">
             <t-button theme="primary" variant="outline" shape="square" size="small" class="share-panel-add-btn"
               :title="$t('knowledgeEditor.share.addShare')" :aria-label="$t('knowledgeEditor.share.addShare')">
@@ -121,7 +121,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue'
-import { MessagePlugin } from 'tdesign-vue-next'
+import { MessagePlugin, type PrimaryTableCol } from 'tdesign-vue-next'
 import { useI18n } from 'vue-i18n'
 import { useOrganizationStore } from '@/stores/organization'
 import { listAgentShares } from '@/api/organization'
@@ -189,7 +189,7 @@ const filteredShares = computed(() => {
   })
 })
 
-const shareColumns = computed(() => [
+const shareColumns = computed<PrimaryTableCol[]>(() => [
   { colKey: 'space', title: t('organization.share.columns.space'), ellipsis: true, minWidth: 180 },
   { colKey: 'permission', title: t('organization.share.columns.permission'), width: 96 },
   { colKey: 'created_at', title: t('organization.share.columns.sharedAt'), width: 154 },

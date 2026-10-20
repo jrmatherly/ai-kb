@@ -2,7 +2,7 @@
 name: ai-kb-shared
 description: Use whenever an agent runs the `aikb` CLI against an AI KB server - connecting with an API key, picking a knowledge base, reading the JSON envelope and exit codes, handling the exit-10 confirmation gate, previewing writes with --dry-run, or managing knowledge bases, documents, sessions, agents and models. Load this first; the other ai-kb-* skills assume it.
 metadata:
-  tested_against: v2026.10.13
+  tested_against: v2026.10.18.1
   openclaw:
     requires:
       bins: [aikb]
@@ -109,8 +109,9 @@ safeguard between an agent and an irreversible delete.
 
 ## Preview with --dry-run before any write
 
-Every create, update, delete, upload, reparse, link and config command accepts
-`--dry-run`. The commands that have no flag are `auth login`, `chat`,
+Every command that changes state accepts `--dry-run` (create, update, delete,
+upload, reparse, link, pin, profile, logout, refresh, stop, approval resolve and
+skill install). The commands that have no flag are `auth login`, `chat`,
 `session ask` (both create a session and a message) and `doc download`
 (writes a file). A dry run resolves arguments, prints
 `meta.dry_run:true` and `meta.plan:{action, args}`, performs no network call or

@@ -17,4 +17,7 @@ npm run type-check
 echo "[verify_frontend_pr] npm run build"
 npm run build
 
+echo "[verify_frontend_pr] src/components.d.ts matches the build"
+git diff --exit-code -- src/components.d.ts
+
 echo "[verify_frontend_pr] OK"

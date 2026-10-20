@@ -12,8 +12,8 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/opensearch-project/opensearch-go/v4"
-	osapi "github.com/opensearch-project/opensearch-go/v4/opensearchapi"
+	"github.com/opensearch-project/opensearch-go/v5"
+	osapi "github.com/opensearch-project/opensearch-go/v5/opensearchapi"
 
 	"github.com/jrmatherly/ai-kb/internal/logger"
 	"github.com/jrmatherly/ai-kb/internal/types"
@@ -131,10 +131,14 @@ func NewRepository(
 		return nil, fmt.Errorf("opensearch: invalid index config: %w", err)
 	}
 
+	// The repository owns the client from here; a failed constructor closes
+	// it, since a v5 client polls the cluster until it is closed.
 	if err := probeVersion(ctx, client); err != nil {
+		_ = client.Client.Close()
 		return nil, err // already wraps ErrVersionUnsupported / ErrTransport
 	}
 	if err := probeKNNPlugin(ctx, client); err != nil {
+		_ = client.Client.Close()
 		return nil, err // already wraps ErrConfigInvalid / ErrTransport
 	}
 
@@ -306,9 +310,7 @@ func parseMajorMinor(num string) (major, minor int) {
 // We group by node name and verify every distinct node has the
 // opensearch-knn component.
 func probeKNNPlugin(ctx context.Context, client *osapi.Client) error {
-	// CatPluginsReq's Params struct has no Format field - the SDK
-	// negotiates JSON via Accept header and returns a typed
-	// CatPluginsResp with .Plugins []CatPluginResp already parsed.
+	// The SDK negotiates JSON and returns one record per (node, plugin).
 	resp, err := client.Cat.Plugins(ctx, &osapi.CatPluginsReq{})
 	if err != nil {
 		return fmt.Errorf("opensearch: cat plugins: %w", wrapTransport(err))
@@ -316,15 +318,15 @@ func probeKNNPlugin(ctx context.Context, client *osapi.Client) error {
 
 	// Group by node, verify every distinct node has opensearch-knn.
 	nodes := make(map[string]bool) // nodeName -> hasKNN
-	for _, p := range resp.Plugins {
-		if p.Name == "" {
+	for _, p := range resp.Records {
+		if p.Name == nil || *p.Name == "" {
 			continue
 		}
-		if _, seen := nodes[p.Name]; !seen {
-			nodes[p.Name] = false
+		if _, seen := nodes[*p.Name]; !seen {
+			nodes[*p.Name] = false
 		}
-		if p.Component == "opensearch-knn" {
-			nodes[p.Name] = true
+		if p.Component != nil && *p.Component == "opensearch-knn" {
+			nodes[*p.Name] = true
 		}
 	}
 	if len(nodes) == 0 {
@@ -435,10 +437,15 @@ func sanitizeIndexName(name string) (string, error) {
 	return name, nil
 }
 
-// drainAndClose closes the response body after draining unread bytes -
-// required for HTTP keep-alive connection reuse. opensearch-go does NOT
-// drain the body for us; failing to drain on every response will starve
-// the per-host connection pool under load.
+// Close stops the client's background pollers; the registry calls it when it
+// stops serving this repository.
+func (r *Repository) Close() error {
+	return r.client.Client.Close()
+}
+
+// drainAndClose drains and closes a response body. The v5 SDK buffers
+// every decoded body before returning, so for those this only closes the
+// buffered copy; it still guards any raw response and keeps one idiom.
 func drainAndClose(body io.ReadCloser) {
 	if body == nil {
 		return

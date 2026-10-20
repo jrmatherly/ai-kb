@@ -7,6 +7,9 @@ and this project follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Deprecated
+- The whole package, in favor of the [built-in MCP server](https://ai-kb.matherly.net/docs/03-features/08-mcp) (Settings → Publish & Integrations → MCP Server, served at `/mcp/<endpoint_id>`). A future release may remove it.
+
 ### Removed
 - `create_model` no longer takes `is_default`. The server's create-model request has no such field, so the flag was always ignored.
 

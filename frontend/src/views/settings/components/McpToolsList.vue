@@ -69,11 +69,11 @@
         <div v-if="serviceId" class="tool-controls">
           <label class="tool-control"><span>{{ t('mcpMetadata.enabled') }}</span>
             <t-switch :value="policy(tool.name).enabled" size="small" :disabled="loading || !!policyError || !!busy.get(tool.name)" :loading="busy.get(tool.name) === 'enabled'"
-              :aria-label="`${tool.name} ${t('mcpMetadata.enabled')}`" @change="(value: boolean) => savePolicy(tool.name, 'enabled', value)" />
+              :aria-label="`${tool.name} ${t('mcpMetadata.enabled')}`" @change="(value: SwitchValue) => savePolicy(tool.name, 'enabled', value)" />
           </label>
           <label class="tool-control"><span>{{ t('mcpMetadata.approval') }}</span>
             <t-switch :value="policy(tool.name).require_approval" size="small" :disabled="loading || !!policyError || !!busy.get(tool.name)" :loading="busy.get(tool.name) === 'require_approval'"
-              :aria-label="`${tool.name} ${t('mcpMetadata.approval')}`" @change="(value: boolean) => savePolicy(tool.name, 'require_approval', value)" />
+              :aria-label="`${tool.name} ${t('mcpMetadata.approval')}`" @change="(value: SwitchValue) => savePolicy(tool.name, 'require_approval', value)" />
           </label>
         </div>
       </article>
@@ -90,7 +90,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { MessagePlugin } from 'tdesign-vue-next'
+import { MessagePlugin, type SwitchValue } from 'tdesign-vue-next'
 import { getMCPToolApprovals, setMCPToolApproval, setMCPToolEnabled, type MCPTool, type MCPToolApprovalRow } from '@/api/mcp-service'
 import { mcpSchemaParameters } from '@/utils/mcpToolDisplay'
 
@@ -149,7 +149,8 @@ async function loadPolicies() {
 }
 watch(() => props.serviceId, loadPolicies, { immediate: true })
 
-async function savePolicy(name: string, field: 'enabled' | 'require_approval', value: boolean) {
+async function savePolicy(name: string, field: 'enabled' | 'require_approval', raw: SwitchValue) {
+  const value = raw === true
   if (!props.serviceId || busy.value.has(name) || loading.value || policyError.value) return
   const current = generation
   busy.value.set(name, field)

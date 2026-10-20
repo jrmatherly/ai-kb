@@ -20,14 +20,14 @@ The retrieval engine (where vector and keyword indexes are stored) is decoupled 
 
 ```text
 migrations/
-├── versioned/     # PostgreSQL/ParadeDB versioned migrations: 000000-000117, 118 versions (236 .up/.down.sql files)
-├── sqlite/        # SQLite migrations: 000000_init (flattened full schema) + incremental versions 000001-000036
+├── versioned/     # PostgreSQL/ParadeDB versioned migrations: 000000-000118, 119 versions (238 .up/.down.sql files)
+├── sqlite/        # SQLite migrations: 000000_init (flattened full schema) + incremental versions 000001-000037
 ├── paradedb/      # ParadeDB extra scripts: 00-init-db.sql, 01-migrate-to-paradedb.sql (switching an existing database)
 └── mysql/         # 00-init-db.sql, a legacy one-off MySQL table script (not wired into the code)
 ```
 
-- PostgreSQL's `versioned/` runs from `000000_init` to `000117_tenant_api_key_hint`.
-- `sqlite/` uses `000000_init` as a flattened full initialization (dialect differences such as JSONB→TEXT and SERIAL→AUTOINCREMENT already adapted), followed by incremental versions (currently up to `000036_tenant_api_key_hint`), also applied in order by golang-migrate.
+- PostgreSQL's `versioned/` runs from `000000_init` to `000118_tenant_slug`.
+- `sqlite/` uses `000000_init` as a flattened full initialization (dialect differences such as JSONB→TEXT and SERIAL→AUTOINCREMENT already adapted), followed by incremental versions (currently up to `000037_tenant_slug`), also applied in order by golang-migrate.
 - Extensions are created by the `versioned/` migrations themselves: `uuid-ossp` in 000000, and `vector`, `pg_trgm` and `pg_search` in 000002. The BM25 index is built on `embeddings.content` with the Lindera tokenizer `chinese_lindera`.
 - `paradedb/00-init-db.sql` contains, besides the extensions, an old set of table definitions. **Neither Compose nor the code references it.** Do not mount it as a database initdb script: the old tables it creates make `000000_init` fail.
 
@@ -93,6 +93,7 @@ migrations/
 | 000115 | Upgrades an installed pg_search 0.22.x–0.25.x to 0.25.11 and pgvector 0.8.0–0.8.3 to 0.8.4 when the server ships those versions; skipped with `app.skip_embedding=true` |
 | 000116 | The `system_secrets` table (`name`, `value`), server-generated secrets such as the per-install JWT secret; no API reads it |
 | 000117 | tenant_api_keys.key_hint (VARCHAR(16)). A startup backfill then writes the real hash for keys 000065 copied with a `migrated-tenant-*` placeholder, fills the hint and empties `api_key`, so no token stays stored |
+| 000118 | tenants.slug (VARCHAR(64), nullable) with a unique index over live rows (`slug IS NOT NULL AND deleted_at IS NULL`): the workspace key the OIDC group mapping names, set by a system administrator |
 
 SQLite version numbers evolve independently and do not map one-to-one to the PostgreSQL numbers:
 
@@ -119,6 +120,7 @@ SQLite version numbers evolve independently and do not map one-to-one to the Pos
 | 000034 | mcp_services.usage_instructions and the `mcp_metadata` table (matching 000092) |
 | 000035 | The `system_secrets` table (matching 000116) |
 | 000036 | tenant_api_keys.key_hint (matching 000117) |
+| 000037 | tenants.slug (matching 000118) |
 
 000099, 000112 and 000115 (pg_search and pgvector upgrades, embeddings indexes) have no SQLite counterpart. 000078 has no separate SQLite version: its columns and the `chunk_revisions` table are part of the SQLite baseline `000000_init`.
 
@@ -132,7 +134,7 @@ The tables below show the **effective structure after all up migrations** (later
 
 | Table | Purpose | Key columns |
 | --- | --- | --- |
-| `tenants` | Tenant (workspace), the root of multi-tenancy | `id` (SERIAL, starting at 10000), `name`, `retriever_engines` (JSONB), `status`, `storage_quota`/`storage_used`, `agent_config`/`context_config`/`conversation_config`/`web_search_config`/`credentials`/`api_principal_config`/`memory_config` (JSONB), `default_storage_backend_id`. The old `api_key` column was dropped in 000065; keys live in `tenant_api_keys` |
+| `tenants` | Tenant (workspace), the root of multi-tenancy | `id` (SERIAL, starting at 10000), `name`, `slug` (nullable, unique over live rows, system administrators only), `retriever_engines` (JSONB), `status`, `storage_quota`/`storage_used`, `agent_config`/`context_config`/`conversation_config`/`web_search_config`/`credentials`/`api_principal_config`/`memory_config` (JSONB), `default_storage_backend_id`. The old `api_key` column was dropped in 000065; keys live in `tenant_api_keys` |
 | `users` | Login users | `id` (UUID), `username` (unique), `email` (unique), `password_hash`, `tenant_id` (FK→tenants, ON DELETE SET NULL), `is_active`, `can_access_all_tenants` (cross-workspace access), `is_system_admin` (system administrator, 000053), `preferences` (JSON) |
 | `auth_tokens` | Login tokens | `id`, `user_id` (FK→users, CASCADE), `token`, `token_type` (access/refresh), `expires_at` (TIMESTAMPTZ since 000072), `is_revoked` |
 | `tenant_members` | Workspace-level RBAC membership | `user_id`+`tenant_id` (unique among non-deleted rows), `role` (owner/admin/contributor/viewer), `status`, `invited_by`, `joined_at` |

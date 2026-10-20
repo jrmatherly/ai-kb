@@ -522,6 +522,16 @@ func (s *userService) LoginWithOIDC(
 		return nil, errors.New("OIDC provider did not return email")
 	}
 
+	return s.completeOIDCLogin(ctx, userInfo, provisioning)
+}
+
+// completeOIDCLogin turns verified claims into a local session: provision or load the user, apply the OIDC
+// group mapping, then resolve the tenant and mint tokens. Split from LoginWithOIDC so tests skip the exchange.
+func (s *userService) completeOIDCLogin(
+	ctx context.Context,
+	userInfo *types.OIDCUserInfo,
+	provisioning types.TenantProvisioningMode,
+) (*types.OIDCCallbackResponse, error) {
 	user, err := s.userRepo.GetUserByEmail(ctx, userInfo.Email)
 	if err != nil && !isUserLookupNotFound(err) {
 		return nil, fmt.Errorf("failed to query user by email: %w", err)
@@ -537,6 +547,15 @@ func (s *userService) LoginWithOIDC(
 
 	if !user.IsActive {
 		return &types.OIDCCallbackResponse{Success: false, Message: "Account is disabled"}, nil
+	}
+
+	groupSync := s.applyOIDCGroups(ctx, user, userInfo.Claims)
+	// The sync may have changed the row (admin flag, memberships); tenant resolution saves the whole struct,
+	// so a stale copy would write a revoked flag back.
+	if fresh, ferr := s.userRepo.GetUserByID(ctx, user.ID); ferr == nil && fresh != nil {
+		user = fresh
+	} else if ferr != nil {
+		logger.Warnf(ctx, "OIDC login: re-read of user %s after the group sync failed: %v", user.ID, ferr)
 	}
 
 	// Resolve target tenant once so the JWT claim and the tenant we
@@ -569,7 +588,48 @@ func (s *userService) LoginWithOIDC(
 		Token:        accessToken,
 		RefreshToken: refreshToken,
 		IsNewUser:    isNewUser,
+		GroupSync:    groupSync,
 	}, nil
+}
+
+// applyOIDCGroups runs the group sync when the mapping is configured. A failure never fails the sign-in: the
+// partial result is still audited and the next sign-in reapplies the claim.
+func (s *userService) applyOIDCGroups(
+	ctx context.Context, user *types.User, claims map[string]any,
+) *types.OIDCGroupSync {
+	if s.systemSettingSvc == nil {
+		return nil
+	}
+	settings, err := LoadOIDCGroupSettings(ctx, s.systemSettingSvc)
+	if err != nil {
+		logger.Warnf(ctx, "OIDC group mapping not applied for user %s: %v", user.ID, err)
+		return nil
+	}
+	if !settings.Enabled() {
+		return nil
+	}
+	res, err := s.syncOIDCGroups(ctx, user, claims, settings)
+	if err != nil {
+		logger.Warnf(ctx, "OIDC group sync for user %s stopped early: %v", user.ID, err)
+		if res != nil {
+			// Marks the audit row partial; the error text stays in the log.
+			res.Skipped = append(res.Skipped, "error")
+		}
+	}
+	if res == nil {
+		if _, present := claims[settings.Claim]; present {
+			logger.Warnf(ctx,
+				"OIDC group mapping is configured but the %q claim of %s is neither a list of strings nor a "+
+					"comma-separated string; no groups were applied",
+				settings.Claim, user.ID)
+		} else {
+			logger.Warnf(ctx,
+				"OIDC group mapping is configured but the sign-in of %s carried no %q claim; "+
+					"add groups to OIDC_AUTH_SCOPES",
+				user.ID, settings.Claim)
+		}
+	}
+	return res
 }
 
 // GetUserByID gets a user by ID

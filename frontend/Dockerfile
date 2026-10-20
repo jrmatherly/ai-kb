@@ -50,12 +50,10 @@ RUN npm run build
 # ---------------------------------------------------------------------------
 # Stage 2: nginx runtime
 # ---------------------------------------------------------------------------
-# Base image pinned by digest for reproducibility. Do NOT switch back to the
-# floating `nginx:stable-alpine` tag: it drifts with every stable release and a
-# newer Alpine base (3.24+) fails to start on old hosts such as CentOS 7
-# (kernel 3.10 + old libseccomp), which broke v0.7.0. This digest is
-# nginx 1.30.3 / Alpine 3.23.5, the same base as the working v0.6.3 image.
-FROM nginx:1.30.3-alpine@sha256:0d3b80406a13a767339fbe2f41406d6c7da727ab89cf8fae399e81f780f814d1
+# Base image pinned by index digest, never the floating `nginx:stable-alpine`
+# tag, so a rebuild reproduces the same base. This digest is nginx 1.30.5 on
+# Alpine 3.24.2. Hosts on kernel 3.10 (CentOS 7) are not a target.
+FROM nginx:1.30.5-alpine@sha256:0985e772fb9f729e6fa0980da05fca5d9c468e870eed43071545afa9d2e27d94
 
 # The base digest is frozen (see above); the weekly rebuild picks up Alpine package fixes here.
 RUN apk upgrade --no-cache

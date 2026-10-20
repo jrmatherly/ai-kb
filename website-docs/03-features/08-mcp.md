@@ -508,7 +508,7 @@ The Python service under `mcp-server/` predates the built-in MCP server: each pr
 
 #### Installation
 
-The commands below match `mcp-server/setup.py`, `pyproject.toml`, `Dockerfile` and `INSTALL.md`:
+The commands below match `mcp-server/setup.py`, `pyproject.toml`, `Dockerfile` and `README.md`:
 
 **Run from source**:
 
@@ -708,7 +708,7 @@ The main AI KB application (the MCP client reference above) can also connect to 
 `create_knowledge_from_file` reads local files **on the machine running the MCP server process**. `mcp-server/upload_paths.py` protects the path:
 
 - Empty paths and paths containing `\x00` are rejected; after `os.path.realpath` normalization the path must be an existing regular file.
-- Allowlisted directories: when `MCP_ALLOWED_UPLOAD_DIRS` (comma-separated) is set, it is authoritative. When unset, **network transports (sse and http) allow only the current working directory** by default (so a remote caller cannot read the disk at will), while the stdio transport is unrestricted (a local client already has that machine's permissions).
+- Allowlisted directories: when `MCP_ALLOWED_UPLOAD_DIRS` (comma-separated) is set, it is authoritative. When unset, **every transport (stdio, sse and http) allows only the current working directory**, so a caller cannot read the disk at will.
 - `_path_within_root` uses `os.path.commonpath` for the containment check, which blocks `..` and symlink escapes.
 
 ---

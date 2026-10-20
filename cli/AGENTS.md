@@ -56,6 +56,7 @@ Errors emit an error envelope on stderr (`--format json`, the default) or prose
     "hint": "run `aikb auth login`",
     "retry_argv": ["aikb", "auth", "login"],
     "retry_after_seconds": 0,
+    "retryable": false,
     "risk": {"level": "destructive", "action": "noun.verb"},
     "detail": {}
   }
@@ -68,7 +69,10 @@ string array. For non-destructive errors agents may execute it; on exit-10
 (`input.confirmation_required`) it is informational only - the human must
 approve the destructive write explicitly. See "Exit-10 anti-patterns" for
 details.
-`retry_after_seconds` mirrors HTTP `Retry-After`. `risk` tags high-risk writes.
+`retry_after_seconds` mirrors HTTP `Retry-After`. `retryable` says whether
+re-running the same command may succeed (true for transient failures such as
+timeouts and rate limits, false for deterministic ones such as auth or bad
+input) and is omitted when unknown. `risk` tags high-risk writes.
 `detail` carries structured per-error context (e.g. `unknown_subcommand`'s
 `available[]` list).
 
@@ -381,9 +385,9 @@ Text-mode consumers parse the first colon to extract the typed code. The exit co
 | `auth.token_expired` | 3 | yes (after refresh) | your session expired; run `aikb auth login` to re-authenticate |
 | `auth.bad_credential` | 3 | no (re-login) | run `aikb auth login` |
 | `auth.forbidden` | 3 | no | active profile lacks permission for this resource |
-| `auth.cross_tenant_blocked` | 3 | no | verify tenant context with `aikb auth status` |
-| `auth.tenant_mismatch` | 3 | no | verify tenant context with `aikb auth status` |
-| `input.invalid_argument` | 5 | no | see `aikb <command> --help` for valid usage |
+| `auth.cross_tenant_blocked` | 3 | no | verify tenant profile with `aikb auth status` |
+| `auth.tenant_mismatch` | 3 | no | verify tenant profile with `aikb auth status` |
+| `input.invalid_argument` | 2 (parse) / 5 (value) | no | see `aikb <command> --help` for valid usage |
 | `input.missing_flag` | 5 | no | see `aikb <command> --help` for valid usage |
 | `input.confirmation_required` | 10 | **NO automatic retry** | high-risk write - re-run with `-y/--yes` after the user explicitly approves |
 | `input.unknown_subcommand` | 5 | no | invocation reached a command path with no matching subcommand. Detail includes `available` list; retry with `<path> --help`. |
@@ -567,7 +571,7 @@ Rationale: earlier drafts produced three categories of schema errors - fields th
 
 ## CRUD command flag conventions
 
-CRUD commands follow the **hard-required-flags** pattern: every required input is a flag or positional, and a missing one yields an immediate `input.invalid_argument` exit. The contrast is **TTY-prompts-fill**, where missing input opens an interactive prompt; that pattern is reserved for `auth login` (the one command where a human must be at the terminal).
+CRUD commands follow the **hard-required-flags** pattern: every required input is a flag or positional, and a missing one yields an immediate `input.invalid_argument` exit (exit 2, a Cobra parse error). The contrast is **TTY-prompts-fill**, where missing input opens an interactive prompt; that pattern is reserved for `auth login` (the one command where a human must be at the terminal).
 
 Required-input idioms in this codebase:
 

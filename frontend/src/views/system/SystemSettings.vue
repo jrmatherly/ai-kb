@@ -35,7 +35,7 @@
       </div>
       <div class="section-description">
         <p>{{ activeSectionDescription }}</p>
-        <t-popup placement="bottom-start" trigger="hover" :overlay-inner-style="{ maxWidth: '420px' }">
+        <t-popup placement="bottom-left" trigger="hover" :overlay-inner-style="{ maxWidth: '420px' }">
           <button type="button" class="hint-trigger" :aria-label="t('system.globalSettings.priorityHint.disclosure')">
             <t-icon name="info-circle" size="16px" />
           </button>
@@ -129,12 +129,12 @@
                   @confirm="highRiskPopconfirm.finish(true)" @cancel="highRiskPopconfirm.finish(false)"
                   @visible-change="highRiskPopconfirm.onVisibleChange">
                   <div class="setting-control-anchor">
-                    <t-select v-model="editValues[item.key]" :options="enumOptions(item)"
+                    <t-select v-model="(editValues[item.key] as SelectValue)" :options="enumOptions(item)"
                       :aria-label="keyLabel(item.key)" :disabled="savingKey === item.key" class="setting-input"
                       @change="onHighRiskSelectChange(item)" />
                   </div>
                 </t-popconfirm>
-                <t-select v-else-if="hasEnum(item)" v-model="editValues[item.key]" :options="enumOptions(item)"
+                <t-select v-else-if="hasEnum(item)" v-model="(editValues[item.key] as SelectValue)" :options="enumOptions(item)"
                   :aria-label="keyLabel(item.key)" :disabled="savingKey === item.key" class="setting-input"
                   @change="onChange(item)" />
                 <t-popconfirm v-else-if="item.value_type === 'bool' && isHighRiskKey(item.key)"
@@ -145,13 +145,13 @@
                   @confirm="highRiskPopconfirm.finish(true)" @cancel="highRiskPopconfirm.finish(false)"
                   @visible-change="highRiskPopconfirm.onVisibleChange">
                   <div class="setting-control-anchor">
-                    <t-switch v-model="editValues[item.key]" :aria-label="keyLabel(item.key)"
+                    <t-switch v-model="(editValues[item.key] as SwitchValue)" :aria-label="keyLabel(item.key)"
                       :disabled="savingKey === item.key" @change="onHighRiskBoolChange(item)" />
                   </div>
                 </t-popconfirm>
-                <t-switch v-else-if="item.value_type === 'bool'" v-model="editValues[item.key]"
+                <t-switch v-else-if="item.value_type === 'bool'" v-model="(editValues[item.key] as SwitchValue)"
                   :aria-label="keyLabel(item.key)" :disabled="savingKey === item.key" @change="onChange(item)" />
-                <t-input-number v-else-if="item.value_type === 'int'" v-model="editValues[item.key]"
+                <t-input-number v-else-if="item.value_type === 'int'" v-model="(editValues[item.key] as InputNumberValue)"
                   :placeholder="placeholderFor(item)" :aria-label="keyLabel(item.key)"
                   :disabled="savingKey === item.key" theme="normal" :step="1" :min="minimumFor(item)"
                   class="setting-input" @blur="onChange(item)" />
@@ -168,7 +168,11 @@
                       @update:model-value="onSsrfWhitelistModelUpdate" />
                   </div>
                 </t-popconfirm>
-                <t-input v-else v-model="editValues[item.key]" :placeholder="placeholderFor(item)"
+                <t-tag-input v-else-if="item.value_type === 'string_list'" v-model="(editValues[item.key] as TagInputValue)"
+                  :placeholder="emptyListPlaceholder" :aria-label="keyLabel(item.key)"
+                  :disabled="savingKey === item.key" class="setting-input setting-input--wide" clearable
+                  @blur="onChange(item)" />
+                <t-input v-else v-model="(editValues[item.key] as InputValue)" :placeholder="placeholderFor(item)"
                   :aria-label="keyLabel(item.key)" :disabled="savingKey === item.key" class="setting-input" clearable
                   @blur="onChange(item)" />
 
@@ -243,7 +247,7 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted, onUnmounted, computed, watch, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { MessagePlugin } from 'tdesign-vue-next'
+import { MessagePlugin, type InputNumberValue, type InputValue, type SelectValue, type SwitchValue, type TagInputValue } from 'tdesign-vue-next'
 import {
   listSystemSettings,
   updateSystemSetting,
@@ -294,6 +298,8 @@ const HIGH_IMPACT_KEYS = new Set<string>([
   'tenant.auto_create_api_key',
   'ssrf.whitelist',
   'sandbox.docker_enabled',
+  'oidc.system_admin_groups',
+  'oidc.group_role_map',
 ])
 
 function isHighRiskKey(key: string): boolean {
@@ -386,6 +392,9 @@ const SETTINGS_SECTION_KEYS: Record<Exclude<SettingsSection, 'other' | 'users'>,
     'auth.registration_mode',
     'auth.complex_password_enabled',
     'auth.default_tenant_mode',
+    'oidc.groups_claim',
+    'oidc.system_admin_groups',
+    'oidc.group_role_map',
     'tenant.self_service_creation_enabled',
     'tenant.max_owned_per_user',
   ],

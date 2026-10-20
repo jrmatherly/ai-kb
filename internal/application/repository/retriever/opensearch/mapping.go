@@ -5,8 +5,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
 
-	osapi "github.com/opensearch-project/opensearch-go/v4/opensearchapi"
+	"github.com/opensearch-project/opensearch-go/v5"
+	osapi "github.com/opensearch-project/opensearch-go/v5/opensearchapi"
 
 	"github.com/jrmatherly/ai-kb/internal/logger"
 )
@@ -245,7 +248,7 @@ func (r *Repository) ensureKeywordsIndex(ctx context.Context) error {
 // indicesCreate is the low-level wrapper around Indices.Create. Body is
 // the JSON mapping produced by buildIndexMapping.
 func (r *Repository) indicesCreate(ctx context.Context, name string, body []byte) error {
-	req := osapi.IndicesCreateReq{Index: name, Body: bytes.NewReader(body)}
+	req := osapi.IndicesCreateReq{Index: name, BodyReader: bytes.NewReader(body)}
 	resp, err := r.client.Indices.Create(ctx, req)
 	if err != nil {
 		return wrapTransport(err)
@@ -260,7 +263,7 @@ func (r *Repository) indicesCreate(ctx context.Context, name string, body []byte
 // Caller decides what to do with the error.
 func (r *Repository) indicesDelete(ctx context.Context, name string) error {
 	req := osapi.IndicesDeleteReq{Indices: []string{name}}
-	resp, err := r.client.Indices.Delete(ctx, req)
+	resp, err := r.client.Indices.Delete(ctx, &req)
 	if err != nil {
 		return wrapTransport(err)
 	}
@@ -270,19 +273,16 @@ func (r *Repository) indicesDelete(ctx context.Context, name string) error {
 	return nil
 }
 
-// aliasExists uses HEAD /_alias/<name> (Indices.Alias.Exists) - returns
+// aliasExists uses HEAD /_alias/<name> (Indices.ExistsAlias) - returns
 // true on 200, false on 404, error on 5xx / transport.
 //
-// SDK quirk (opensearch-go v4.6.0): the Exists method passes
-// dataPointer=nil to its internal do(), which means non-2xx responses
-// come back as a plain *errors.errorString ("status: 404 Not Found")
-// rather than as a *opensearch.StructError. We therefore inspect
-// resp.StatusCode directly (resp is always returned even when err is
-// non-nil) and only fall back to wrapTransport for the "no response at
-// all" case (true network failure).
+// The SDK's ExistsAlias returns the raw response and reports a non-2xx status
+// as a plain error, so the status code is inspected directly (resp is
+// returned even when err is non-nil) and wrapTransport is only for the
+// "no response at all" case (true network failure).
 func (r *Repository) aliasExists(ctx context.Context, alias string) (bool, error) {
-	req := osapi.AliasExistsReq{Alias: []string{alias}}
-	resp, err := r.client.Indices.Alias.Exists(ctx, req)
+	req := osapi.IndicesExistsAliasReq{Name: []string{alias}}
+	resp, err := r.client.Indices.ExistsAlias(ctx, &req)
 	if resp != nil {
 		statusCode := resp.StatusCode
 		drainAndClose(resp.Body)
@@ -306,11 +306,11 @@ func (r *Repository) aliasExists(ctx context.Context, alias string) (bool, error
 // (rolling-reindex atomic swap is deferred to a follow-up PR - see
 // stubs.go swapToVersion).
 func (r *Repository) aliasPut(ctx context.Context, index, alias string) error {
-	req := osapi.AliasPutReq{
+	req := osapi.IndicesPutAliasReq{
 		Indices: []string{index},
-		Alias:   alias,
+		Name:    alias,
 	}
-	resp, err := r.client.Indices.Alias.Put(ctx, req)
+	resp, err := r.client.Indices.PutAlias(ctx, req)
 	if err != nil {
 		return wrapTransport(err)
 	}
@@ -326,13 +326,16 @@ func (r *Repository) aliasPut(ctx context.Context, index, alias string) error {
 // would be ideal but expensive; we check only the parts that matter for
 // query correctness.
 func (r *Repository) verifyMappingMatches(ctx context.Context, index string, expected []byte) error {
-	req := osapi.MappingGetReq{Indices: []string{index}}
-	resp, err := r.client.Indices.Mapping.Get(ctx, &req)
+	// Raw request: the SDK's typed mapping decode rejects field types its
+	// schema does not know (a plugin or operator-added field), and that
+	// must not fail every ensureReady.
+	req := osapi.IndicesGetMappingReq{Indices: []string{index}}
+	resp, err := opensearch.Execute(ctx, r.client.Client, http.MethodGet, &req, (*opensearch.NoBody)(nil))
 	if err != nil {
 		return fmt.Errorf("get mapping %s: %w", index, wrapTransport(err))
 	}
-	if resp != nil {
-		drainAndClose(resp.Inspect().Response.Body)
+	if resp.IsError() {
+		return fmt.Errorf("get mapping %s: %w", index, wrapTransport(opensearch.ParseError(resp)))
 	}
 
 	// Both fingerprints are derived from the mapping's embedding-field
@@ -343,7 +346,7 @@ func (r *Repository) verifyMappingMatches(ctx context.Context, index string, exp
 	if err != nil {
 		return fmt.Errorf("parse expected fingerprint: %w", err)
 	}
-	actualFP, err := extractMappingFingerprintFromResp(resp, index)
+	actualFP, err := extractMappingFingerprintFromBody(bytes.NewReader(resp.RawBody()), index)
 	if err != nil {
 		return fmt.Errorf("parse actual fingerprint: %w", err)
 	}
@@ -379,23 +382,26 @@ func extractEmbeddingFingerprint(body []byte) (embFingerprint, error) {
 	return extractFingerprintFromProps(m.Mappings.Properties)
 }
 
-// extractMappingFingerprintFromResp parses the cluster's GET-mapping
-// response and pulls out the embedding-field HNSW fingerprint for the
-// given index.
-func extractMappingFingerprintFromResp(resp *osapi.MappingGetResp, index string) (embFingerprint, error) {
-	indexMapping, ok := resp.GetIndices()[index]
+// extractMappingFingerprintFromBody parses the cluster's GET-mapping
+// response body and pulls out the embedding-field HNSW fingerprint for
+// the given index.
+func extractMappingFingerprintFromBody(raw io.Reader, index string) (embFingerprint, error) {
+	if raw == nil {
+		return embFingerprint{}, fmt.Errorf("index %s: empty mapping response", index)
+	}
+	var indices map[string]struct {
+		Mappings struct {
+			Properties map[string]any `json:"properties"`
+		} `json:"mappings"`
+	}
+	if err := json.NewDecoder(raw).Decode(&indices); err != nil {
+		return embFingerprint{}, err
+	}
+	indexMapping, ok := indices[index]
 	if !ok {
 		return embFingerprint{}, fmt.Errorf("index %s not in mapping response", index)
 	}
-	// MappingGetResp.GetIndices()[index].Mappings is a json.RawMessage in
-	// the SDK - we decode the inner properties shape ourselves.
-	var m struct {
-		Properties map[string]any `json:"properties"`
-	}
-	if err := json.Unmarshal(indexMapping.Mappings, &m); err != nil {
-		return embFingerprint{}, err
-	}
-	return extractFingerprintFromProps(m.Properties)
+	return extractFingerprintFromProps(indexMapping.Mappings.Properties)
 }
 
 func extractFingerprintFromProps(props map[string]any) (embFingerprint, error) {

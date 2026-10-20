@@ -5,7 +5,7 @@ import { installFakeChrome, tick } from '../../test/fakeChrome';
 import { ApiError, type ApiClient } from '../shared/api';
 import { pollParse } from '../shared/capture';
 import type { ExtractReply, Request, TabAccessReply } from '../shared/messages';
-import type { ClipError } from '../shared/session';
+import { captureScope, type ClipError } from '../shared/session';
 import type { Capture, CaptureDraft, Connection, Intent, Knowledge } from '../shared/types';
 import { type Editor, useCapture } from './useCapture';
 
@@ -34,7 +34,11 @@ function harness(opts: Opts = {}) {
   if (opts.draft) session.set('draft:7', opts.draft);
   if (opts.intent) session.set('intent:7', opts.intent);
   if (opts.clipError) session.set('clipError:7', opts.clipError);
-  for (const c of opts.recent ?? []) local.set(`capture:${c.knowledgeId}`, c);
+  const connection: Connection | null = opts.connection === null
+    ? null
+    : { serverUrl: 'https://kb.example.com', auth: { kind: 'api_key', key: 'sk' }, tenantId: null, lastKbId: 'kb1', quickClip: true, ...opts.connection };
+  if (connection) local.set('connection', connection);
+  for (const c of opts.recent ?? []) local.set(`capture:${c.knowledgeId}`, { ...c, scope: captureScope(connection ?? { serverUrl: 'https://other', tenantId: null }) });
   const saves: unknown[][] = [];
   const sent: Request[] = [];
   const resyncs: Capture[][] = [];
@@ -51,9 +55,6 @@ function harness(opts: Opts = {}) {
     listKnowledgeBases: async () => { if (opts.kbError) throw opts.kbError; return [{ id: 'kb1', name: 'Docs', type: 'document' }]; },
     listSharedKnowledgeBases: async () => [{ knowledge_base: { id: 'kb2', name: 'Team' }, permission: 'editor' }],
   } as unknown as ApiClient;
-  const connection: Connection | null = opts.connection === null
-    ? null
-    : { serverUrl: 'https://kb.example.com', auth: { kind: 'api_key', key: 'sk' }, tenantId: null, lastKbId: 'kb1', quickClip: true, ...opts.connection };
   let now = 0;
   const capture = useCapture({
     api,
@@ -210,6 +211,15 @@ test('startClip opens the extracted draft with the earlier capture of its URL', 
   assert.equal(editor.existing?.knowledgeId, 'k0');
   assert.equal(capture.state.pageError, null);
   assert.deepEqual(capture.state.kbs.map((kb) => kb.id), ['kb1', 'kb2']);
+});
+
+test('startClip on a URL captured under another scope offers no existing or duplicate', async () => {
+  const { capture, local } = harness({ recent: [saved('k0')] });
+  local.set('capture:k0', { ...saved('k0'), scope: captureScope({ serverUrl: 'https://elsewhere', tenantId: null }) });
+  await capture.startClip('select');
+  const editor = phase(capture, 'editing');
+  assert.equal(editor.existing, undefined);
+  assert.equal(editor.duplicate, undefined);
 });
 
 test('startClip on a tab without access shows the cold hint without asking the worker', async () => {

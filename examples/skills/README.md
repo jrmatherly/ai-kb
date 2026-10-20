@@ -8,8 +8,8 @@ This directory holds examples for the Agent Skills feature. The server does not 
 skills/
 ├── README.md              # this file
 └── pdf-processing/        # example PDF processing skill
-    ├── SKILL.md           # main file (Level 2)
-    ├── FORMS.md           # supplementary doc (Level 3)
+    ├── SKILL.md           # main file, loaded when the skill matches
+    ├── FORMS.md           # supplementary doc, read on demand
     └── scripts/           # mock scripts (print sample output)
         ├── analyze_form.py
         └── extract_text.py

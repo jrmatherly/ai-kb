@@ -65,10 +65,12 @@ class StdMarkitdownParser(BaseParser):
         if ext and not ext.startswith("."):
             ext = "." + ext
 
+        data_uris = True
         with parser_worker_limit("markitdown", CONFIG.markitdown_max_workers):
             try:
                 result = self._convert_markitdown(content, ext, keep_data_uris=True)
             except Exception:
+                data_uris = False
                 logger.warning(
                     "MarkItDown failed with embedded images for %s; retrying without data URIs",
                     ft or ext,
@@ -77,8 +79,12 @@ class StdMarkitdownParser(BaseParser):
 
         text = result.text_content
         images: dict[str, str] = {}
+        # Inlined data URIs are left in place: the MarkdownParser stage that
+        # follows this parser in MarkitdownParser extracts them.
         if pptx_bytes is not None and markdown_needs_pptx_media_attach(text):
-            text, images = attach_pptx_media_to_markdown(text, pptx_bytes)
+            text, images = attach_pptx_media_to_markdown(
+                text, pptx_bytes, data_uris=data_uris
+            )
         return Document(content=text, images=images)
 
     def _convert_markitdown(

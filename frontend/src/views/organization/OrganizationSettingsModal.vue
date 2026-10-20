@@ -237,7 +237,7 @@
           <div class="section-header-row">
             <div class="section-header-titlewrap">
               <h2>{{ $t('organization.manageMembers') }}</h2>
-              <t-popup placement="bottom-start" trigger="hover"
+              <t-popup placement="bottom-left" trigger="hover"
                 overlay-class-name="wk-popover org-permissions-popup-overlay"
                 :overlay-inner-style="permissionsPopupInnerStyle">
                 <button type="button" class="permissions-trigger-btn"
@@ -292,7 +292,7 @@
                 </t-input>
               </div>
               <t-popup v-if="canRequestUpgrade" v-model="upgradePopupVisible" trigger="click"
-                placement="bottom-end" destroy-on-close overlay-class-name="org-upgrade-popup-overlay">
+                placement="bottom-right" destroy-on-close overlay-class-name="org-upgrade-popup-overlay">
                 <t-button variant="outline" shape="square" size="small" class="members-list-upgrade-btn"
                   :disabled="hasPendingUpgrade"
                   :title="hasPendingUpgrade ? $t('organization.upgrade.pending') : $t('organization.upgrade.requestUpgrade')"
@@ -342,7 +342,7 @@
                   </div>
                 </template>
               </t-popup>
-              <t-popup v-if="isAdmin" v-model="addMemberPopupVisible" trigger="click" placement="bottom-end"
+              <t-popup v-if="isAdmin" v-model="addMemberPopupVisible" trigger="click" placement="bottom-right"
                 destroy-on-close overlay-class-name="org-add-member-popup-overlay">
                 <t-button theme="primary" variant="outline" shape="square" size="small"
                   class="members-list-add-btn" :title="$t('organization.addMember.button')"
@@ -412,7 +412,7 @@
                 <div class="role-cell">
                   <t-select v-if="isAdmin && !isOwnerMember(row)" :model-value="row.role"
                     class="member-role-select" size="small" :options="roleOptions"
-                    @change="(val: string) => handleRoleChange(row, val)" />
+                    @change="(val: SelectValue) => handleRoleChange(row, typeof val === 'string' ? val : '')" />
                   <t-tag v-else size="small" :theme="getRoleTheme(row.role)">
                     {{ $t(`organization.role.${row.role}`) }}
                   </t-tag>
@@ -509,7 +509,7 @@
               <template #actions="{ row }">
                 <div class="join-request-actions">
                   <t-popup :visible="approvePopupRequestId === row.id"
-                    placement="left-start" destroy-on-close overlay-class-name="org-approve-request-popup-overlay"
+                    placement="left-top" destroy-on-close overlay-class-name="org-approve-request-popup-overlay"
                     @visible-change="(visible: boolean) => handleApprovePopupVisibleChange(visible, row)">
                     <t-tooltip :content="$t('organization.settings.approve')" placement="top">
                       <t-button theme="primary" variant="text" shape="square" size="small"
@@ -564,7 +564,7 @@
           <div class="section-header-row">
             <div class="section-header-titlewrap">
               <h2>{{ $t('organization.share.sharedKnowledgeBase') }}</h2>
-              <t-popup placement="bottom-start" trigger="hover"
+              <t-popup placement="bottom-left" trigger="hover"
                 overlay-class-name="wk-popover org-permissions-popup-overlay"
                 :overlay-inner-style="permissionsHintPopupInnerStyle">
                 <button type="button" class="permissions-trigger-btn"
@@ -658,7 +658,7 @@
           <div class="section-header-row">
             <div class="section-header-titlewrap">
               <h2>{{ $t('organization.settings.sharedAgents') }}</h2>
-              <t-popup placement="bottom-start" trigger="hover"
+              <t-popup placement="bottom-left" trigger="hover"
                 overlay-class-name="wk-popover org-permissions-popup-overlay"
                 :overlay-inner-style="permissionsHintPopupInnerStyle">
                 <button type="button" class="permissions-trigger-btn"
@@ -751,7 +751,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, nextTick, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
-import { MessagePlugin } from 'tdesign-vue-next'
+import { MessagePlugin, type PrimaryTableCol, type SelectValue, type SwitchValue } from 'tdesign-vue-next'
 import { useModalShell } from '@/composables/useModalShell'
 import SettingsModalShell from '@/components/SettingsModalShell.vue'
 import { useI18n } from 'vue-i18n'
@@ -828,7 +828,7 @@ const addMemberPopupVisible = ref(false)
 const addMemberSubmitting = ref(false)
 const tenantSearchLoading = ref(false)
 const tenantSearchResults = ref<TenantInviteCandidate[]>([])
-const selectedTenantId = ref<number | null>(null)
+const selectedTenantId = ref<number | undefined>(undefined)
 const addMemberRole = ref<'admin' | 'editor' | 'viewer'>('viewer')
 
 const formData = ref({
@@ -1077,7 +1077,7 @@ function sharePermissionLabel(permission: string): string {
 }
 
 const joinRequestColumns = computed(() => {
-  const cols = [
+  const cols: PrimaryTableCol[] = [
     { colKey: 'applicant', title: t('organization.joinRequests.columns.applicant'), ellipsis: true, minWidth: 160 },
     { colKey: 'request_type', title: t('organization.joinRequests.columns.type'), width: 88 },
     { colKey: 'requested_role', title: t('organization.joinRequests.columns.requestedRole'), width: 140 },
@@ -1089,7 +1089,7 @@ const joinRequestColumns = computed(() => {
 })
 
 const sharedKbColumns = computed(() => {
-  const cols = [
+  const cols: PrimaryTableCol[] = [
     { colKey: 'name', title: t('organization.sharedResources.columns.name'), ellipsis: true, minWidth: 180 },
     { colKey: 'shared_by', title: t('organization.sharedResources.columns.sharedBy'), width: 120, ellipsis: true },
     { colKey: 'created_at', title: t('organization.sharedResources.columns.sharedAt'), width: 154 },
@@ -1610,7 +1610,7 @@ const handleAddMember = async () => {
 
 // Reset the add-member popup
 const resetAddMemberDialog = () => {
-  selectedTenantId.value = null
+  selectedTenantId.value = undefined
   addMemberRole.value = 'viewer'
   tenantSearchResults.value = []
 }
@@ -1642,11 +1642,11 @@ const refreshInviteCode = async () => {
   }
 }
 
-const handleValidityChange = async (value: number) => {
+const handleValidityChange = async (value: SelectValue) => {
   if (!props.orgId) return
   try {
     const result = await orgStore.updateOrganization(props.orgId, {
-      invite_code_validity_days: value
+      invite_code_validity_days: Number(value)
     })
     if (result) {
       MessagePlugin.success(t('common.saveSuccess'))
@@ -1661,11 +1661,11 @@ const handleValidityChange = async (value: number) => {
 }
 
 // Save immediately when the approval switch toggles
-const handleApprovalToggle = async (value: boolean) => {
+const handleApprovalToggle = async (value: SwitchValue) => {
   if (!props.orgId) return
   try {
     const result = await orgStore.updateOrganization(props.orgId, {
-      require_approval: value
+      require_approval: value === true
     })
     if (result) {
       MessagePlugin.success(t('common.saveSuccess'))
@@ -1682,11 +1682,11 @@ const handleApprovalToggle = async (value: boolean) => {
 }
 
 // Save immediately when the searchable switch toggles
-const handleSearchableToggle = async (value: boolean) => {
+const handleSearchableToggle = async (value: SwitchValue) => {
   if (!props.orgId) return
   try {
     const result = await orgStore.updateOrganization(props.orgId, {
-      searchable: value
+      searchable: value === true
     })
     if (result) {
       MessagePlugin.success(t('common.saveSuccess'))

@@ -7,6 +7,8 @@ const t = (key: string) => i18n.global.t(key)
 export interface TenantInfo {
   id: number
   name: string
+  /** Unique human key of the workspace; null until a system admin sets one. */
+  slug?: string | null
   description?: string
   status?: string
   business?: string
@@ -275,8 +277,8 @@ export async function deleteTenantAPIKey(
  */
 export async function updateTenant(
   tenantId: number,
-  payload: { name?: string; description?: string },
-): Promise<{ success: boolean; data?: TenantInfo; message?: string }> {
+  payload: { name?: string; description?: string; slug?: string },
+): Promise<{ success: boolean; data?: TenantInfo; message?: string; status?: number }> {
   try {
     const response = await put(`/api/v1/tenants/${tenantId}`, payload)
     return response as unknown as { success: boolean; data?: TenantInfo; message?: string }
@@ -284,6 +286,7 @@ export async function updateTenant(
     return {
       success: false,
       message: error.message || t('error.tenant.updateFailed'),
+      status: typeof error?.status === 'number' ? error.status : undefined,
     }
   }
 }

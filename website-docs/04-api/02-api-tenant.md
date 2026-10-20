@@ -74,14 +74,15 @@ curl $BASE/api/v1/tenants/1 -H "Authorization: Bearer $TOKEN"
 
 ### PUT /api/v1/tenants/:id
 
-Purpose: update the workspace. Permission: Owner; platform keys need `system_tenants_manage`. Only `name` and `description` are writable here; quota, status and configuration live behind dedicated endpoints. Handler: `internal/handler/tenant.go`
+Purpose: update the workspace. Permission: Owner; platform keys need `system_tenants_manage`. Only `name`, `description` and `slug` are writable here; quota, status and configuration live behind dedicated endpoints. Handler: `internal/handler/tenant.go`
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
 | `name` | *string | no (`binding:"omitempty,min=1,max=128"`) | New name |
 | `description` | *string | no (`binding:"omitempty,max=512"`) | New description |
+| `slug` | *string | no (`binding:"omitempty,max=64"`) | Unique workspace key used by the OIDC group mapping. System administrators only: any other caller gets 403 when the body carries it. Pattern `^[a-z][a-z0-9-]{1,63}$` (400 otherwise); `""` clears it; a slug another live workspace holds gives 409 |
 
-Response: 200 `{"success":true,"data":{TenantResponse}}`
+Response: 200 `{"success":true,"data":{TenantResponse}}`; `TenantResponse.slug` is the slug or `null`.
 
 ```bash
 curl -X PUT $BASE/api/v1/tenants/1 -H "Authorization: Bearer $TOKEN" \
@@ -233,7 +234,7 @@ Purpose: member list. Permission: Viewer+.
 | `q` | string | no | Filter by email or username |
 | `page` / `page_size` | int | no | Pagination (default 1/20, maximum 100; out of range returns 400) |
 
-Response: 200 `{"success":true,"data":{"members":[{user_id,email,username,avatar,role,status,invited_by,joined_at}],"total","page","page_size"}}`
+Response: 200 `{"success":true,"data":{"members":[{user_id,email,username,avatar,role,status,invited_by,joined_at}],"total","page","page_size","managed_by_idp"}}`. `managed_by_idp` is `true` when the OIDC [group mapping](../03-features/01-tenant-auth.md#groups-to-roles) names this workspace: roles set here are reapplied from the identity provider at each OIDC sign-in, and the UI shows a banner.
 
 ```bash
 curl $BASE/api/v1/tenants/1/members -H "Authorization: Bearer $TOKEN"

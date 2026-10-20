@@ -3,6 +3,7 @@ package retriever
 import (
 	"context"
 	"fmt"
+	"io"
 	"runtime/debug"
 	"sync"
 	"time"
@@ -87,9 +88,22 @@ func (r *RetrieveEngineRegistry) registerIfGenUnchanged(
 	if r.storeGen[storeID] != gen {
 		return false
 	}
+	closeEngine(r.byStoreID[storeID])
 	r.byStoreID[storeID] = svc
 	delete(r.failedUntil, storeID)
 	return true
+}
+
+// closeEngine releases an engine the registry no longer serves. An OpenSearch
+// client, for one, polls its cluster until it is closed.
+func closeEngine(svc interfaces.RetrieveEngineService) {
+	c, ok := svc.(io.Closer)
+	if !ok || svc == nil {
+		return
+	}
+	if err := c.Close(); err != nil {
+		logger.Warnf(context.Background(), "closing a replaced retrieval engine: %v", err)
+	}
 }
 
 // inFailureCooldown reports whether a recent build failure should short-circuit
@@ -188,6 +202,7 @@ func (r *RetrieveEngineRegistry) RegisterWithStoreID(storeID string, svc interfa
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
+	closeEngine(r.byStoreID[storeID])
 	r.byStoreID[storeID] = svc
 	// Count this alongside unregistrations: an on-demand build that started
 	// earlier must not overwrite the entry published here, which would leave
@@ -338,6 +353,7 @@ func (r *RetrieveEngineRegistry) UnregisterByStoreID(storeID string) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
+	closeEngine(r.byStoreID[storeID])
 	delete(r.byStoreID, storeID)
 	r.bumpGenerationLocked(storeID)
 	// Let an operator retry immediately after removing a store rather than

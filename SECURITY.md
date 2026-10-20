@@ -2,24 +2,24 @@
 
 ## Reporting a Vulnerability
 
-The AI KB team takes security vulnerabilities seriously.  
+The AI KB team takes security vulnerabilities seriously.
 We appreciate your efforts to responsibly disclose any security issues you discover.
 
-⚠️ **Please do NOT report security vulnerabilities through public GitHub issues.**
+**Do not report security vulnerabilities through public GitHub issues.**
 
 ### Preferred reporting method
 
-We recommend reporting security vulnerabilities using GitHub’s private vulnerability reporting feature:
+We recommend reporting security vulnerabilities using GitHub's private vulnerability reporting feature:
 
 1. Go to the **Security** tab of this repository
-2. Click **“Report a vulnerability”**
+2. Click **"Report a vulnerability"**
 3. Fill in the details and submit the report
 
 This allows us to discuss, investigate, and fix the issue privately.
 
 ### Alternative contact
 
-If you are unable to use GitHub’s Security Advisory feature, you may contact the maintainers through the repository owners.
+If you are unable to use GitHub's Security Advisory feature, you may contact the maintainers through the repository owners.
 
 > Please avoid sharing sensitive information publicly.
 

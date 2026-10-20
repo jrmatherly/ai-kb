@@ -33,23 +33,40 @@ import (
 // is guaranteed to either match the active tenant or carry a
 // cross-tenant superuser bypass.
 type TenantMemberHandler struct {
-	memberService interfaces.TenantMemberService
-	userService   interfaces.UserService
+	memberService    interfaces.TenantMemberService
+	userService      interfaces.UserService
+	systemSettingSvc interfaces.SystemSettingService
+	tenantService    interfaces.TenantService
 }
 
-// NewTenantMemberHandler wires the dependencies. PR 1 already provides
-// both services through the dig container; we just consume them. The
-// previous *config.Config argument was removed once
-// middleware.RequirePathTenantMatch took over the cross-tenant
-// superuser carve-out.
+// NewTenantMemberHandler wires the dependencies; the dig container provides all four.
 func NewTenantMemberHandler(
 	memberService interfaces.TenantMemberService,
 	userService interfaces.UserService,
+	systemSettingSvc interfaces.SystemSettingService,
+	tenantService interfaces.TenantService,
 ) *TenantMemberHandler {
 	return &TenantMemberHandler{
-		memberService: memberService,
-		userService:   userService,
+		memberService:    memberService,
+		userService:      userService,
+		systemSettingSvc: systemSettingSvc,
+		tenantService:    tenantService,
 	}
+}
+
+// managedByIdp reports whether the OIDC group mapping names this workspace, so the page can say that
+// membership is reapplied at each sign-in. A resolution failure reads as false.
+func (h *TenantMemberHandler) managedByIdp(ctx context.Context, tenantID uint64) bool {
+	if h.systemSettingSvc == nil || h.tenantService == nil {
+		return false
+	}
+	governed, err := service.OIDCGovernedWorkspaces(ctx, h.systemSettingSvc, h.tenantService)
+	if err != nil {
+		logger.Warnf(ctx, "ListMembers: cannot resolve the OIDC group mapping: %v", err)
+		return false
+	}
+	_, ok := governed[tenantID]
+	return ok
 }
 
 // addMemberRequest is the JSON body for POST /tenants/:id/members.
@@ -155,10 +172,11 @@ func (h *TenantMemberHandler) ListMembers(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"data": gin.H{
-			"members":   resp,
-			"total":     total,
-			"page":      page,
-			"page_size": pageSize,
+			"members":        resp,
+			"total":          total,
+			"page":           page,
+			"page_size":      pageSize,
+			"managed_by_idp": h.managedByIdp(ctx, tenantID),
 		},
 	})
 }

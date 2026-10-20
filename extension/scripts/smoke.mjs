@@ -1,4 +1,6 @@
 // CDP smoke run of the built extension against a live server: node scripts/smoke.mjs --identity <name>.
+// AIKB_SMOKE_IMAGE_REF (restricted only): a stored file path; the storage proxy must answer 403 for a
+// KB-restricted key. Unset, that step is skipped.
 import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { createServer } from 'node:http';
 import { tmpdir } from 'node:os';
@@ -254,6 +256,21 @@ async function run() {
     await choose(panel, 'select[aria-label="Knowledge bases"]', kbName);
   });
 
+  // Records every request URL the panel makes from here on, and each button click as click:<label>;
+  // the Stop and History steps read it.
+  await panel.evaluate(`(() => {
+    window.__log = [];
+    const real = window.fetch;
+    window.fetch = (input, init) => { window.__log.push(String(input instanceof Request ? input.url : input)); return real(input, init); };
+    document.addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) window.__log.push('click:' + b.textContent.trim()); }, true);
+    // Worker round trips and page errors, so a step that fails can say why the panel did not act.
+    const send = chrome.runtime.sendMessage.bind(chrome.runtime);
+    chrome.runtime.sendMessage = (...a) => { const p = send(...a); window.__log.push('msg:' + a[0]?.type); p.then((r) => window.__log.push('reply:' + a[0]?.type + ':' + JSON.stringify(r).slice(0, 60)), (e) => window.__log.push('msgerr:' + a[0]?.type + ':' + e.message)); return p; };
+    window.addEventListener('unhandledrejection', (e) => window.__log.push('rejection:' + (e.reason?.message ?? e.reason)));
+    const err = console.error.bind(console);
+    console.error = (...a) => { window.__log.push('console.error:' + a.map(String).join(' ').slice(0, 120)); err(...a); };
+  })()`);
+
   await step('ask "What does the fixture say?"', async () => {
     await fill(panel, '.composer textarea', 'What does the fixture say?');
     await click(panel, button('Send'));
@@ -269,16 +286,38 @@ async function run() {
     return `${result.answer.length} characters, references ${result.refs.join('; ')}`;
   });
 
+  await step('press Stop on a second question and see POST /sessions/<id>/stop', async () => {
+    const last = `[...document.querySelectorAll('.message.assistant')].at(-1)`;
+    const stopButton = button('Stop');
+    const stopUrl = `window.__log.find((u) => /\\/sessions\\/[^/]+\\/stop$/.test(u))`;
+    await fill(panel, '.composer textarea', 'Explain every section of the fixture in detail.');
+    await click(panel, button('Send'));
+    await until(panel, `!!(${stopButton}) && !!${last}?.querySelector('.answer')?.textContent.trim()`, 'answer text before Stop', 20_000);
+    await click(panel, stopButton);
+    await until(panel, `${stopUrl} || !(${stopButton})`, 'the stop request or the end of the stream');
+    const seen = JSON.parse(await panel.evaluate(`JSON.stringify({ stop: ${stopUrl} ?? null, log: window.__log.slice(-12), error: ${last}?.querySelector('.error')?.textContent ?? null, toasts: [...document.querySelectorAll('.toast')].map((t) => t.textContent.trim()), stopVisible: !!(${stopButton}) })`));
+    if (!seen.stop) throw new Error(`no stop request; Stop still shown ${seen.stopVisible}; toasts ${JSON.stringify(seen.toasts)}; recent: ${seen.log.join(' | ')}`);
+    await until(panel, `!(${stopButton})`, 'the stream to end after Stop');
+    if (seen.error) throw new Error(`the stopped answer shows "${seen.error}"`);
+    return new URL(seen.stop).pathname;
+  });
+
+  if (values.identity === 'restricted') {
+    await step('a restricted key gets 403 from the storage proxy', async () => {
+      const ref = process.env.AIKB_SMOKE_IMAGE_REF;
+      if (!ref) return 'skipped (no AIKB_SMOKE_IMAGE_REF)';
+      const r = await fetch(`${server}/files?file_path=${encodeURIComponent(ref)}`, { headers });
+      await r.body?.cancel();
+      if (r.status !== 403) throw new Error(`the storage proxy answered ${r.status}`);
+      return `${r.status}`;
+    });
+  }
+
   await step(`History loads the session with resource_urls=${identity.history}`, async () => {
-    await panel.evaluate(`(() => {
-      window.__urls = [];
-      const real = window.fetch;
-      window.fetch = (input, init) => { window.__urls.push(String(input instanceof Request ? input.url : input)); return real(input, init); };
-    })()`);
     await click(panel, button('History'));
     await until(panel, `!!document.querySelector('.sessions li button')`, 'the session list');
     await click(panel, `document.querySelector('.sessions li button.current') ?? document.querySelector('.sessions li button')`);
-    const url = await until(panel, `window.__urls.find((u) => u.includes('/load?'))`, 'the messages load request');
+    const url = await until(panel, `window.__log.find((u) => u.includes('/load?'))`, 'the messages load request');
     await until(panel, `!!document.querySelector('.message.assistant .answer')?.textContent.trim()`, 'the loaded conversation');
     if (!url.includes(`resource_urls=${identity.history}`)) throw new Error(`load went to ${url}`);
     return new URL(url).pathname + new URL(url).search;

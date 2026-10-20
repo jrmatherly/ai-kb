@@ -38,8 +38,8 @@ Fields on each chunk, from `aikb search chunks --help`:
 | `content` | the passage text |
 | `matched_content` | the matched span when the server reports one |
 | `score` | the retrieval score; enrichment chunks the server adds for context carry 0 |
-| `match_type` | an integer: 0 vector, 1 keyword, 2 nearby chunk, 4 parent chunk, 5 related chunk |
-| `knowledge_id`, `knowledge_title`, `knowledge_filename` | the source document |
+| `match_type` | an integer: 0 vector, 1 keyword, 2 nearby chunk, 3 history, 4 parent chunk, 5 related chunk, 6 graph, 7 web search, 8 direct load, 9 data analysis |
+| `knowledge_id`, `knowledge_title`, `knowledge_filename`, `knowledge_source`, `knowledge_channel` | the source document |
 | `chunk_index`, `seq`, `start_at`, `end_at` | position inside the document |
 | `chunk_type`, `image_info`, `metadata` | chunk kind and extra data |
 

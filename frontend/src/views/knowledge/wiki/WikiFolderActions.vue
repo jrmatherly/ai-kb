@@ -4,7 +4,7 @@
        confirm) happens inside this one popup so no full-page dialog is spawned.
        click.stop on the trigger and content prevents the surrounding directory
        row from treating the interaction as an expand/collapse toggle. -->
-  <t-popup v-model:visible="open" trigger="click" placement="bottom-start" destroy-on-close
+  <t-popup v-model:visible="open" trigger="click" placement="bottom-left" destroy-on-close
     :overlay-class-name="popupOverlayClass" @visible-change="onVisibleChange">
     <span :class="['wiki-directory-action', 'wiki-directory-action--reveal', { 'is-open': open }]"
       :title="t('knowledgeEditor.wikiBrowser.folderActions')" @click.stop @dragstart.prevent.stop>

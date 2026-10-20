@@ -4,6 +4,7 @@ import { storeToRefs } from 'pinia';
 import { useRoute, useRouter } from 'vue-router';
 import { onBeforeRouteUpdate } from 'vue-router';
 import { MessagePlugin } from "tdesign-vue-next";
+import type { TextareaValue } from "tdesign-vue-next";
 import type { SendMessageOptions } from '@/utils/questionOrigin';
 import { useSettingsStore } from '@/stores/settings';
 import { useBrowserConnectionStore } from '@/stores/browserConnection';
@@ -2384,7 +2385,7 @@ const injectCurrentInput = () => {
   else if (firstQueuedSteer.value) emit('promote-steer', firstQueuedSteer.value.steer_id);
 };
 
-const onKeydown = (val: string, event: { e: KeyboardEvent }) => {
+const onKeydown = (val: TextareaValue, event: { e: KeyboardEvent }) => {
   if (isComposing.value || event.e.isComposing || event.e.keyCode === 229) return;
   if (showMention.value) {
     if (event.e.keyCode === 38) { // Up
@@ -2430,7 +2431,7 @@ const onKeydown = (val: string, event: { e: KeyboardEvent }) => {
     event.e.preventDefault();
     if (props.composerLocked) return;
     if (delivery === 'inject' && props.isReplying && props.canSteer) injectCurrentInput();
-    else void createSession(val, delivery);
+    else void createSession(String(val), delivery);
   }
 }
 

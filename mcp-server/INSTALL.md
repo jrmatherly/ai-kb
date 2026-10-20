@@ -1,11 +1,20 @@
 # AI KB MCP Server installation and usage guide
 
+> **Deprecated.** AI KB ships a [built-in MCP server](https://ai-kb.matherly.net/docs/03-features/08-mcp); prefer it. This package may be removed in a future release.
+
 ## Quick start
 
-### 1. Install dependencies
+### 1. Install
+
+From PyPI, which installs the `ai-kb-mcp-server` command:
 
 ```bash
-pip install ai-kb-mcp            # from PyPI; or, in a checkout of mcp-server/:
+pip install ai-kb-mcp
+```
+
+From a checkout of `mcp-server/`, which installs only the dependencies (then run `python main.py`):
+
+```bash
 pip install -r requirements.txt
 ```
 
@@ -31,7 +40,7 @@ Create the API key under Settings → Publish & Integrations → API Integration
 
 There are several ways to run the server:
 
-#### Option 1: the main entry point (recommended)
+#### Option 1: the main entry point (recommended from a checkout)
 
 ```bash
 python main.py
@@ -42,6 +51,10 @@ python main.py
 ```bash
 python run_server.py
 ```
+
+`run_server.py` always runs stdio and ignores every option.
+
+Options 3 and 4 accept only `--transport`, `--host` and `--port`.
 
 #### Option 3: run the server module directly
 
@@ -67,7 +80,7 @@ After installation you can use the command-line tools:
 
 ```bash
 ai-kb-mcp-server
-# or
+# or, stdio only and without options:
 ai-kb-server
 ```
 
@@ -80,10 +93,10 @@ pip install .
 ### Build distribution packages
 
 ```bash
-# Build the source distribution and wheel
-python setup.py sdist bdist_wheel
+# Build the source distribution and wheel (what CI runs)
+uv build
 
-# Or use the build tool
+# Or without uv
 pip install build
 python -m build
 ```
@@ -155,6 +168,7 @@ ai-kb/mcp-server/
 ├── MANIFEST.in              # package file manifest
 ├── Dockerfile               # container image (Streamable HTTP)
 ├── test_*.py, tests/        # tests
+├── check_imports.py         # manual import check
 ├── LICENSE                  # license
 ├── README.md                # project overview
 ├── INSTALL.md               # installation guide
@@ -163,11 +177,7 @@ ai-kb/mcp-server/
 └── CHANGELOG.md             # changelog
 ```
 
-### Adding a feature
-
-1. Add the new API method to the `AIKBClient` class
-2. Register a new tool function with the `@mcp.tool()` decorator: annotate the parameters with types (the schema is generated from them), put the description in the docstring, and call the new client method from the function body
-3. Update the docs and tests
+Adding a tool: see [README.md](./README.md#add-a-tool).
 
 ### Testing
 
@@ -184,46 +194,7 @@ python main.py --verbose
 
 ## Deployment
 
-### Docker
-
-Build and run the bundled `Dockerfile`, which serves Streamable HTTP on port 8000:
-
-```bash
-docker build -t ai-kb-mcp mcp-server
-docker run -e AIKB_API_KEY=your_api_key -e MCP_SERVER_AUTH_TOKEN=change_me -p 8000:8000 ai-kb-mcp
-```
-
-The image defaults to `AIKB_BASE_URL=http://app:8080/api/v1`; override it when AI KB runs elsewhere. The MCP endpoint is `http://<host>:8000/mcp`.
-
-### System service
-
-Create the systemd unit file `/etc/systemd/system/ai-kb-mcp.service`:
-
-```ini
-[Unit]
-Description=AI KB MCP Server
-After=network.target
-
-[Service]
-Type=simple
-User=aikb
-WorkingDirectory=/opt/ai-kb-mcp
-Environment=AIKB_BASE_URL=http://localhost:8080/api/v1
-Environment=AIKB_API_KEY=your_api_key
-Environment=MCP_SERVER_AUTH_TOKEN=change_me
-ExecStart=/usr/local/bin/ai-kb-mcp-server --transport http --host 127.0.0.1 --port 8000
-Restart=always
-
-[Install]
-WantedBy=multi-user.target
-```
-
-Enable the service:
-
-```bash
-sudo systemctl enable ai-kb-mcp
-sudo systemctl start ai-kb-mcp
-```
+Docker and systemd: see [README.md](./README.md#deployment).
 
 ## Support
 

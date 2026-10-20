@@ -40,7 +40,7 @@
             <template #icon><t-icon name="history" /></template>
             {{ $t('tenantMember.audit.tabLabel') }}
           </t-button>
-          <t-popup v-if="canManage" v-model="invitePopupVisible" trigger="click" placement="bottom-end"
+          <t-popup v-if="canManage" v-model="invitePopupVisible" trigger="click" placement="bottom-right"
             destroy-on-close overlay-class-name="wk-popover wk-popover--form member-invite-popup-overlay">
             <t-button theme="default" variant="text" size="small" class="members-list-add-btn"
               :title="$t('tenantMember.add.button')" :aria-label="$t('tenantMember.add.button')">
@@ -90,7 +90,7 @@
           <!-- Share-link generator. Sits next to the invite-by-email
                popup so the two flows live side-by-side: "I know who"
                (email input) vs "I don't" (one link, group chat). -->
-          <t-popup v-if="canManage" v-model="shareLinkPopupVisible" trigger="click" placement="bottom-end"
+          <t-popup v-if="canManage" v-model="shareLinkPopupVisible" trigger="click" placement="bottom-right"
             destroy-on-close overlay-class-name="wk-popover wk-popover--form member-invite-popup-overlay">
             <t-button theme="default" variant="text" size="small" class="members-list-add-btn"
               :title="$t('tenantInvitation.shareLink.button')"
@@ -290,6 +290,8 @@
       </div>
 
       <div v-show="activeListTab === 'members'" class="members-list-wrap">
+        <t-alert v-if="managedByIdp" theme="info" class="managed-by-idp"
+          :message="$t('tenantMember.managedByIdp', { provider: idpName })" />
         <div v-if="loading && members.length === 0" class="loading-inline">
           <t-loading size="small" />
           <span>{{ $t('tenantMember.loading') }}</span>
@@ -321,7 +323,7 @@
                   <t-select v-if="canManage && row.user_id !== currentUserId" :model-value="row.role"
                     class="member-role-select" :borderless="true" :popup-props="roleSelectPopupProps"
                     :aria-label="`${memberPrimary(row)} · ${$t('tenantMember.columns.role')}`"
-                    @change="(val: string) => onRoleChange(row, val)">
+                    @change="(val: SelectValue) => onRoleChange(row, typeof val === 'string' ? val : '')">
                     <template #prefixIcon><t-icon :name="roleIcon(row.role)" size="14px" /></template>
                     <t-option v-for="opt in roleOptions" :key="opt.value" :value="opt.value" :label="opt.label">
                       <span class="role-option">
@@ -502,10 +504,11 @@
 <script setup lang="ts">
 import { computed, nextTick, onUnmounted, reactive, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { MessagePlugin } from 'tdesign-vue-next'
+import { MessagePlugin, type FormRules, type PrimaryTableCol, type SelectValue } from 'tdesign-vue-next'
 import SettingDrawer from '@/components/settings/SettingDrawer.vue'
 import { copyWithToast } from '@/utils/clipboard'
 import { useAuthStore } from '@/stores/auth'
+import { getOIDCConfig } from '@/api/auth'
 import { AUDIT_ACTION_I18N_ROOTS } from '@/i18n/auditActionRegistry'
 import { auditActionLabel } from '@/i18n/auditActionLabel'
 import {
@@ -545,6 +548,8 @@ const permissionsPopupInnerStyle = {
 
 // State
 const members = ref<TenantMember[]>([])
+const managedByIdp = ref(false)
+const idpName = ref('')
 const loading = ref(false)
 const error = ref('')
 const adding = ref(false)
@@ -724,7 +729,7 @@ function roleMatrixIcon(role: TenantRole): string {
   }
 }
 
-const columns = computed(() => [
+const columns = computed<PrimaryTableCol[]>(() => [
   { colKey: 'member', title: t('tenantMember.columns.member'), ellipsis: true, minWidth: 230 },
   { colKey: 'role', title: t('tenantMember.columns.role'), width: 168 },
   { colKey: 'joined_at', title: t('tenantMember.columns.joinedAt'), width: 154 },
@@ -742,7 +747,7 @@ function memberSecondary(row: { username?: string; email?: string }) {
   return ''
 }
 
-const addFormRules = {
+const addFormRules: FormRules<typeof addForm> = {
   email: [
     { required: true, message: t('tenantMember.errors.emailRequired'), trigger: 'blur' },
     { email: true, message: t('tenantMember.errors.emailFormat'), trigger: 'blur' },
@@ -820,6 +825,10 @@ async function loadMembers() {
       }
       members.value = resp.data.members ?? []
       membersTotal.value = total
+      managedByIdp.value = resp.data.managed_by_idp === true
+      if (managedByIdp.value && !idpName.value) {
+        void getOIDCConfig().then((cfg) => { idpName.value = cfg.provider_display_name || 'OIDC' })
+      }
       if (typeof resp.data.page === 'number' && resp.data.page > 0) {
         membersPage.value = resp.data.page
       }
@@ -1581,6 +1590,10 @@ watch(
 }
 
 .permissions-trigger-btn { .settings-title-help(); }
+
+.managed-by-idp {
+  margin-bottom: 12px;
+}
 
 .members-list-wrap {
   display: flex;

@@ -5,7 +5,7 @@ import { Icon } from "./ui";
 import { getThemeSnapshot, subscribeToTheme, toggleTheme } from "./theme";
 import { siteNavigation, repositoryUrl, headerIcons, homeAssets } from "../../shared/header";
 import s from "./home.module.css";
-const videoUrl = "https://github.com/user-attachments/assets/6e6f5950-e479-4268-a3eb-76f69b93af63";
+const videoUrl = "https://github.com/user-attachments/assets/9f07fd45-2a94-41cd-b72e-3444ecd0eea2";
 
 function HeaderIcon({ name }: { name: string }) {
   return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={headerIcons[name]} /></svg>;

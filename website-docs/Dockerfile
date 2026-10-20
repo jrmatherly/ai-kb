@@ -23,12 +23,10 @@ RUN npm run setup
 COPY . .
 RUN npm run build
 
-# Pin the runtime base. Do NOT switch back to floating `nginx:stable-alpine`:
-# that tag is now Alpine 3.24+, which fails to start on intranet hosts with
-# CentOS 7's kernel 3.10 and old libseccomp (the v0.7.0 frontend outage).
-# This digest is nginx 1.30.3 / Alpine 3.23.5, the same base as the frontend
-# image that still starts there. apk stays on the 3.23 repos.
-FROM nginx:1.30.3-alpine@sha256:0d3b80406a13a767339fbe2f41406d6c7da727ab89cf8fae399e81f780f814d1 AS runtime
+# Runtime base pinned by index digest, never the floating `nginx:stable-alpine`
+# tag: nginx 1.30.5 on Alpine 3.24.2, the same base as the frontend image.
+# Hosts on kernel 3.10 (CentOS 7) are not a target.
+FROM nginx:1.30.5-alpine@sha256:0985e772fb9f729e6fa0980da05fca5d9c468e870eed43071545afa9d2e27d94 AS runtime
 # Some deployment platforms wrap the startup command with /bin/bash -c.
 RUN apk add --no-cache bash
 # Baked into default.conf below. Entrypoint still honors a runtime override

@@ -398,6 +398,9 @@ services:
       - OIDC_AUTH_EXTENSION_RETURN_URLS=${OIDC_AUTH_EXTENSION_RETURN_URLS:-}
       - OIDC_USER_INFO_MAPPING_USER_NAME=${OIDC_USER_INFO_MAPPING_USER_NAME:-}
       - OIDC_USER_INFO_MAPPING_EMAIL=${OIDC_USER_INFO_MAPPING_EMAIL:-}
+      - OIDC_AUTH_GROUPS_CLAIM=${OIDC_AUTH_GROUPS_CLAIM:-}
+      - OIDC_AUTH_SYSTEM_ADMIN_GROUPS=${OIDC_AUTH_SYSTEM_ADMIN_GROUPS:-}
+      - OIDC_AUTH_GROUP_ROLE_MAP=${OIDC_AUTH_GROUP_ROLE_MAP:-}
       # Feishu cloud document parsing mode. export: export as docx. blocks: parse Feishu document blocks into markdown. Default: export
       - FEISHU_DOCX_PARSE_MODE=${FEISHU_DOCX_PARSE_MODE:-export}
     depends_on:
@@ -803,7 +806,7 @@ services:
   # Data persists in the doris_fe_meta / doris_be_storage volumes.
   # ---------------------------------------------------------------------------
   doris-fe:
-    image: apache/doris:fe-4.1.4.1
+    image: apache/doris:fe-4.1.5@sha256:bd0149d76fd02429ee4ab751f34c16948fbf761a886070489fdebf7b2069305c
     container_name: ai-kb-doris-fe
     hostname: doris-fe
     environment:
@@ -827,7 +830,7 @@ services:
       - doris
 
   doris-be:
-    image: apache/doris:be-4.1.4.1
+    image: apache/doris:be-4.1.5@sha256:10d282e1bd685f8c0d71b3b42bbd0841bbb20909de2cd847923f00378b6b9a11
     container_name: ai-kb-doris-be
     hostname: doris-be
     environment:
@@ -1109,7 +1112,7 @@ services:
       - AIKB_CHAT_TIMEOUT=${AIKB_CHAT_TIMEOUT:-300}
       # Whether to verify the AI KB backend TLS certificate (default true; set false for self-signed certificates)
       - AIKB_VERIFY_SSL=${AIKB_VERIFY_SSL:-true}
-      # Allowlist of directories that may be uploaded (comma-separated; empty disables the file upload tool)
+      # Allowlist of directories that may be uploaded (comma-separated; empty allows only the working directory)
       - MCP_ALLOWED_UPLOAD_DIRS=${MCP_ALLOWED_UPLOAD_DIRS:-}
     depends_on:
       app:

@@ -175,6 +175,14 @@ func (f *fakeTenantService) SearchTenants(
 	return nil, 0, nil
 }
 
+func (f *fakeTenantService) GetTenantBySlug(context.Context, string) (*types.Tenant, error) {
+	return nil, nil
+}
+
+func (f *fakeTenantService) SetTenantSlug(context.Context, uint64, *string) error {
+	return nil
+}
+
 func (f *fakeTenantService) GetTenantByIDForUser(
 	ctx context.Context, tenantID uint64, userID string,
 ) (*types.Tenant, error) {

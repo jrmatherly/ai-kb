@@ -15,7 +15,7 @@ from pptx.oxml.ns import qn
 from pptx.util import Inches
 
 from docreader.parser import pptx_media
-from docreader.parser.markitdown_parser import MarkitdownParser, StdMarkitdownParser
+from docreader.parser.markitdown_parser import MarkitdownParser
 
 RED = (220, 30, 40)
 BLUE = (30, 80, 220)
@@ -262,55 +262,69 @@ class TestPptxMediaBrokenPictureRelationships(unittest.TestCase):
         ):
             with self.subTest(mutate.__name__):
                 data = deck_with_broken_picture(mutate)
-                document = StdMarkitdownParser(
+                document = MarkitdownParser(
                     file_name="deck.pptx", file_type="pptx"
-                ).parse_into_text(data)
+                ).parse(data)
                 self.assertIn("SLIDE TEXT OK", document.content)
                 self.assertEqual(
                     image_colors(document.content, document.images), [RED, None]
                 )
                 self.assertIn("(bad.jpg)", document.content)
 
-                parsed = MarkitdownParser(
-                    file_name="deck.pptx", file_type="pptx"
-                ).parse(data)
-                self.assertIn("SLIDE TEXT OK", parsed.content)
+
+def svg_deck(names=None):
+    """A RED PNG picture, then a BLUE SVG picture MarkItDown cannot read."""
+    data = deck([RED, BLUE], names=names)
+    with zipfile.ZipFile(io.BytesIO(data)) as archive:
+        files = {name: archive.read(name) for name in archive.namelist()}
+    original = "ppt/media/image2.png"
+    replacement = "ppt/media/image2.svg"
+    files[replacement] = (
+        b'<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16">'
+        b'<rect width="16" height="16" fill="#1e50dc"/></svg>'
+    )
+    del files[original]
+    for name, blob in list(files.items()):
+        if name.endswith(".rels"):
+            files[name] = blob.replace(b"image2.png", b"image2.svg")
+    types = etree.fromstring(files["[Content_Types].xml"])
+    etree.SubElement(
+        types,
+        "{http://schemas.openxmlformats.org/package/2006/content-types}Default",
+        Extension="svg",
+        ContentType="image/svg+xml",
+    )
+    files["[Content_Types].xml"] = etree.tostring(types)
+    output = io.BytesIO()
+    with zipfile.ZipFile(output, "w", zipfile.ZIP_DEFLATED) as archive:
+        archive.writestr(replacement, files.pop(replacement))
+        for name, blob in files.items():
+            archive.writestr(name, blob)
+    return output.getvalue()
+
+
+class TestPptxMediaInlineImages(unittest.TestCase):
+    def test_inline_data_uri_images_are_collected(self):
+        document = MarkitdownParser(file_type="pptx").parse(deck([RED]))
+        self.assertNotIn("data:", document.content)
+        [target] = IMAGE.findall(document.content)
+        self.assertTrue(target.startswith("images/"))
+        self.assertEqual(list(document.images), [target])
+        self.assertEqual(image_colors(document.content, document.images), [RED])
 
 
 class TestPptxMediaRealFallback(unittest.TestCase):
     @unittest.skipUnless(shutil.which("convert"), "ImageMagick is not installed")
     def test_svg_fallback_preserves_picture_order(self):
-        # SVG is valid Office media, but Pillow cannot identify it. That makes
-        # pinned MarkItDown 0.1.3 naturally enter the actual fallback path.
-        data = deck([RED, BLUE])
-        with zipfile.ZipFile(io.BytesIO(data)) as archive:
-            files = {name: archive.read(name) for name in archive.namelist()}
-        original = "ppt/media/image2.png"
-        replacement = "ppt/media/image2.svg"
-        files[replacement] = (
-            b'<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16">'
-            b'<rect width="16" height="16" fill="#1e50dc"/></svg>'
-        )
-        del files[original]
-        for name, blob in list(files.items()):
-            if name.endswith(".rels"):
-                files[name] = blob.replace(b"image2.png", b"image2.svg")
-        types = etree.fromstring(files["[Content_Types].xml"])
-        etree.SubElement(
-            types,
-            "{http://schemas.openxmlformats.org/package/2006/content-types}Default",
-            Extension="svg",
-            ContentType="image/svg+xml",
-        )
-        files["[Content_Types].xml"] = etree.tostring(types)
-        output = io.BytesIO()
-        with zipfile.ZipFile(output, "w", zipfile.ZIP_DEFLATED) as archive:
-            archive.writestr(replacement, files.pop(replacement))
-            for name, blob in files.items():
-                archive.writestr(name, blob)
+        # SVG is valid Office media, but Pillow cannot identify it, so
+        # MarkItDown emits a placeholder for it and inlines the PNG.
+        document = MarkitdownParser(file_type="pptx").parse(svg_deck())
+        self.assertEqual(image_colors(document.content, document.images), [RED, BLUE])
 
-        with self.assertLogs("docreader.parser.markitdown_parser", level="WARNING"):
-            document = MarkitdownParser(file_type="pptx").parse(output.getvalue())
+    @unittest.skipUnless(shutil.which("convert"), "ImageMagick is not installed")
+    def test_inlined_picture_does_not_take_a_same_name_placeholder(self):
+        data = svg_deck(names=["Picture 1", "Picture 1"])
+        document = MarkitdownParser(file_type="pptx").parse(data)
         self.assertEqual(image_colors(document.content, document.images), [RED, BLUE])
 
 

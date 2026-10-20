@@ -5,12 +5,50 @@ repository) are documented in this file, in the
 [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) format.
 
 The CLI has no version of its own: it ships under the product's dated CalVer
-release tag (`vYYYY.M.D[.MICRO]`). Entries from `[0.9.0]` down are upstream
-WeKnora's CLI history, kept verbatim; their `weknora` / `WEKNORA_*` names map to
-`aikb` / `AIKB_*`. CLI history before v0.3 is recorded in the project root
-[CHANGELOG.md](../CHANGELOG.md) under the release that introduced the CLI.
+release tag (`vYYYY.M.D[.MICRO]`). The `[2026.10.13]` section combines the AI KB
+rename with upstream WeKnora's unreleased v0.10 notes. Entries from `[0.9.0]`
+down are upstream WeKnora's CLI history, kept verbatim; their `weknora` /
+`WEKNORA_*` names map to `aikb` / `AIKB_*`. CLI history before v0.3 is
+recorded in the project root [CHANGELOG.md](../CHANGELOG.md) under the release
+that introduced the CLI.
 
 ## [Unreleased]
+
+## [2026.10.18.1] - 2026-10-18
+
+### Added
+- Every product release publishes `aikb` archives for macOS, Linux and Windows
+  (`aikb_<tag>_<os>_<arch>.tar.gz`, `aikb_<tag>_windows_<arch>.zip`, each with a
+  `.sha256` and a build provenance attestation), installable with
+  `brew install jrmatherly/ai-kb/aikb` or Scoop from the
+  `jrmatherly/homebrew-ai-kb` bucket.
+
+## [2026.10.18] - 2026-10-18
+
+### Added
+- `aikb skills install` bundles a new `ai-kb-ingest` skill next to
+  `ai-kb-shared` and `ai-kb-rag-search`; every skill declares OpenClaw metadata.
+
+### Changed
+- The `ai-kb-shared` and `ai-kb-rag-search` skills are rewritten as original
+  text.
+- `make build` stamps the version from product `v*` tags only
+  (`git describe --match 'v[0-9]*'`), so `aikb version` no longer reports an
+  `extension-v*` tag.
+
+## [2026.10.17] - 2026-10-17
+
+### Fixed
+- Help text for `auth logout`, `session resume` and `session stop` matches what
+  the commands do.
+
+## [2026.10.15.1] - 2026-10-15
+
+### Fixed
+- Output truncation no longer splits emoji sequences or flags; it cuts between
+  grapheme clusters.
+
+## [2026.10.13] - 2026-10-13
 
 ### Changed
 - **Renamed to AI KB.** Binary `weknora` → `aikb`, environment prefix
@@ -19,6 +57,11 @@ WeKnora's CLI history, kept verbatim; their `weknora` / `WEKNORA_*` names map to
   `github.com/jrmatherly/ai-kb/cli`.
 - Versioning follows the product's CalVer release tag; skill
   `tested_against` values use that tag.
+- JSON, text, and MCP now share one event projector and filtering policy.
+- Projected references contain lookup indexes only; fetch full
+  passages with `chunk view <chunk_id>` or `chunk view <parent_chunk_id>`.
+- NDJSON remains an unmodified SDK event trace, including reasoning and full
+  reference payloads.
 
 ### Breaking
 - `chat` and `session ask` now distinguish JSON from NDJSON: the default
@@ -51,13 +94,6 @@ WeKnora's CLI history, kept verbatim; their `weknora` / `WEKNORA_*` names map to
   keeps the profile registered (use `profile remove` to delete it entirely).
 - `meta.total_count` on paginated list / search output (full result size before
   client-side `--limit` truncation).
-
-### Changed
-- JSON, text, and MCP now share one event projector and filtering policy.
-- Projected references contain lookup indexes only; fetch full
-  passages with `chunk view <chunk_id>` or `chunk view <parent_chunk_id>`.
-- NDJSON remains an unmodified SDK event trace, including reasoning and full
-  reference payloads.
 
 ### Fixed
 - Streaming SDK calls are no longer cut off by the client's default 30-second

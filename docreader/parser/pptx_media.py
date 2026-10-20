@@ -127,8 +127,11 @@ def _is_unresolved_image_ref(url: str) -> bool:
     return True
 
 
-def _picture_sources(pptx_bytes: bytes) -> dict[str, deque[tuple[str, bytes] | None]]:
+def _picture_sources(
+    pptx_bytes: bytes, data_uris: bool
+) -> dict[str, deque[tuple[str, bytes] | None]]:
     """Resolve MarkItDown picture placeholders in slide/shape order."""
+    from markitdown.converters import PptxConverter
     from pptx import Presentation
     from pptx.enum.shapes import MSO_SHAPE_TYPE
     from pptx.exc import PythonPptxError
@@ -154,6 +157,19 @@ def _picture_sources(pptx_bytes: bytes) -> dict[str, deque[tuple[str, bytes] | N
             )
             if not is_picture:
                 continue
+            # With data URIs on, MarkItDown inlines every picture its own
+            # reader can load and emits a placeholder only for the rest. Such a
+            # picture must not sit in a queue a same-name placeholder pops.
+            if data_uris:
+                try:
+                    inlined = converter._get_image_info(shape)[0] is not None
+                except Exception as exc:  # private MarkItDown API, may change shape
+                    logger.warning(
+                        "Cannot probe pptx picture %s for inlining: %s", shape.name, exc
+                    )
+                    inlined = False
+                if inlined:
+                    continue
 
             # MarkItDown's no-data-URI mode uses the shape name, not the media
             # part name. Names may repeat across slides or normalize equally.
@@ -178,6 +194,7 @@ def _picture_sources(pptx_bytes: bytes) -> dict[str, deque[tuple[str, bytes] | N
                 )
             sources.setdefault(placeholder, deque()).append(source)
 
+    converter = PptxConverter()
     presentation = Presentation(io.BytesIO(pptx_bytes))
     for slide in presentation.slides:
         visit(slide.shapes)
@@ -185,10 +202,13 @@ def _picture_sources(pptx_bytes: bytes) -> dict[str, deque[tuple[str, bytes] | N
 
 
 def attach_pptx_media_to_markdown(
-    markdown: str, pptx_bytes: bytes
+    markdown: str, pptx_bytes: bytes, *, data_uris: bool = False
 ) -> Tuple[str, Dict[str, str]]:
-    """Attach the media referenced by MarkItDown's fallback picture placeholders."""
-    sources = _picture_sources(pptx_bytes)
+    """Attach the media referenced by MarkItDown's fallback picture placeholders.
+
+    `data_uris` says whether `markdown` came from a keep_data_uris=True run.
+    """
+    sources = _picture_sources(pptx_bytes, data_uris)
     if not sources:
         return markdown, {}
 

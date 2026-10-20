@@ -16,7 +16,7 @@ From `frontend/package.json`:
 | --- | --- | --- | --- |
 | Framework | Vue | ^3.5.44 | Composition API, `<script setup>` style |
 | Language | TypeScript | ~6.0.3 | `vue-tsc` type checking (`npm run type-check`) |
-| Build tool | Vite | ^7.3.7 | Plugins: `@vitejs/plugin-vue`, `@vitejs/plugin-vue-jsx`, `unplugin-vue-components` (registers the TDesign components each template uses through `TDesignResolver`; `dts` is off until the 92 template type mismatches are fixed) |
+| Build tool | Vite | ^7.3.7 | Plugins: `@vitejs/plugin-vue`, `@vitejs/plugin-vue-jsx`, `unplugin-vue-components` (registers the TDesign components each template uses through `TDesignResolver` and writes `src/components.d.ts`, which is committed so `vue-tsc` type-checks the templates; any build regenerates it and `scripts/verify_frontend_pr.sh` fails when the build changes it) |
 | UI component library | TDesign (tdesign-vue-next) | ^1.20.10 | With `tdesign-icons-vue-next` 0.4.11 (version locked by overrides) |
 | State management | Pinia | ^4.1.0 | Every store lives in `frontend/src/stores/` |
 | Routing | Vue Router | 5.4.0 | `createWebHistory`, see `frontend/src/router/index.ts` |
@@ -324,7 +324,7 @@ Use this section to run the frontend locally, build the production image and con
 Key points of `frontend/vite.config.ts`:
 
 - **Two build inputs**: `rollupOptions.input` builds both `index.html` (main SPA) and `embed.html` (embed page). In development the custom plugin `embedHtmlDevFallback()` rewrites `/embed/:channelId` requests to `/embed.html`, matching nginx.
-- **Code splitting**: `manualChunks` splits mermaid/dagre/cytoscape, marked/katex and highlight.js into `vendor-mermaid`, `vendor-markdown` and `vendor-highlight`, every TDesign component in use into one `vendor-tdesign` chunk (one file beat 65 per-component chunks under HTTP/1.1: knowledge list cold LCP 2.5 s against 3.0 s), and lodash-es, dompurify and es-toolkit into `vendor-shared`. The embed entry filters the heavy chat chunks out through `modulePreload.resolveDependencies`, so the embed page's first screen loads only the code needed for the token exchange.
+- **Code splitting**: `manualChunks` splits mermaid/dagre/cytoscape, marked/katex and highlight.js into `vendor-mermaid`, `vendor-markdown` and `vendor-highlight`, and lodash-es, dompurify and es-toolkit into `vendor-shared`. TDesign has no shared chunk, so each entry carries only the components its templates use (the embed page's startup JavaScript is 290 KiB gzipped, the main app's 384 KiB). The embed entry filters the heavy chat chunks out through `modulePreload.resolveDependencies`, so the embed page's first screen loads only the code needed for the token exchange.
 - **Version injection**: `__FRONTEND_VERSION__` (the package.json version) and `__FRONTEND_COMMIT__` (`VITE_FRONTEND_COMMIT` / `GITHUB_SHA` / `git rev-parse`) are injected at build time.
 - **Dev proxy**: the dev server (port 5173) and preview (port 4173) both proxy `/api`, `/files` and `/mcp/` to `VITE_DEV_PROXY_TARGET` (or `FRONTEND_BACKEND_URL`, default `http://localhost:8080`). `/api` forwards WebSockets (sandbox terminals and the like) with the timeout raised to 180s. `/mcp/` carries the built-in MCP Server's long-lived Streamable HTTP connections with a 1-hour timeout.
 - **Aliases**: `@` → `frontend/src`, plus entry-file detection for `@vue-office/pptx`.
@@ -335,7 +335,7 @@ Key points of `frontend/vite.config.ts`:
 `frontend/Dockerfile`:
 
 - It is a two-stage build. A digest-pinned `node:24-bookworm-slim` runs `npm ci` + `npm run build` on `$BUILDPLATFORM`, then `dist/` is copied into the runtime stage. The host no longer needs Node / npm, and `dist/` does not have to be built beforehand (`scripts/build_frontend_dist.sh` is still used for Lite and desktop packaging).
-- The runtime base image is a digest-pinned `nginx:1.30.3-alpine`. A comment forbids switching back to a floating tag: newer Alpine 3.24+ bases fail to start on old CentOS 7 kernels, which broke v0.7.0.
+- The runtime base image is a digest-pinned `nginx:1.30.5-alpine` (Alpine 3.24). A comment forbids switching back to a floating tag, so a rebuild reproduces the same base.
 - The container runs as the `nginx` user (uid 101) on port 8080 with everything it writes (pid, temp files, the rendered config and `config.js`) under `/tmp`, so it works on a read-only root filesystem; `nginx-main.conf` replaces the base `nginx.conf` for that. `nginx.conf` goes in as the template `/etc/nginx/templates/default.conf.template`. The proxy settings shared by `/api/`, `/mcp/` and skill uploads are in `nginx-api-proxy.conf` (copied verbatim to `/etc/nginx/api-proxy.conf`). The http-level snippet `nginx-http.conf` (the `api_no_query` log format, which drops query strings) is copied to `/etc/nginx/conf.d/00-ai-kb-http.conf`. The image exposes port 8080 and its entrypoint is `docker-entrypoint.sh`.
 
 Image build arguments:

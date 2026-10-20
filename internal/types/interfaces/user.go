@@ -147,6 +147,8 @@ type UserRepository interface {
 	// RevokeSystemAdmin removes system-admin privileges with the
 	// last-admin/self-revoke checks performed atomically.
 	RevokeSystemAdmin(ctx context.Context, userID, actorID string) (*types.User, error)
+	// GrantSystemAdmin sets is_system_admin alone, so a stale struct save elsewhere cannot clobber it.
+	GrantSystemAdmin(ctx context.Context, userID string) error
 	// SearchUsers searches users by username or email
 	SearchUsers(ctx context.Context, query string, limit int) ([]*types.User, error)
 }

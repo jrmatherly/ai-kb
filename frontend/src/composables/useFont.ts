@@ -172,13 +172,13 @@ const DEFAULT_SANS: FontKey = 'system'
 const DEFAULT_MONO: MonoFontKey = 'system'
 const DEFAULT_SIZE: FontSizeKey = 'normal'
 
-const isFontKey = (v: string | null): v is FontKey =>
-  !!v && Object.prototype.hasOwnProperty.call(SANS_STACKS, v)
+const isFontKey = (v: unknown): v is FontKey =>
+  typeof v === 'string' && Object.prototype.hasOwnProperty.call(SANS_STACKS, v)
 
-const isMonoFontKey = (v: string | null): v is MonoFontKey =>
-  !!v && Object.prototype.hasOwnProperty.call(MONO_STACKS, v)
+const isMonoFontKey = (v: unknown): v is MonoFontKey =>
+  typeof v === 'string' && Object.prototype.hasOwnProperty.call(MONO_STACKS, v)
 
-const isFontSizeKey = (v: string | null): v is FontSizeKey =>
+const isFontSizeKey = (v: unknown): v is FontSizeKey =>
   v === 'small' || v === 'normal' || v === 'large'
 
 function loadSans(): FontKey {
@@ -241,7 +241,7 @@ function applyFont() {
 }
 
 export function useFont() {
-  function setSansFont(key: FontKey): boolean {
+  function setSansFont(key: unknown): boolean {
     if (!isFontKey(key)) return false
     currentSans.value = key
     savePreference(SANS_KEY, key)
@@ -249,7 +249,7 @@ export function useFont() {
     return true
   }
 
-  function setMonoFont(key: MonoFontKey): boolean {
+  function setMonoFont(key: unknown): boolean {
     if (!isMonoFontKey(key)) return false
     currentMono.value = key
     savePreference(MONO_KEY, key)
@@ -257,7 +257,7 @@ export function useFont() {
     return true
   }
 
-  function setFontSize(key: FontSizeKey): boolean {
+  function setFontSize(key: unknown): boolean {
     if (!isFontSizeKey(key)) return false
     currentSize.value = key
     savePreference(SIZE_KEY, key)

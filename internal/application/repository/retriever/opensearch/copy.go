@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
-	osapi "github.com/opensearch-project/opensearch-go/v4/opensearchapi"
+	osapi "github.com/opensearch-project/opensearch-go/v5/opensearchapi"
 
 	"github.com/jrmatherly/ai-kb/internal/logger"
 	"github.com/jrmatherly/ai-kb/internal/types"
@@ -167,7 +167,7 @@ func (r *Repository) copyScanBatch(
 	if err != nil {
 		return nil, fmt.Errorf("opensearch: marshal copy scan body: %w", err)
 	}
-	req := osapi.SearchReq{Indices: []string{index}, Body: bytes.NewReader(body)}
+	req := osapi.SearchReq{Indices: []string{index}, BodyReader: bytes.NewReader(body)}
 	resp, err := r.client.Search(ctx, &req)
 	if err != nil {
 		if isNotFound(err) {
@@ -177,6 +177,10 @@ func (r *Repository) copyScanBatch(
 	}
 	defer drainAndClose(resp.Inspect().Response.Body)
 	var parsed struct {
+		Shards struct {
+			Total  int `json:"total"`
+			Failed int `json:"failed"`
+		} `json:"_shards"`
 		Hits struct {
 			Hits []struct {
 				Source copySourceDoc `json:"_source"`
@@ -185,6 +189,11 @@ func (r *Repository) copyScanBatch(
 	}
 	if err := json.NewDecoder(io.LimitReader(resp.Inspect().Response.Body, 64<<20)).Decode(&parsed); err != nil {
 		return nil, fmt.Errorf("opensearch: parse copy scan response: %w", ErrTransport)
+	}
+	// A failed shard means missing documents, and a copy must be complete.
+	if parsed.Shards.Failed > 0 {
+		return nil, fmt.Errorf("opensearch: copy scan of %s: %d of %d shards failed: %w",
+			index, parsed.Shards.Failed, parsed.Shards.Total, ErrTransport)
 	}
 	out := make([]copySourceDoc, len(parsed.Hits.Hits))
 	for i, h := range parsed.Hits.Hits {

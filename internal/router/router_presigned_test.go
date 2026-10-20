@@ -64,6 +64,14 @@ func (s *stubTenantService) SearchTenants(context.Context, string, uint64, int, 
 	panic("unexpected")
 }
 
+func (s *stubTenantService) GetTenantBySlug(context.Context, string) (*types.Tenant, error) {
+	return nil, nil
+}
+
+func (s *stubTenantService) SetTenantSlug(context.Context, uint64, *string) error {
+	return nil
+}
+
 func (s *stubTenantService) GetTenantByIDForUser(context.Context, uint64, string) (*types.Tenant, error) {
 	panic("unexpected")
 }

@@ -270,13 +270,17 @@ this format:
 ```text
 <code.namespace>: <message>[: <wrapped cause>]
 hint: <actionable next-step>
+[retry: <suggested argv>]
 ```
+
+The `retry:` line appears when the error has a suggested argv (`retry_argv`).
 
 Example:
 
 ```text
 auth.unauthenticated: fetch current user: HTTP error 401: ...
 hint: run `aikb auth login`
+retry: aikb auth login
 ```
 
 Under `--format json` the same failure is the typed error envelope on stderr

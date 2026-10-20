@@ -34,7 +34,7 @@
             <div class="wiki-graph-search">
               <t-select v-model="graphSearchValue" filterable :options="graphSearchEffectiveOptions"
                 :loading="graphSearchLoading" :on-search="handleGraphRemoteSearch"
-                :placeholder="$t('knowledgeEditor.wikiBrowser.searchPlaceholder')" @change="handleGraphSearchSelect"
+                :placeholder="$t('knowledgeEditor.wikiBrowser.searchPlaceholder')" @change="(v: SelectValue) => handleGraphSearchSelect(typeof v === 'string' ? v : '')"
                 @enter="handleGraphSearchEnter" :popup-props="{ zIndex: 100 }" class="graph-search-select">
                 <template #prefixIcon><t-icon name="search" /></template>
               </t-select>
@@ -826,7 +826,7 @@ import { useSettingsStore } from '@/stores/settings'
 import { useI18n } from 'vue-i18n'
 import { marked } from 'marked'
 import { ensureLiteralSingleTildeOnGlobalMarked } from '@/utils/markedLiteralTilde'
-import { MessagePlugin } from 'tdesign-vue-next'
+import { MessagePlugin, type SelectValue, type TagProps } from 'tdesign-vue-next'
 import { RecycleScroller } from 'vue-virtual-scroller'
 import { hydrateProtectedFileImages, sanitizeMarkdownHTML } from '@/utils/security'
 import type { ProtectedFileAccessContext } from '@/utils/protectedFileAccess'
@@ -2049,8 +2049,8 @@ watch([activeTreeRows, treeListRef], () => {
     .forEach(el => loadMoreObserver!.observe(el))
 }, { flush: 'post' })
 
-function getTypeTheme(type: string): string {
-  const map: Record<string, string> = {
+function getTypeTheme(type: string): TagProps['theme'] {
+  const map: Record<string, TagProps['theme']> = {
     summary: 'primary', entity: 'success', concept: 'warning',
     synthesis: 'primary', comparison: 'danger', index: 'default',
   }

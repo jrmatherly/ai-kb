@@ -2,7 +2,7 @@
 name: ai-kb-ingest
 description: Use when adding material to an AI KB knowledge base through the `aikb` CLI - uploading local files or directories, importing a web page or remote file by URL, writing a Markdown note as a knowledge entry, and waiting for parsing to finish before searching.
 metadata:
-  tested_against: v2026.10.17.1
+  tested_against: v2026.10.18.1
   openclaw:
     requires:
       bins: [aikb]
@@ -33,7 +33,7 @@ that ingests and then searches must `doc wait` in between.
 | A directory of files | `doc upload <dir> --recursive --glob '*.pdf' --kb <kb>` | One document per matching file; the batch envelope has one item per file with its id or error |
 | A URL (web page or remote file) | `doc fetch <url> --kb <kb>` | `--file-type pdf` when the URL has no extension; `--title` sets the display title |
 | Text you wrote (notes, summaries, decisions) | `doc create --text "<markdown>" --title "<title>" --kb <kb>` | Use `--text "$(cat notes.md)"` for a file you want stored as an entry, not parsed as an upload |
-| Document ids that are still parsing | `doc wait <id> [<id>...]` | Exits 0 when every document is parsed, 124 on timeout (`--timeout 20m`) |
+| Document ids that are still parsing | `doc wait <id> [<id>...]` | Exits 0 when every document is parsed, 1 if any failed, 124 on timeout (`--timeout 20m`) |
 
 `--tag-id <id>` on `doc fetch` and `doc create` files the entry under a tag;
 `--enable-multimodel` on `doc upload` and `doc fetch` turns image-in-PDF text

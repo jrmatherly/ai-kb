@@ -66,7 +66,7 @@ if has 'frontend/*' scripts/build_frontend_dist.sh scripts/test_embed_nginx.py s
 if has 'docreader/*' go.mod go.sum 'testdata/*' docker/Dockerfile.docreader docker/Dockerfile.odl-hybrid; then areas+=(docreader); fi
 if has 'internal/models/catalog/data/*' 'scripts/model-catalog/*'; then areas+=(model-catalog); fi
 if has 'scripts/git-hooks/*' scripts/test-git-hooks.sh scripts/check-english-only.sh scripts/check-emdash.sh \
-  scripts/emdash-allowlist.txt .claude/hooks/post-edit.sh; then areas+=(git-hooks); fi
+  scripts/emdash-allowlist.txt .claude/hooks/post-edit.sh .claude/hooks/guard-generated.sh; then areas+=(git-hooks); fi
 if has scripts/start_all.sh scripts/test-start-all.sh; then areas+=(start-all); fi
 if has '*.sh' 'scripts/git-hooks/*'; then areas+=(shell); fi
 if has scripts/update_tap.py scripts/test_update_tap.py .github/workflows/release-lite.yml; then areas+=(tap); fi

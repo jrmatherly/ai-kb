@@ -658,6 +658,7 @@ import { resolveCitationChunkId } from '@/utils/citationMarkdown';
 import { citationAnchorText } from '@/utils/citationAnchor';
 import { getWikiPage, type WikiPage } from '@/api/wiki';
 import { MessagePlugin } from 'tdesign-vue-next';
+import type { TagProps } from 'tdesign-vue-next';
 import { useUIStore } from '@/stores/ui';
 import { useSettingsStore } from '@/stores/settings';
 import { useAuthStore } from '@/stores/auth';
@@ -866,8 +867,8 @@ const wikiDrawerPage = ref<WikiPage | null>(null);
 const wikiDrawerBodyRef = ref<HTMLElement | null>(null);
 const currentWikiKbId = ref<string>('');
 
-function getTypeTheme(type: string): string {
-  const map: Record<string, string> = {
+function getTypeTheme(type: string): TagProps['theme'] {
+  const map: Record<string, TagProps['theme']> = {
     summary: 'primary', entity: 'success', concept: 'warning',
     synthesis: 'primary', comparison: 'danger', index: 'default',
   };
