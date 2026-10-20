@@ -11,6 +11,7 @@ import (
 
 	"github.com/jrmatherly/ai-kb/internal/application/repository"
 	"github.com/jrmatherly/ai-kb/internal/types"
+	"github.com/jrmatherly/ai-kb/internal/types/interfaces"
 )
 
 // groupsFromClaim reads the group names out of a verified claim set: a list of strings, a single name or a
@@ -70,10 +71,10 @@ func desiredRoles(
 	return roles, governed, unknown, nil
 }
 
-// workspaceResolver looks a mapping key up once per sign-in: all digits is an id, anything else a slug. Only a
-// true not-found is unknown; a lookup error aborts the sync, since a workspace named twice would otherwise be
+// oidcWorkspaceResolver looks a mapping key up once: all digits is an id, anything else a slug. Only a true
+// not-found is unknown; a lookup error aborts the sync, since a workspace named twice would otherwise be
 // governed through the other key with the user wanted nowhere, and that removes memberships.
-func (s *userService) workspaceResolver(ctx context.Context) func(string) (uint64, bool, error) {
+func oidcWorkspaceResolver(ctx context.Context, tenants interfaces.TenantService) func(string) (uint64, bool, error) {
 	cache := map[string]uint64{}
 	return func(key string) (uint64, bool, error) {
 		if id, ok := cache[key]; ok {
@@ -82,12 +83,12 @@ func (s *userService) workspaceResolver(ctx context.Context) func(string) (uint6
 		var tenant *types.Tenant
 		var err error
 		if id, perr := strconv.ParseUint(key, 10, 64); perr == nil {
-			tenant, err = s.tenantService.GetTenantByID(ctx, id)
+			tenant, err = tenants.GetTenantByID(ctx, id)
 			if errors.Is(err, repository.ErrTenantNotFound) {
 				err = nil
 			}
 		} else {
-			tenant, err = s.tenantService.GetTenantBySlug(ctx, key)
+			tenant, err = tenants.GetTenantBySlug(ctx, key)
 		}
 		if err != nil {
 			return 0, false, fmt.Errorf("resolve workspace %q: %w", key, err)
@@ -99,6 +100,18 @@ func (s *userService) workspaceResolver(ctx context.Context) func(string) (uint6
 		cache[key] = tenant.ID
 		return tenant.ID, true, nil
 	}
+}
+
+// OIDCGovernedWorkspaces returns the ids the configured mapping names; the members page shows a banner for them.
+func OIDCGovernedWorkspaces(
+	ctx context.Context, settingsSvc interfaces.SystemSettingService, tenants interfaces.TenantService,
+) (map[uint64]struct{}, error) {
+	settings, err := LoadOIDCGroupSettings(ctx, settingsSvc)
+	if err != nil || len(settings.Map) == 0 {
+		return map[uint64]struct{}{}, err
+	}
+	_, governed, _, err := desiredRoles(nil, settings.Map, oidcWorkspaceResolver(ctx, tenants))
+	return governed, err
 }
 
 // syncOIDCGroups applies the groups claim to the system admin flag and to membership in every governed
@@ -128,7 +141,7 @@ func (s *userService) syncOIDCGroups(
 		return res, nil
 	}
 
-	roles, governed, unknown, err := desiredRoles(groups, settings.Map, s.workspaceResolver(ctx))
+	roles, governed, unknown, err := desiredRoles(groups, settings.Map, oidcWorkspaceResolver(ctx, s.tenantService))
 	if err != nil {
 		return res, err
 	}

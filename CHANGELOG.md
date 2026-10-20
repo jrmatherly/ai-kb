@@ -6,6 +6,8 @@ All notable changes to this project will be documented in this file.
 
 ### Features
 
+- **ADDED**: OIDC groups to roles: the system settings `oidc.groups_claim`, `oidc.system_admin_groups` and `oidc.group_role_map` (environment fallbacks `OIDC_AUTH_GROUPS_CLAIM`, `OIDC_AUTH_SYSTEM_ADMIN_GROUPS`, `OIDC_AUTH_GROUP_ROLE_MAP`) set workspace membership and the system administrator flag from the identity provider's groups at each OIDC sign-in, inside the workspaces the mapping names; the last owner and the last administrator are kept; each sign-in writes an `auth.oidc_group_sync` audit row and Settings > Members shows a banner in a governed workspace.
+- **ADDED**: A unique workspace slug (Settings > Workspace, `PUT /tenants/:id` with `slug`), settable by system administrators only, as the human key the group mapping names.
 - **CHANGED**: The Browser Extension page's "Get the extension" button opens the Chrome Web Store listing, live since extension 1.0.2; the release packages for Edge and manual installs stay linked in the footer.
 
 ### Bug Fixes

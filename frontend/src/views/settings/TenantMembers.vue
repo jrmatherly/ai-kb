@@ -290,6 +290,8 @@
       </div>
 
       <div v-show="activeListTab === 'members'" class="members-list-wrap">
+        <t-alert v-if="managedByIdp" theme="info" class="managed-by-idp"
+          :message="$t('tenantMember.managedByIdp', { provider: idpName })" />
         <div v-if="loading && members.length === 0" class="loading-inline">
           <t-loading size="small" />
           <span>{{ $t('tenantMember.loading') }}</span>
@@ -506,6 +508,7 @@ import { MessagePlugin } from 'tdesign-vue-next'
 import SettingDrawer from '@/components/settings/SettingDrawer.vue'
 import { copyWithToast } from '@/utils/clipboard'
 import { useAuthStore } from '@/stores/auth'
+import { getOIDCConfig } from '@/api/auth'
 import { AUDIT_ACTION_I18N_ROOTS } from '@/i18n/auditActionRegistry'
 import { auditActionLabel } from '@/i18n/auditActionLabel'
 import {
@@ -545,6 +548,8 @@ const permissionsPopupInnerStyle = {
 
 // State
 const members = ref<TenantMember[]>([])
+const managedByIdp = ref(false)
+const idpName = ref('')
 const loading = ref(false)
 const error = ref('')
 const adding = ref(false)
@@ -820,6 +825,10 @@ async function loadMembers() {
       }
       members.value = resp.data.members ?? []
       membersTotal.value = total
+      managedByIdp.value = resp.data.managed_by_idp === true
+      if (managedByIdp.value && !idpName.value) {
+        void getOIDCConfig().then((cfg) => { idpName.value = cfg.provider_display_name || 'OIDC' })
+      }
       if (typeof resp.data.page === 'number' && resp.data.page > 0) {
         membersPage.value = resp.data.page
       }
@@ -1581,6 +1590,10 @@ watch(
 }
 
 .permissions-trigger-btn { .settings-title-help(); }
+
+.managed-by-idp {
+  margin-bottom: 12px;
+}
 
 .members-list-wrap {
   display: flex;

@@ -98,7 +98,7 @@ VITE_DEV_PROXY_TARGET=https://kb.example.com npm run dev
 | `opensearch-dashboards` | `opensearchproject/opensearch-dashboards:3.9.0` | `5601` | Profile `opensearch-ui` (start it separately when needed) |
 | `milvus` | `milvusdb/milvus:v3.0.3` (standalone, embedded etcd; the one-shot `milvus-volume-init` hands the volume to the image's non-root user) | `19530` / `9091` | Profile `milvus` / `full` |
 | `neo4j` | `neo4j:2026.09.0` (APOC plugin) | `7474` / `7687` | `--neo4j` / `--full` |
-| `dex` | `dexidp/dex:v2.46.0` (OIDC test identity provider, config `misc/dex-config.yaml`) | `5556` | `--dex` / `--full` |
+| `dex` | `dexidp/dex:v2.46.0` (OIDC test identity provider, config `misc/dex-config.yaml`; its mock connector signs in `kilgore@kilgore.trout` with the group `authors`, so with `groups` in `OIDC_AUTH_SCOPES` the group mapping can be checked locally) | `5556` | `--dex` / `--full` |
 | `langfuse-web` / `langfuse-worker` / `langfuse-clickhouse` / `langfuse-minio` / `langfuse-db-init` | Self-hosted Langfuse v4 stack (`langfuse/langfuse:4.59.0`, ClickHouse `26.8.28`). Reuses the dev postgres (separate `langfuse` database) and redis (DB 1) | web `3000`, minio `9100/9101` | `--langfuse` (on by default in `dev.sh`, `--no-langfuse` turns it off) / `--full` |
 | `odl-hybrid` | Built locally from `docker/Dockerfile.odl-hybrid` (Docling PDF backend) | `5002` | `--odl-hybrid` (large image, start on demand) |
 | `sandbox` | `ghcr.io/jrmatherly/ai-kb-sandbox` (sandbox for skill scripts; build/pull only, not a long-running service) | - | Profile `full` |

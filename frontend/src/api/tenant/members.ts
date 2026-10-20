@@ -26,6 +26,8 @@ export interface ListMembersResponse {
     total: number
     page?: number
     page_size?: number
+    /** True when the OIDC group mapping names this workspace: membership is reapplied at each sign-in. */
+    managed_by_idp?: boolean
   }
   message?: string
 }

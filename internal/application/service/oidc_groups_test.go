@@ -34,6 +34,7 @@ func TestParseOIDCGroupMap(t *testing.T) {
 		{name: "colon in the group with a bad role", entries: []string{"a:b:c:d"}, wantErr: "unknown role"},
 		{name: "unknown role", entries: []string{"eng:home:root"}, wantErr: "unknown role"},
 		{name: "invalid workspace", entries: []string{"eng:Home:admin"}, wantErr: "invalid workspace"},
+		{name: "zero id", entries: []string{"eng:0:admin"}, wantErr: "invalid workspace"},
 		{name: "empty group", entries: []string{":home:admin"}, wantErr: "expects group:workspace:role"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {

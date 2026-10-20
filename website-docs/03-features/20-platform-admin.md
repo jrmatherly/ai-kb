@@ -74,8 +74,13 @@ The supported runtime settings can be changed in the console. A value in the dat
 | `tenant.default_storage_quota_gb` | int | `10` | **Read only when a workspace is created**, not written back to existing workspaces |
 | `tenant.auto_create_api_key` | bool | `false` | Read on every workspace creation |
 | `ssrf.whitelist` | string list | empty | At once (`SSRF_WHITELIST_EXTRA` is still maintained by the deployer and is not overridden here) |
+| `oidc.groups_claim` | string | `groups` | Read at each OIDC sign-in; see [Groups to roles](01-tenant-auth.md#groups-to-roles) |
+| `oidc.system_admin_groups` | string list | empty | Read at each OIDC sign-in |
+| `oidc.group_role_map` | string list of `group:workspace:role` | empty | Read at each OIDC sign-in; validated on save |
 | `asynq.core/postprocess/enrichment/maintenance/shared/wiki_concurrency` | int | see [Async task system](../02-architecture/05-async-tasks.md) | After a restart; the UI shows a "Restart required" badge |
 | `model.max_concurrency` | int | `32` | At once |
+
+The Registration & access tab lists the `auth.*` keys and the three `oidc.*` keys. Every string-list setting is edited as a tag input, one tag per entry.
 
 These switches follow the same database-first rule:
 

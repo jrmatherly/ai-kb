@@ -168,8 +168,8 @@ var registry = map[string]settingSpec{
 		EnvName:  "OIDC_AUTH_GROUPS_CLAIM",
 		Default:  "groups",
 		Category: "auth",
-		Description: "Name of the ID token claim that carries the group names. The groups scope must be in " +
-			"OIDC_AUTH_SCOPES for the claim to arrive. Read at each OIDC sign-in.",
+		Description: "Name of the ID token claim that carries the group names. Most providers send it only when " +
+			"groups is in OIDC_AUTH_SCOPES. Read at each OIDC sign-in.",
 	},
 	"oidc.system_admin_groups": {
 		Type:     "string_list",

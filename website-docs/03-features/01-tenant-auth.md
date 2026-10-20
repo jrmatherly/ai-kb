@@ -438,6 +438,28 @@ Other hard limits: the platform API key routes (`/system/admin/api-keys`) are re
 
 The authorization and token endpoints can be set explicitly; even when both are filled in, discovery is still used to complete the verification data whenever the issuer or `jwks_uri` is missing. Without reliable verification data a login must not be completed from the id_token payload alone.
 
+#### Groups to roles
+
+An OIDC sign-in can set workspace membership and the system administrator flag from the identity provider's groups. Three system settings drive it (System Settings, "Registration & access"; each has an environment fallback read when no row is stored):
+
+| Setting | Environment | Meaning |
+| --- | --- | --- |
+| `oidc.groups_claim` | `OIDC_AUTH_GROUPS_CLAIM` | Claim that carries the group names; default `groups`. Most providers send it only when `groups` is in `OIDC_AUTH_SCOPES` |
+| `oidc.system_admin_groups` | `OIDC_AUTH_SYSTEM_ADMIN_GROUPS` | Groups whose members are system administrators; empty leaves the flag alone |
+| `oidc.group_role_map` | `OIDC_AUTH_GROUP_ROLE_MAP` | `group:workspace:role` entries (one per tag in the UI, comma-separated in the variable); `workspace` is a workspace slug or numeric id, `role` is `owner`, `admin`, `contributor` or `viewer` |
+
+Examples: `cluster_admins:main:owner` names the workspace by its slug, `authors:10042:contributor` by its id. The slug is set on Settings > Workspace by a system administrator only (`PUT /tenants/:id` with `slug`), because an owner who could claim any slug could capture a mapping meant for another workspace. The feature is off while both lists are empty.
+
+Rules, applied at each OIDC sign-in after the disabled-account check and before the session is issued; password sign-ins never run it:
+
+- A workspace named in the mapping is governed: membership there is set from the groups (added, role changed, removed). When several groups name one workspace the highest role wins. Workspaces absent from the mapping are never touched.
+- A claim that is absent (or neither a list of names nor a string) changes nothing and logs a warning; a present claim, even an empty list, is authoritative inside the governed workspaces.
+- The last active owner of a workspace is never demoted or removed, and the last active system administrator is never revoked; both are recorded as skipped.
+- Every sign-in that applied the mapping writes one `auth.oidc_group_sync` audit row (added, role changes, removals, admin granted/revoked/unchanged, skipped), `partial` when anything was skipped. A member removal is recorded as `rbac.member_removed` with no actor. A sync failure never fails the sign-in.
+- Settings > Members shows a banner in a governed workspace, and `GET /tenants/:id/members` carries `managed_by_idp: true`.
+
+Set `auth.default_tenant_mode` to `tenantless` so a first OIDC sign-in lands in the mapped workspaces instead of creating a personal one.
+
 Routes (`internal/router/routes_auth_tenant.go`):
 
 ```go

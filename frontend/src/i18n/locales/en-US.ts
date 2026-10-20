@@ -4586,7 +4586,7 @@ export default {
           complex_password_enabled: 'Whether to require complex passwords. When enabled, passwords must contain uppercase and lowercase letters, numbers, and special characters. Changes take effect immediately and only apply to newly registered users or new password changes/resets. Special characters include {specialChars}'
         },
         oidc: {
-          groups_claim: 'Name of the ID token claim that carries the group names. Default groups. The groups scope must be in OIDC_AUTH_SCOPES for the claim to arrive.',
+          groups_claim: 'Name of the ID token claim that carries the group names. Default groups. Most providers send it only when groups is in OIDC_AUTH_SCOPES.',
           system_admin_groups: 'Groups whose members become system administrators at each OIDC sign-in; members of none of them lose the flag, except the last active administrator. One group per tag (comma-separated in the environment variable). Empty leaves the flag alone.',
           group_role_map: 'group:workspace:role entries, one per tag (comma-separated in the environment variable, so a group name cannot contain a comma there). workspace is a workspace slug or numeric id, role is owner, admin, contributor or viewer; when several groups name one workspace the highest role wins. In every workspace named here membership is set from the groups at each OIDC sign-in. The feature is off while this and the administrator groups are both empty.'
         },
@@ -7487,6 +7487,7 @@ export default {
     },
   },
   tenantMember: {
+    managedByIdp: 'Membership in this workspace is assigned from {provider} groups and is reapplied at each sign-in.',
     title: 'Members',
     sectionDescription: 'Invite teammates to the workspace and manage their roles. Only Owner can add or remove members.',
     learnRbacGuide: 'Learn about RBAC',

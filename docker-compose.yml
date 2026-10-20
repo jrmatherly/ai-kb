@@ -398,6 +398,9 @@ services:
       - OIDC_AUTH_EXTENSION_RETURN_URLS=${OIDC_AUTH_EXTENSION_RETURN_URLS:-}
       - OIDC_USER_INFO_MAPPING_USER_NAME=${OIDC_USER_INFO_MAPPING_USER_NAME:-}
       - OIDC_USER_INFO_MAPPING_EMAIL=${OIDC_USER_INFO_MAPPING_EMAIL:-}
+      - OIDC_AUTH_GROUPS_CLAIM=${OIDC_AUTH_GROUPS_CLAIM:-}
+      - OIDC_AUTH_SYSTEM_ADMIN_GROUPS=${OIDC_AUTH_SYSTEM_ADMIN_GROUPS:-}
+      - OIDC_AUTH_GROUP_ROLE_MAP=${OIDC_AUTH_GROUP_ROLE_MAP:-}
       # Feishu cloud document parsing mode. export: export as docx. blocks: parse Feishu document blocks into markdown. Default: export
       - FEISHU_DOCX_PARSE_MODE=${FEISHU_DOCX_PARSE_MODE:-export}
     depends_on:

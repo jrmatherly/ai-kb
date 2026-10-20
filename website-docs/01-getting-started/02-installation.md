@@ -110,7 +110,7 @@ Enable them on demand with `docker compose --profile <name> up -d`:
 | `milvus` | `milvus` | 19530 / 9091 | Vector store (standalone, embedded etcd) |
 | `weaviate` | `weaviate` | 9035 (HTTP) / 50052 (gRPC) | Vector store |
 | `doris` | `doris-fe` + `doris-be` | 8030 (FE HTTP) / 9030 (FE MySQL) / 8040 (BE) | Apache Doris 4.1 retrieval engine (needs >= 3.0, HNSW ANN) |
-| `dex` (also in `full`) | `dex` | 5556 | OIDC test IdP (configured in `misc/dex-config.yaml`) |
+| `dex` (also in `full`) | `dex` | 5556 | OIDC test IdP (configured in `misc/dex-config.yaml`; a mock connector signs in a fixed user with the group `authors`) |
 | `langfuse` (also in `full`) | `langfuse-db-init`, `langfuse-clickhouse`, `langfuse-minio`, `langfuse-worker`, `langfuse-web` | 3000 (UI) / 9100 and 9101 (dedicated MinIO) | Self-hosted Langfuse observability stack; reuses the AI KB postgres (creates a `langfuse` database) and redis (DB 1) |
 | `odl-hybrid` | `odl-hybrid` | expose 5002 | OpenDataLoader/Docling PDF hybrid parsing backend (local build only, used with `DOCREADER_ODL_HYBRID`) |
 | `full` | `sandbox`, `mcp` and every service marked `full` above | mcp: `${MCP_PORT:-8082}:8000` | `sandbox` only builds or pulls the image (`command: ["true"]`, not a long-running service). The Docker sandbox is off by default; set `AIKB_SANDBOX_DOCKER_ENABLED=true` and mount `docker.sock` (equivalent to root on the host); Cube and E2B do not need a local daemon. `mcp` is the MCP server |

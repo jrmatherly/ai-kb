@@ -37,7 +37,8 @@ func ParseOIDCGroupMap(entries []string) ([]types.OIDCGroupMapping, error) {
 		if !role.IsValid() {
 			return nil, fmt.Errorf("%q: unknown role %q", entry, role)
 		}
-		if _, err := strconv.ParseUint(workspace, 10, 64); err != nil && !types.ValidTenantSlug(workspace) {
+		id, perr := strconv.ParseUint(workspace, 10, 64)
+		if (perr != nil || id == 0) && !types.ValidTenantSlug(workspace) {
 			return nil, fmt.Errorf("%q: invalid workspace %q (a slug or a numeric id)", entry, workspace)
 		}
 		out = append(out, types.OIDCGroupMapping{Group: group, Workspace: workspace, Role: role})
