@@ -117,7 +117,10 @@ export async function attachWorker(devtools, origin) {
     if (Date.now() > end) throw new Error(`no worker for ${origin}: the derived id does not match the loaded extension, or this Chrome ignores --load-extension (branded Chrome does; use Chrome for Testing)`);
     await sleep(250);
   }
-  return connectTarget(target);
+  const worker = await connectTarget(target);
+  // The target is listed before its global scope has the extension APIs; an evaluate in that window fails.
+  await until(worker, "typeof chrome !== 'undefined'", `chrome.* in the worker at ${target.url}`, Math.max(end - Date.now(), 1_000));
+  return worker;
 }
 
 export async function until(page, expression, what, ms = 30_000) {
