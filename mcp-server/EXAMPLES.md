@@ -212,13 +212,12 @@ Omitting `title` or passing an empty string keeps the original title. Set `statu
 {
   "tool": "create_session",
   "arguments": {
-    "kb_id": "kb_123456",
     "title": "Product Q&A"
   }
 }
 ```
 
-The tool requires `kb_id`, but the server keeps only `title` and `description`: sessions are not bound to a knowledge base. Pass the knowledge bases to `chat` instead.
+Sessions are not bound to a knowledge base. Pass the knowledge bases to `chat` instead.
 
 #### Get session details
 
@@ -345,7 +344,6 @@ python main.py --verbose
 {
   "tool": "create_session",
   "arguments": {
-    "kb_id": "knowledge base ID",
     "title": "API questions"
   }
 }
