@@ -27,6 +27,8 @@
 # so the whole frontend/ directory can be excluded here.
 **/node_modules/
 frontend/
+# The app image's licence check (scripts/copy-licenses.sh calls check-license-bundle.sh) reads this lockfile.
+!frontend/package-lock.json
 WeKnora-Chrome-Extension/
 
 # Logs / temporary files
