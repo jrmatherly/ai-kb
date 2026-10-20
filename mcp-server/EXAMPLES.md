@@ -1,39 +1,18 @@
 # AI KB MCP Server usage examples
 
-Detailed usage examples for the AI KB MCP Server.
+> **Deprecated.** AI KB ships a [built-in MCP server](https://ai-kb.matherly.net/docs/03-features/08-mcp); prefer it. This package may be removed in a future release.
 
-## Basic usage
-
-### 1. Start the server
-
-```bash
-# Recommended: the main entry point
-python main.py
-
-# Check the environment configuration
-python main.py --check-only
-
-# Enable verbose logging
-python main.py --verbose
-```
-
-### 2. Environment configuration
-
-```bash
-# Set environment variables
-export AIKB_BASE_URL="http://localhost:8080/api/v1"
-export AIKB_API_KEY="your_api_key_here"
-```
-
-The server does not read a `.env` file; export the variables or set them in the MCP client's `env` block.
+Install, configure and start the server as [README.md](./README.md) describes. The server does not read a `.env` file; export the variables or set them in the MCP client's `env` block.
 
 ## MCP tool examples
 
-Examples for each MCP tool:
+Examples for common tools. The full tool list is in [README.md](./README.md#features).
 
 ### Workspace management
 
 #### Create a workspace
+
+This needs an API key with the platform capability `system_tenants_manage`. A workspace key from Settings → API Keys is refused.
 
 ```json
 {
@@ -71,11 +50,13 @@ Examples for each MCP tool:
   "arguments": {
     "name": "Product Docs",
     "description": "Product documents and materials",
-    "embedding_model_id": "text-embedding-ada-002",
-    "summary_model_id": "gpt-3.5-turbo"
+    "embedding_model_id": "<embedding model ID from list_models>",
+    "summary_model_id": "<chat model ID from list_models>"
   }
 }
 ```
+
+Both model IDs are AI KB model record IDs, not provider model names.
 
 #### List knowledge bases
 
@@ -126,6 +107,21 @@ Examples for each MCP tool:
   }
 }
 ```
+
+#### Create knowledge from a local file
+
+```json
+{
+  "tool": "create_knowledge_from_file",
+  "arguments": {
+    "kb_id": "kb_123456",
+    "file_path": "/srv/docs/spec/design.pdf",
+    "file_name": "spec/design.pdf"
+  }
+}
+```
+
+The file must be on the MCP server's filesystem, inside the allowed upload roots ([README.md](./README.md#local-upload-directory-boundary)). `file_name` is optional; a path-qualified name puts the entry in that knowledge folder.
 
 #### Create knowledge from text
 
@@ -217,13 +213,12 @@ Omitting `title` or passing an empty string keeps the original title. Set `statu
   "tool": "create_session",
   "arguments": {
     "kb_id": "kb_123456",
-    "max_rounds": 10,
-    "enable_rewrite": true,
-    "fallback_response": "Sorry, I can't answer that question.",
-    "summary_model_id": "gpt-3.5-turbo"
+    "title": "Product Q&A"
   }
 }
 ```
+
+The tool requires `kb_id`, but the server keeps only `title` and `description`: sessions are not bound to a knowledge base. Pass the knowledge bases to `chat` instead.
 
 #### Get session details
 
@@ -257,10 +252,29 @@ Omitting `title` or passing an empty string keeps the original title. Set `statu
   "tool": "chat",
   "arguments": {
     "session_id": "sess_345678",
-    "query": "Describe the product's main features"
+    "query": "Describe the product's main features",
+    "knowledge_base_ids": ["kb_123456"]
   }
 }
 ```
+
+Without `knowledge_base_ids` nothing is retrieved and the answer comes from the model alone.
+
+#### Call an agent
+
+```json
+{
+  "tool": "agent_chat",
+  "arguments": {
+    "session_id": "sess_345678",
+    "agent_id": "<agent name or ID from list_agents>",
+    "query": "Compare the last two release notes",
+    "knowledge_base_ids": ["kb_123456"]
+  }
+}
+```
+
+Pass `knowledge_base_ids` when the agent has no knowledge bases of its own (check with `get_agent`); otherwise the call fails with "no search targets available".
 
 ### Chunk management
 
@@ -300,20 +314,7 @@ python main.py --verbose
 # 2. Run these steps in the MCP client:
 ```
 
-#### Step 1: create a workspace
-
-```json
-{
-  "tool": "create_tenant",
-  "arguments": {
-    "name": "Engineering Docs Center",
-    "description": "Company engineering documentation",
-    "business": "technology"
-  }
-}
-```
-
-#### Step 2: create a knowledge base
+#### Step 1: create a knowledge base
 
 ```json
 {
@@ -325,7 +326,7 @@ python main.py --verbose
 }
 ```
 
-#### Step 3: add knowledge
+#### Step 2: add knowledge
 
 ```json
 {
@@ -338,61 +339,39 @@ python main.py --verbose
 }
 ```
 
-#### Step 4: create a chat session
+#### Step 3: create a chat session
 
 ```json
 {
   "tool": "create_session",
   "arguments": {
     "kb_id": "knowledge base ID",
-    "max_rounds": 5,
-    "enable_rewrite": true
+    "title": "API questions"
   }
 }
 ```
 
-#### Step 5: start chatting
+#### Step 4: start chatting
 
 ```json
 {
   "tool": "chat",
   "arguments": {
     "session_id": "session ID",
-    "query": "How do I use the user authentication API?"
+    "query": "How do I use the user authentication API?",
+    "knowledge_base_ids": ["knowledge base ID"]
   }
 }
 ```
 
 ## Error handling
 
-### Common errors and fixes
+A failed call returns a tool error whose text carries the HTTP error, for example `401 Client Error: Unauthorized`.
 
-#### 1. Connection error
-
-```json
-{
-  "error": "Connection refused",
-  "solution": "Check that AIKB_BASE_URL is correct and the service is running"
-}
-```
-
-#### 2. Authentication error
-
-```json
-{
-  "error": "Unauthorized",
-  "solution": "Check that AIKB_API_KEY is set correctly"
-}
-```
-
-#### 3. Resource not found
-
-```json
-{
-  "error": "Knowledge base not found",
-  "solution": "Check the knowledge base ID, or create the knowledge base first"
-}
-```
+- Connection refused: check that `AIKB_BASE_URL` is correct and the service is running.
+- 401 Unauthorized: check that `AIKB_API_KEY` is set and valid.
+- 403 Forbidden: the API key lacks the capability the route needs (see the workspace example above).
+- 404 Not Found: check the ID, or create the resource first.
 
 ## Advanced configuration
 
@@ -411,26 +390,11 @@ python main.py --verbose
 }
 ```
 
-### Custom session strategy
-
-```json
-{
-  "tool": "create_session",
-  "arguments": {
-    "kb_id": "kb_123456",
-    "max_rounds": 20,
-    "enable_rewrite": true,
-    "fallback_response": "Based on the available knowledge, I can't answer your question accurately. Try rephrasing it or contact technical support."
-  }
-}
-```
-
 ## Performance tips
 
-1. **Batch operations**: create and update knowledge in batches where possible
-2. **Search thresholds**: set search thresholds to balance accuracy and performance
-3. **Session management**: clean up sessions you no longer need to save resources
-4. **Log monitoring**: use the `--verbose` option to watch performance metrics
+1. **Search thresholds**: set search thresholds to balance accuracy and performance
+2. **Session management**: clean up sessions you no longer need to save resources
+3. **Debug logs**: use the `--verbose` option to see debug logs
 
 ## Integration
 
@@ -445,6 +409,6 @@ Project repository: <https://github.com/jrmatherly/ai-kb/tree/main/mcp-server>
 If you run into problems:
 
 1. Run `python main.py --check-only` to check the environment
-2. Run `python main.py --verbose` to see detailed logs
+2. Run `python main.py --verbose` to see debug logs
 3. Check that the AI KB service is running
 4. Check the network connection and firewall settings

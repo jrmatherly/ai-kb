@@ -508,7 +508,7 @@ The Python service under `mcp-server/` predates the built-in MCP server: each pr
 
 #### Installation
 
-The commands below match `mcp-server/setup.py`, `pyproject.toml`, `Dockerfile` and `INSTALL.md`:
+The commands below match `mcp-server/setup.py`, `pyproject.toml`, `Dockerfile` and `README.md`:
 
 **Run from source**:
 
