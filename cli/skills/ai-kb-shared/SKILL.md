@@ -109,8 +109,9 @@ safeguard between an agent and an irreversible delete.
 
 ## Preview with --dry-run before any write
 
-Every create, update, delete, upload, reparse, link and config command accepts
-`--dry-run`. The commands that have no flag are `auth login`, `chat`,
+Every command that changes state accepts `--dry-run` (create, update, delete,
+upload, reparse, link, pin, profile, logout, refresh, stop, approval resolve and
+skill install). The commands that have no flag are `auth login`, `chat`,
 `session ask` (both create a session and a message) and `doc download`
 (writes a file). A dry run resolves arguments, prints
 `meta.dry_run:true` and `meta.plan:{action, args}`, performs no network call or

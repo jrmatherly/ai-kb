@@ -1,6 +1,6 @@
 # AI KB HTTP client
 
-This package is a client library for the AI KB service. It covers every HTTP endpoint, so other modules can integrate with AI KB without writing HTTP requests by hand.
+This package is a client library for the AI KB service. It wraps the server's REST API under `/api/v1`, so other modules can integrate with AI KB without writing HTTP requests by hand.
 
 ## Features
 

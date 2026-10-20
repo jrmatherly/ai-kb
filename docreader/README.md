@@ -29,7 +29,7 @@ make -C docreader run         # start the server on :50051
 
 ## Configuration
 
-DocReader reads only environment variables. `config.py` and `auth.py` define them, and the docreader block in `docker-compose.yml` sets every one with a comment. On start the service logs its effective `DOCREADER_*` values.
+DocReader reads only environment variables. `config.py` and `auth.py` define most of them, and the docreader block in `docker-compose.yml` sets every one with a comment. `parser/pdf_parser.py` reads the `DOCREADER_PDF_*` parsing tunables (scan detection, embedded images, layout, headings, charts), `utils/ssrf.py` the `SSRF_*` variables, and `main.py` `LOG_LEVEL`. On start the service logs the effective values of the `config.py` set only.
 
 ### gRPC
 
