@@ -4,9 +4,13 @@ import { getDeploymentCapabilities } from '@/api/system'
 import { useAuthStore } from '@/stores/auth'
 import {
   isDeploymentCapabilitySupported,
+  SETTINGS_SECTION_CAPABILITY,
+  skillSettingsSupported,
   type DeploymentCapabilityKey,
   type DeploymentCapabilityMap,
 } from '@/config/deploymentCapabilities'
+import { INTEGRATION_TAB_CAPABILITY } from '@/config/integrations'
+import { integrationTabFromSection, isIntegrationSection } from '@/config/settingsRoute'
 
 export const useDeploymentCapabilitiesStore = defineStore('deploymentCapabilities', () => {
   const edition = ref('')
@@ -49,6 +53,13 @@ export const useDeploymentCapabilitiesStore = defineStore('deploymentCapabilitie
     })
   }
 
+  /** Whether the deployment offers the Settings section `key` (the capability half of the section gate). */
+  const isSettingsSectionSupported = (key: string): boolean => {
+    if (isIntegrationSection(key)) return isSupported(INTEGRATION_TAB_CAPABILITY[integrationTabFromSection(key)])
+    if (key === 'skills' || key === 'envvars') return skillSettingsSupported(capabilities.value)
+    return isSupported(SETTINGS_SECTION_CAPABILITY[key])
+  }
+
   return {
     edition,
     capabilities,
@@ -57,5 +68,6 @@ export const useDeploymentCapabilitiesStore = defineStore('deploymentCapabilitie
     loadError,
     ensureLoaded,
     isSupported,
+    isSettingsSectionSupported,
   }
 })

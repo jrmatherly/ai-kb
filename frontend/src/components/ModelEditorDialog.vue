@@ -1443,7 +1443,7 @@ const checkOllamaServiceStatus = async () => {
 
 // The Ollama settings section exists only where AIKB_OLLAMA_ENABLED is on.
 const deploymentCapabilities = useDeploymentCapabilitiesStore()
-const ollamaSettingsAvailable = computed(() => deploymentCapabilities.isSupported('settings.ollama'))
+const ollamaSettingsAvailable = computed(() => deploymentCapabilities.isSettingsSectionSupported('ollama'))
 
 // Open the Ollama settings window
 const goToOllamaSettings = async () => {

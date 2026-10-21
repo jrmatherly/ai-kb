@@ -228,14 +228,12 @@ import SystemAuditLog from '@/views/system/SystemAuditLog.vue'
 import IntegrationSettingsSection from '@/views/integrations/IntegrationSettingsSection.vue'
 import {
   INTEGRATION_PREVIEW_ITEMS,
-  INTEGRATION_TAB_CAPABILITY,
   INTEGRATION_TAB_MIN_ROLE,
 } from '@/config/integrations'
 import {
   SETTINGS_SECTION_MIN_ROLE,
   SYSTEM_ADMIN_SETTINGS_SECTIONS,
 } from '@/config/settingsAccess'
-import { SETTINGS_SECTION_CAPABILITY, skillSettingsSupported } from '@/config/deploymentCapabilities'
 import { isToolboxSection, toolboxLocation } from '@/config/toolbox'
 import { hostSkillsOnly } from '@/utils/skillTarget'
 import {
@@ -312,17 +310,7 @@ const syncSettingsRoute = (sectionKey: string) => {
   })
 }
 
-const isSectionSupported = (key: string): boolean => {
-  if (isIntegrationSection(key)) {
-    return deploymentCapabilities.isSupported(
-      INTEGRATION_TAB_CAPABILITY[integrationTabFromSection(key)],
-    )
-  }
-  if (key === 'skills' || key === 'envvars') {
-    return skillSettingsSupported(deploymentCapabilities.capabilities)
-  }
-  return deploymentCapabilities.isSupported(SETTINGS_SECTION_CAPABILITY[key])
-}
+const isSectionSupported = deploymentCapabilities.isSettingsSectionSupported
 
 const canSeeSection = (key: string): boolean => {
   if (isIntegrationSection(key)) {
