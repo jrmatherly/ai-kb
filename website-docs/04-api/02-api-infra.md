@@ -310,7 +310,7 @@ Errors from the connected service (validating a connection or credentials, listi
 
 ### GET /api/v1/datasource/types
 
-Purpose: the available connector catalog, sorted by `priority`. Permission: Viewer+.
+Purpose: the available connector catalog, sorted by `priority` and limited to the types `AIKB_DATASOURCE_TYPES` allows (unset means all). `POST /datasource`, `POST /datasource/validate-credentials` and `POST /datasource/list-resources` answer 400 for an excluded type. Permission: Viewer+.
 
 Response: 200 `[{type,name,description,icon,priority,auth_type,capabilities}]`
 
