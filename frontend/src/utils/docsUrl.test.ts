@@ -97,3 +97,13 @@ test('a failed links request keeps the default docs and no GitHub link', async (
   assert.equal(docs.docsUrl('home'), 'https://ai-kb.matherly.net/docs/')
   assert.equal(links.githubUrl, '')
 })
+
+test('a failed links request is retried by the next ensureLoaded', async () => {
+  globals.__systemLinksReply = async () => { throw new Error('timeout') }
+  setActivePinia(createPinia())
+  const links = useSiteLinksStore()
+  await links.ensureLoaded()
+  globals.__systemLinksReply = async () => ({ docs_url: 'https://kb.example.com/docs/', github_url: '' })
+  await links.ensureLoaded()
+  assert.equal(links.docsUrl, 'https://kb.example.com/docs/')
+})

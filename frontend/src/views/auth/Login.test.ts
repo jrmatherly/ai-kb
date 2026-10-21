@@ -60,7 +60,7 @@ async function fixture({ oidc, registration = 'self_serve' }: { oidc: boolean; r
     if (name === 'vue-i18n') return { useI18n: () => ({ t: (key: string) => key, tm: () => [] }) }
     if (name === '@/api/auth') return api
     if (name === '@/stores/auth') return { useAuthStore: () => ({ isLoggedIn: false }) }
-    if (name === '@/stores/siteLinks') return { useSiteLinksStore: () => ({ docsUrl: '', githubUrl: '' }) }
+    if (name === '@/stores/siteLinks') return { useSiteLinksStore: () => ({ docsUrl: '', githubUrl: '', ensureLoaded: async () => {} }) }
     if (name === './registrationPolicy') return { canRegister: (mode: string) => mode === 'self_serve' }
     if (name === '@/composables/useRoleLabel') return { useRoleLabel: () => ({}) }
     if (name === '@/utils/passwordPolicy') return { newPasswordRules: () => [] }

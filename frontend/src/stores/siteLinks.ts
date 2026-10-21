@@ -16,8 +16,10 @@ export const useSiteLinksStore = defineStore('siteLinks', () => {
         docsUrl.value = links?.docs_url || DEFAULT_DOCS_URL
         githubUrl.value = links?.github_url || ''
       })
-      // A backend older than this route answers 401; the defaults stay.
-      .catch(() => {}))
+      // The defaults stay (a backend older than this route answers 401); a later call retries.
+      .catch(() => {
+        p = undefined
+      }))
 
   return { docsUrl, githubUrl, ensureLoaded }
 })
