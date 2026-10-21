@@ -31,5 +31,6 @@ func deploymentCapabilitiesFromRouter(params RouterParams) handler.DeploymentCap
 		SandboxHost:   params.HostSandbox.Manager != nil,
 		SandboxRemote: params.SandboxConfigHandler != nil && !params.HostSandbox.Desktop,
 		WeKnoraCloud:  docparser.WeKnoraCloudEnabled(),
+		Ollama:        handler.OllamaEnabled(),
 	})
 }

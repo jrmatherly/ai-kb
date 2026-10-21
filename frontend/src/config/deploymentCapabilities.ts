@@ -14,6 +14,7 @@ export const DEPLOYMENT_CAPABILITY_KEYS = [
   'settings.sandbox.host',
   'settings.sandbox.remote',
   'settings.weknoracloud',
+  'settings.ollama',
 ] as const
 
 export type DeploymentCapabilityKey = typeof DEPLOYMENT_CAPABILITY_KEYS[number]
@@ -70,6 +71,7 @@ export const SETTINGS_SECTION_CAPABILITY: Partial<Record<string, DeploymentCapab
   envvars: 'settings.sandbox',
   mcp: 'settings.mcp',
   weknoracloud: 'settings.weknoracloud',
+  ollama: 'settings.ollama',
 }
 
 /**

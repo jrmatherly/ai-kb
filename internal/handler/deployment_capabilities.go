@@ -2,6 +2,8 @@ package handler
 
 import (
 	"net/http"
+	"os"
+	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -26,6 +28,16 @@ var DeploymentCapabilityKeys = []string{
 	"settings.sandbox.host",
 	"settings.sandbox.remote",
 	"settings.weknoracloud",
+	"settings.ollama",
+}
+
+// OllamaEnabledEnv shows the Ollama settings section. Off by default.
+const OllamaEnabledEnv = "AIKB_OLLAMA_ENABLED"
+
+// OllamaEnabled reads OllamaEnabledEnv at call time; unset or unparsable is false.
+func OllamaEnabled() bool {
+	parsed, err := strconv.ParseBool(strings.TrimSpace(os.Getenv(OllamaEnabledEnv)))
+	return err == nil && parsed
 }
 
 // DeploymentCapability describes whether a deployment exposes a feature route.
@@ -61,6 +73,7 @@ type DeploymentFeatureAvailability struct {
 	SandboxHost   bool
 	SandboxRemote bool
 	WeKnoraCloud  bool
+	Ollama        bool
 }
 
 func supportedDeploymentCapability(supported bool) DeploymentCapability {
@@ -121,6 +134,11 @@ func BuildDeploymentCapabilities(
 		weKnoraCloud.Reason = "disabled_by_deployment"
 	}
 
+	ollama := DeploymentCapability{Supported: available.Ollama}
+	if !available.Ollama {
+		ollama.Reason = "disabled_by_deployment"
+	}
+
 	return DeploymentCapabilitiesData{
 		Edition:     edition,
 		IMPlatforms: imPlatforms,
@@ -140,6 +158,7 @@ func BuildDeploymentCapabilities(
 			"settings.sandbox.host":   sandboxHost,
 			"settings.sandbox.remote": sandboxRemote,
 			"settings.weknoracloud":   weKnoraCloud,
+			"settings.ollama":         ollama,
 		},
 	}
 }

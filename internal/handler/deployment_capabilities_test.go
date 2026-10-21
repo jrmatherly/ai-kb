@@ -137,3 +137,17 @@ func TestWeKnoraCloudCapabilityIsOffUnlessEnabled(t *testing.T) {
 	on := BuildDeploymentCapabilities("standard", DeploymentFeatureAvailability{WeKnoraCloud: true})
 	require.True(t, on.Capabilities["settings.weknoracloud"].Supported)
 }
+
+func TestOllamaCapabilityFollowsEnv(t *testing.T) {
+	for env, want := range map[string]bool{"": false, "false": false, "maybe": false, "true": true, " 1 ": true} {
+		t.Setenv(OllamaEnabledEnv, env)
+		got := BuildDeploymentCapabilities("standard", DeploymentFeatureAvailability{Ollama: OllamaEnabled()})
+		capability := got.Capabilities["settings.ollama"]
+		require.Equal(t, want, capability.Supported, "AIKB_OLLAMA_ENABLED=%q", env)
+		if want {
+			require.Empty(t, capability.Reason)
+		} else {
+			require.Equal(t, "disabled_by_deployment", capability.Reason)
+		}
+	}
+}
