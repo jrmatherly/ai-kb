@@ -6,13 +6,13 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/jrmatherly/ai-kb/internal/envlist"
 	"github.com/jrmatherly/ai-kb/internal/logger"
 )
 
 // PlatformsEnv is the deployment allow-list of IM platforms. Unset or blank
 // means every platform (compose templates pass empty values through); a list
-// that names only unknown platforms means none. Separators and case handling
-// mirror STORAGE_ALLOW_LIST (internal/storageallowlist).
+// that names only unknown platforms means none. Parsed by internal/envlist.
 const PlatformsEnv = "AIKB_IM_PLATFORMS"
 
 // AllPlatforms lists every platform with an adapter, in adapter.go order.
@@ -27,35 +27,12 @@ var unknownPlatformWarning sync.Once
 
 // EnabledPlatforms returns the allow-listed platforms in AllPlatforms order.
 func EnabledPlatforms() []Platform {
-	raw := strings.TrimSpace(os.Getenv(PlatformsEnv))
 	all := AllPlatforms()
-	if raw == "" {
-		return all
+	known := make([]string, 0, len(all))
+	for _, p := range all {
+		known = append(known, string(p))
 	}
-	wanted := make(map[Platform]bool)
-	var unknown []string
-	for _, item := range strings.FieldsFunc(raw, func(r rune) bool {
-		switch r {
-		case ',', ';', '|', '\n', '\t', ' ':
-			return true
-		default:
-			return false
-		}
-	}) {
-		name := Platform(strings.ToLower(strings.TrimSpace(item)))
-		known := false
-		for _, p := range all {
-			if p == name {
-				known = true
-				break
-			}
-		}
-		if known {
-			wanted[name] = true
-		} else {
-			unknown = append(unknown, string(name))
-		}
-	}
+	wanted, unknown := envlist.Parse(os.Getenv(PlatformsEnv), known)
 	if len(unknown) > 0 {
 		unknownPlatformWarning.Do(func() {
 			logger.Warnf(context.Background(), "[IM] %s names unknown platforms, ignored: %s",
@@ -64,7 +41,7 @@ func EnabledPlatforms() []Platform {
 	}
 	enabled := make([]Platform, 0, len(wanted))
 	for _, p := range all {
-		if wanted[p] {
+		if _, ok := wanted[string(p)]; ok {
 			enabled = append(enabled, p)
 		}
 	}

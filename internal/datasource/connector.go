@@ -8,6 +8,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/jrmatherly/ai-kb/internal/envlist"
 	"github.com/jrmatherly/ai-kb/internal/logger"
 	"github.com/jrmatherly/ai-kb/internal/types"
 )
@@ -397,8 +398,7 @@ func ListAvailableConnectors() []ConnectorMetadata {
 
 // ConnectorTypesEnv is the deployment allow-list of connector types (keys of
 // ConnectorMetadataRegistry). Unset or blank means every type; a list that
-// names only unknown types means none. Separators and case handling mirror
-// AIKB_IM_PLATFORMS (internal/im).
+// names only unknown types means none. Parsed by internal/envlist.
 const ConnectorTypesEnv = "AIKB_DATASOURCE_TYPES"
 
 var unknownConnectorTypeWarning sync.Once
@@ -411,30 +411,8 @@ func ConnectorTypeEnabled(connectorType string) bool {
 
 // enabledConnectorTypes reads the allow-list on every call, so a changed env applies without a restart.
 func enabledConnectorTypes() map[string]struct{} {
-	raw := strings.TrimSpace(os.Getenv(ConnectorTypesEnv))
-	enabled := make(map[string]struct{}, len(ConnectorMetadataRegistry))
-	if raw == "" {
-		for name := range ConnectorMetadataRegistry {
-			enabled[name] = struct{}{}
-		}
-		return enabled
-	}
-	var unknown []string
-	for _, item := range strings.FieldsFunc(raw, func(r rune) bool {
-		switch r {
-		case ',', ';', '|', '\n', '\t', ' ':
-			return true
-		default:
-			return false
-		}
-	}) {
-		name := strings.ToLower(strings.TrimSpace(item))
-		if _, known := ConnectorMetadataRegistry[name]; known {
-			enabled[name] = struct{}{}
-		} else {
-			unknown = append(unknown, name)
-		}
-	}
+	known := slices.Collect(maps.Keys(ConnectorMetadataRegistry))
+	enabled, unknown := envlist.Parse(os.Getenv(ConnectorTypesEnv), known)
 	if len(unknown) > 0 {
 		unknownConnectorTypeWarning.Do(func() {
 			logger.Warnf(context.Background(), "[DataSource] %s names unknown connector types, ignored: %s",
