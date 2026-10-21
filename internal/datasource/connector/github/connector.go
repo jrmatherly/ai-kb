@@ -182,8 +182,12 @@ type repositoryCursor struct {
 // A pendingCursor records the head, ref and paths the interrupted diff was
 // computed against, because the diff's order (and so what Done counts) depends
 // on all three. A resumed sync with the same selection recomputes the same
-// diff and skips the first Done entries; a selection changed in between
-// recomputes a different diff and emits it from the start.
+// diff and skips the first Done entries. A selection changed in between is
+// reconciled first: the items the interrupted run emitted under the pending
+// selection are the only record of them (Head, Ref and Paths still describe
+// the last completed selection), so the resume rebuilds that prefix and
+// tombstones what the new selection does not own before emitting its own diff
+// from the start.
 type pendingCursor struct {
 	Head  string   `json:"head"`
 	Ref   string   `json:"ref"`
@@ -267,7 +271,7 @@ func (c *Connector) streamRepository(
 	}
 	rc := next.Repositories[key]
 	done := repositoryCursor{Head: head, Ref: ref, Paths: selection.Paths}
-	if rc.Head == head && rc.Ref == ref && slices.Equal(rc.Paths, selection.Paths) {
+	if rc.Head == head && rc.Ref == ref && slices.Equal(rc.Paths, selection.Paths) && rc.Pending == nil {
 		next.Repositories[key] = done
 		return h.Checkpoint(ctx, gitHubCursor(next, false))
 	}
@@ -275,21 +279,26 @@ func (c *Connector) streamRepository(
 	if err != nil {
 		return err
 	}
-	changes := diff(nil, snap, true)
-	if rc.Head != "" {
-		prev, err := c.snapshot(ctx, key, rc.Head, rc.Paths)
-		switch {
-		case errors.Is(err, errMissingCommit):
-			logger.Infof(ctx, "[GitHub] %s: previous head %s is gone, emitting the whole snapshot", key, rc.Head)
-		case err != nil:
-			return err
-		default:
-			changes = diff(prev, snap, rc.Ref == ref)
-		}
+	prev, err := c.baseline(ctx, key, rc)
+	if err != nil {
+		return err
 	}
+	changes := diff(prev, snap, rc.Ref == ref)
 	start := 0
-	if p := rc.Pending; p != nil && p.Head == head && p.Ref == ref && slices.Equal(p.Paths, selection.Paths) {
-		start = p.Done
+	if p := rc.Pending; p != nil {
+		if p.Head == head && p.Ref == ref && slices.Equal(p.Paths, selection.Paths) {
+			start = p.Done
+		} else {
+			tombstones, err := c.supersededPendingTombstones(ctx, key, rc, prev, ref, snap)
+			if err != nil {
+				return err
+			}
+			for _, item := range tombstones {
+				if err := h.Emit(ctx, item); err != nil {
+					return err
+				}
+			}
+		}
 	}
 	for i := start; i < len(changes); i++ {
 		ch := changes[i]
@@ -317,6 +326,55 @@ func (c *Connector) streamRepository(
 	}
 	next.Repositories[key] = done
 	return h.Checkpoint(ctx, gitHubCursor(next, false))
+}
+
+// baseline is the snapshot at the recorded head, or nil when there is none or
+// its tree is gone (a force-push whose old commit was garbage-collected), in
+// which case the whole new snapshot is emitted with no deletions.
+func (c *Connector) baseline(ctx context.Context, key string, rc repositoryCursor) (snapshot, error) {
+	if rc.Head == "" {
+		return nil, nil
+	}
+	prev, err := c.snapshot(ctx, key, rc.Head, rc.Paths)
+	if errors.Is(err, errMissingCommit) {
+		logger.Infof(ctx, "[GitHub] %s: previous head %s is gone, emitting the whole snapshot", key, rc.Head)
+		return nil, nil
+	}
+	return prev, err
+}
+
+// supersededPendingTombstones reconstructs the items an interrupted run emitted
+// under rc.Pending's selection and tombstones those the current run (ref, snap)
+// will not own: an item is kept only when it is at the same ref and still in
+// the new snapshot. A path the baseline already holds under the pending ref is
+// left to the new diff, which deletes it under that same ref.
+func (c *Connector) supersededPendingTombstones(
+	ctx context.Context, key string, rc repositoryCursor, prev snapshot, ref string, snap snapshot,
+) ([]types.FetchedItem, error) {
+	p := rc.Pending
+	pendingSnap, err := c.snapshot(ctx, key, p.Head, p.Paths)
+	if errors.Is(err, errMissingCommit) {
+		logger.Infof(ctx, "[GitHub] %s: pending head %s is gone, nothing to reconcile", key, p.Head)
+		pendingSnap = nil
+	} else if err != nil {
+		return nil, err
+	}
+	emitted := diff(prev, pendingSnap, rc.Ref == p.Ref)
+	emitted = emitted[:min(p.Done, len(emitted))]
+	var out []types.FetchedItem
+	for _, ch := range emitted {
+		if ch.Deleted {
+			continue
+		}
+		if _, inNew := snap[ch.Path]; inNew && p.Ref == ref {
+			continue
+		}
+		if _, inBaseline := prev[ch.Path]; inBaseline && rc.Ref == p.Ref {
+			continue
+		}
+		out = append(out, c.deleted(key, p.Ref, ch.Path))
+	}
+	return out, nil
 }
 
 func (c *Connector) externalID(key, ref, file string) string {

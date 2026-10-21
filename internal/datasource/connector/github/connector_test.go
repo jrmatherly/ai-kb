@@ -497,13 +497,17 @@ func TestFetchStreamResumesInsideRepositoryFromPendingCursor(t *testing.T) {
 		repositories(t, next))
 }
 
-func TestFetchStreamSelectionChangeAfterPendingCheckpointRestartsTheDiff(t *testing.T) {
+// interruptedGuidesSync syncs a cursor of {c1, main, [docs]} under main with
+// [docs, guides] (2 docs files, 120 guides files) and fails at the 101st emit,
+// returning the server, the pending checkpoint and the guides file names.
+func interruptedGuidesSync(t *testing.T) (*fakeServer, *types.SyncCursor, []string) {
+	t.Helper()
 	files := map[string]string{"docs/a.md": "a", "docs/b.md": "b"}
 	var guides []string
 	for i := 1; i <= 120; i++ {
 		name := fmt.Sprintf("guides/g%03d.md", i)
 		files[name] = fmt.Sprint(i)
-		guides = append(guides, fmt.Sprintf("+o/r:release:%s=%d", name, i))
+		guides = append(guides, name)
 	}
 	server := fakeGitHub(t, fakeRepo{
 		commits: map[string]fakeCommit{"c1": {files: files}},
@@ -518,16 +522,42 @@ func TestFetchStreamSelectionChangeAfterPendingCheckpointRestartsTheDiff(t *test
 		Head: "c1", Ref: "main", Paths: []string{"docs"},
 		Pending: &pendingCursor{Head: "c1", Ref: "main", Paths: []string{"docs", "guides"}, Done: 100},
 	}}, repositories(t, h.checkpoints[1]))
+	return server, h.checkpoints[1], guides
+}
+
+func TestFetchStreamSelectionChangeAfterPendingCheckpointRestartsTheDiff(t *testing.T) {
+	server, pending, guides := interruptedGuidesSync(t)
 
 	resumed := &gitHubStreamRecorder{}
-	next, err := stream(t, server, h.checkpoints[1], resumed, selection("o/r", "release", "docs", "guides"))
+	next, err := stream(t, server, pending, resumed, selection("o/r", "release", "docs", "guides"))
 	require.NoError(t, err)
-	want := append([]string{
-		"-o/r:main:docs/a.md", "-o/r:main:docs/b.md", "+o/r:release:docs/a.md=a", "+o/r:release:docs/b.md=b",
-	}, guides...)
+	var want []string
+	for _, name := range guides[:100] {
+		want = append(want, "-o/r:main:"+name)
+	}
+	want = append(want,
+		"-o/r:main:docs/a.md", "-o/r:main:docs/b.md", "+o/r:release:docs/a.md=a", "+o/r:release:docs/b.md=b")
+	for i, name := range guides {
+		want = append(want, fmt.Sprintf("+o/r:release:%s=%d", name, i+1))
+	}
 	require.Equal(t, want, summary(server.base(), resumed.items))
 	require.Equal(t,
 		map[string]repositoryCursor{"o/r": {Head: "c1", Ref: "release", Paths: []string{"docs", "guides"}}},
+		repositories(t, next))
+}
+
+func TestFetchStreamPathsShrinkAfterPendingCheckpointTombstonesPendingItems(t *testing.T) {
+	server, pending, guides := interruptedGuidesSync(t)
+
+	resumed := &gitHubStreamRecorder{}
+	next, err := stream(t, server, pending, resumed, selection("o/r", "main", "docs"))
+	require.NoError(t, err)
+	var want []string
+	for _, name := range guides[:100] {
+		want = append(want, "-o/r:main:"+name)
+	}
+	require.Equal(t, want, summary(server.base(), resumed.items))
+	require.Equal(t, map[string]repositoryCursor{"o/r": {Head: "c1", Ref: "main", Paths: []string{"docs"}}},
 		repositories(t, next))
 }
 
