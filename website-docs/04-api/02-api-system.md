@@ -18,6 +18,14 @@ curl "$BASE/api/v1/system/capabilities" -H "Authorization: Bearer $TOKEN"
 
 `settings.sandbox.host` in `capabilities` says whether this deployment can use the local operating-system sandbox. Today it is only supported in the native macOS desktop application (other platforms report `platform_unsupported`). `settings.sandbox.docker` is read live, so a System Settings toggle shows up without a restart. `settings.weknoracloud` says whether the deployment opted in to WeKnoraCloud through `AIKB_WEKNORACLOUD_ENABLED`; when off it reports `supported: false` with reason `disabled_by_deployment`, and the frontend hides the AI KB Cloud settings section. `integrations.im` reports `supported: false` with reason `no_platform_enabled` when `AIKB_IM_PLATFORMS` leaves no known platform enabled, which hides the IM tab.
 
+### GET /api/v1/system/links
+
+No authentication, so the login page can read it before a session exists. It returns `{"docs_url":"...","github_url":"..."}` without the `code`/`data` envelope. `docs_url` is `AIKB_DOCS_URL` (default `https://ai-kb.matherly.net/docs/`) ending in one `/`. `github_url` is `https://github.com/jrmatherly/ai-kb` when `AIKB_GITHUB_LINK_ENABLED` is true and an empty string otherwise. The UI shows no GitHub link when it is empty.
+
+```bash
+curl "$BASE/api/v1/system/links"
+```
+
 ### POST /api/v1/system/host-project-dir
 
 Purpose: open the native folder picker on the machine running AI KB so a new session can bind a local project directory (native desktop application only). Permission: Viewer+, JWT only; API keys are always denied. No request body.

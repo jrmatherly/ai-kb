@@ -250,6 +250,8 @@ func RegisterSystemRoutes(
 	// JWT-only: this pops a native dialog on the Lite machine. API keys must
 	// not trigger it. Undeclared for the API-key gate, so keys are denied.
 	r.POST("/system/host-project-dir", g.Viewer(), handler.PickHostProjectDir)
+	// Unauthenticated (middleware noAuthAPI): the login page reads it.
+	r.GET("/system/links", handler.GetSystemLinks)
 
 	systemRoutes := g.apiKeyGroup(r.Group("/system"), apiKeyManageVectorStores(apiKeyFullAccess()))
 	{

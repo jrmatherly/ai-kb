@@ -16862,6 +16862,26 @@ const docTemplate = `{
                 }
             }
         },
+        "/system/links": {
+            "get": {
+                "description": "Returns the documentation base URL and the source repository URL the UI links to. Unauthenticated, so\nthe login page can read it; github_url is empty unless AIKB_GITHUB_LINK_ENABLED is true",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "System"
+                ],
+                "summary": "Get the deployment's external links",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_handler.SystemLinks"
+                        }
+                    }
+                }
+            }
+        },
         "/system/parser-engines": {
             "get": {
                 "produces": [
@@ -27594,6 +27614,17 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "suggestion_set_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_handler.SystemLinks": {
+            "type": "object",
+            "properties": {
+                "docs_url": {
+                    "type": "string"
+                },
+                "github_url": {
                     "type": "string"
                 }
             }

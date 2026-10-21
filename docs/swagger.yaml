@@ -6749,6 +6749,13 @@ definitions:
     - event_type
     - suggestion_set_id
     type: object
+  internal_handler.SystemLinks:
+    properties:
+      docs_url:
+        type: string
+      github_url:
+        type: string
+    type: object
   internal_handler.TestProviderRequest:
     properties:
       parameters:
@@ -18552,6 +18559,21 @@ paths:
           schema:
             $ref: '#/definitions/internal_handler.GetSystemInfoResponse'
       summary: Get system info
+      tags:
+      - System
+  /system/links:
+    get:
+      description: |-
+        Returns the documentation base URL and the source repository URL the UI links to. Unauthenticated, so
+        the login page can read it; github_url is empty unless AIKB_GITHUB_LINK_ENABLED is true
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_handler.SystemLinks'
+      summary: Get the deployment's external links
       tags:
       - System
   /system/parser-engines:

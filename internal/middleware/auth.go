@@ -56,6 +56,8 @@ var noAuthAPI = map[string][]string{
 	"/api/v1/auth/oidc/url":           {"GET"},
 	"/api/v1/auth/oidc/start":         {"GET"},
 	"/api/v1/auth/oidc/callback":      {"GET"},
+	// Docs and repository links for the login page.
+	"/api/v1/system/links": {"GET"},
 	// MCP OAuth provider redirect: the third-party authorization server
 	// redirects the browser here without an AI KB bearer token. The request
 	// is authenticated by the opaque, single-use `state` parameter instead.
