@@ -188,8 +188,6 @@ const wailsThemeSyncJS = `(function(){try{var t=localStorage.getItem('AIKB_boot_
 	`}else{if(w.WindowSetLightTheme)w.WindowSetLightTheme();` +
 	`if(w.WindowSetBackgroundColour)w.WindowSetBackgroundColour(238,238,238,255);}}catch(e){}})()`
 
-const aikbGitHubRepoURL = "https://github.com/jrmatherly/ai-kb"
-
 // ensureDesktopLiteEdition marks this process as Lite. cmd/desktop is the
 // Lite app; packaged builds also inject this via ldflags. wails dev often
 // does not, and auto-setup / the embedded SPA / capabilities still key off
@@ -376,7 +374,7 @@ func main() {
 			Message: fmt.Sprintf("AI KB Lite, Desktop Edition\n\n"+
 				"A RAG framework for document understanding and semantic Q&A over complex, heterogeneous content.\n\n"+
 				"Version %s\n© 2026 Jason Matherly. Portions © 2026 Tencent.\n\nGitHub:\n%s",
-				desktopAboutVersion(), aikbGitHubRepoURL),
+				desktopAboutVersion(), handler.GitHubURL),
 			Buttons:       []string{"Open GitHub", "OK"},
 			DefaultButton: "OK",
 		})
@@ -385,7 +383,7 @@ func main() {
 			return
 		}
 		if choice == "Open GitHub" {
-			wailsruntime.BrowserOpenURL(app.ctx, aikbGitHubRepoURL)
+			wailsruntime.BrowserOpenURL(app.ctx, handler.GitHubURL)
 		}
 	})
 	FileMenu.AddText("Check for Updates...", nil, func(_ *menu.CallbackData) {
