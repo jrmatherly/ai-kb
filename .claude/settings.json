@@ -1,11 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "permissions": {
-    "deny": [
-      "Bash(git push *)",
-      "Bash(git stash *)",
-      "Bash(git merge *weknora*)"
-    ]
+    "deny": ["Bash(git merge *weknora*)"]
   },
   "hooks": {
     "PreToolUse": [
@@ -24,7 +20,10 @@
       {
         "matcher": "Edit|Write",
         "hooks": [
-          { "type": "command", "command": "\"${CLAUDE_PROJECT_DIR}\"/.claude/hooks/post-edit.sh" }
+          {
+            "type": "command",
+            "command": "\"${CLAUDE_PROJECT_DIR}\"/.claude/hooks/post-edit.sh"
+          }
         ]
       }
     ]
