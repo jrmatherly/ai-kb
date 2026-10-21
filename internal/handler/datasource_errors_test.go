@@ -23,7 +23,7 @@ type failingConnector struct {
 	errs map[string]error
 }
 
-func (failingConnector) Type() string { return "fake" }
+func (failingConnector) Type() string { return types.ConnectorTypeRSS }
 
 func (c failingConnector) ListResources(_ context.Context, _ *types.DataSourceConfig, parentID string) (
 	[]types.Resource, error,
@@ -51,33 +51,33 @@ func TestListResourcesClassifiesConnectorFailures(t *testing.T) {
 		want       string
 	}{
 		{
-			"permission", `{"type":"fake","credentials":{},"parent_id":"forbidden"}`, http.StatusBadRequest,
+			"permission", `{"type":"rss","credentials":{},"parent_id":"forbidden"}`, http.StatusBadRequest,
 			`{"success":false,"error":{"code":1000,"message":"list folder: permission denied by source system",` +
 				`"details":{"code":"permission_denied"}}}`,
 		},
 		{
-			"credentials", `{"type":"fake","credentials":{},"parent_id":"secret"}`, http.StatusBadRequest,
+			"credentials", `{"type":"rss","credentials":{},"parent_id":"secret"}`, http.StatusBadRequest,
 			`{"success":false,"error":{"code":1000,"message":"invalid credentials: client_secret is required",` +
 				`"details":{"code":"auth_failed"}}}`,
 		},
 		{
-			"not found", `{"type":"fake","credentials":{},"parent_id":"missing"}`, http.StatusBadRequest,
+			"not found", `{"type":"rss","credentials":{},"parent_id":"missing"}`, http.StatusBadRequest,
 			`{"success":false,"error":{"code":1000,"message":"resource not found in source system: folder missing",` +
 				`"details":{"code":"not_found"}}}`,
 		},
 		{
-			"feishu drive not shared", `{"type":"fake","credentials":{},"parent_id":"drive"}`, http.StatusBadRequest,
+			"feishu drive not shared", `{"type":"rss","credentials":{},"parent_id":"drive"}`, http.StatusBadRequest,
 			`{"success":false,"error":{"code":1000,"message":"list folder: list drive files error: code=1061004 ` +
 				`msg=no access","details":{"code":"permission_denied"}}}`,
 		},
 		{
-			"auth and not-found words in plain text", `{"type":"fake","credentials":{},"parent_id":"text"}`,
+			"auth and not-found words in plain text", `{"type":"rss","credentials":{},"parent_id":"text"}`,
 			http.StatusBadGateway,
 			`{"success":false,"error":{"code":1011,"message":"failed to list resources: author field not found",` +
 				`"details":{"code":"upstream_error"}}}`,
 		},
 		{
-			"unclassified", `{"type":"fake","credentials":{},"parent_id":"timeout"}`, http.StatusBadGateway,
+			"unclassified", `{"type":"rss","credentials":{},"parent_id":"timeout"}`, http.StatusBadGateway,
 			`{"success":false,"error":{"code":1011,"message":"failed to list resources: dial tcp 10.0.0.1:443: ` +
 				`i/o timeout","details":{"code":"upstream_error"}}}`,
 		},
@@ -132,7 +132,7 @@ func TestListResourcesKeepsFeishuBodyOutOfErrorText(t *testing.T) {
 	r := newDataSourceTestRouter(NewDataSourceHandler(svc, nil))
 
 	req := httptest.NewRequest(http.MethodPost, "/datasource/list-resources",
-		strings.NewReader(`{"type":"fake","credentials":{},"parent_id":"gateway"}`))
+		strings.NewReader(`{"type":"rss","credentials":{},"parent_id":"gateway"}`))
 	req = req.WithContext(context.WithValue(req.Context(), types.TenantIDContextKey, uint64(1)))
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
