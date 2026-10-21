@@ -31,10 +31,10 @@ var DeploymentCapabilityKeys = []string{
 	"settings.ollama",
 }
 
-// OllamaEnabledEnv shows the Ollama settings section. Off by default.
+// OllamaEnabledEnv gates the Ollama settings section; off by default.
 const OllamaEnabledEnv = "AIKB_OLLAMA_ENABLED"
 
-// OllamaEnabled reads OllamaEnabledEnv at call time; unset or unparsable is false.
+// OllamaEnabled reports OllamaEnabledEnv; unset or unparsable is false.
 func OllamaEnabled() bool {
 	parsed, err := strconv.ParseBool(strings.TrimSpace(os.Getenv(OllamaEnabledEnv)))
 	return err == nil && parsed

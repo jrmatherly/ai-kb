@@ -181,7 +181,7 @@
           </div>
 
           <div class="form-content">
-            <!-- Holds the space until the OIDC config decides between the form and the OIDC button. -->
+            <!-- Holds the space until the OIDC config answers, so the password form never paints and then collapses. -->
             <div v-if="!loginConfigLoaded" class="login-config-placeholder" aria-busy="true"></div>
             <template v-else-if="oidcEnabled">
               <t-button theme="primary" size="large" block :loading="oidcLoading" :disabled="loading"
@@ -404,7 +404,6 @@ const oidcLoading = ref(false)
 const isRegisterMode = ref(false)
 const oidcEnabled = ref(false)
 const showPasswordLogin = ref(false)
-// False until the OIDC config answers, so the password form never paints and then collapses.
 const loginConfigLoaded = ref(false)
 const oidcProviderName = ref('')
 // Wait for configuration before showing a registration entry.

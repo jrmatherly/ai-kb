@@ -20,7 +20,7 @@ export const useSiteLinksStore = defineStore('siteLinks', () => {
         if (typeof links?.docs_url === 'string' && links.docs_url) docsUrl.value = links.docs_url
         githubUrl.value = typeof links?.github_url === 'string' ? links.github_url : ''
       } catch {
-        // A backend older than this route answers 401; keep the defaults.
+        // A backend older than this route answers 401.
         docsUrl.value = DEFAULT_DOCS_URL
         githubUrl.value = ''
       } finally {

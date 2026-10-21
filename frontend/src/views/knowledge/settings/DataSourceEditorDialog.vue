@@ -1280,7 +1280,7 @@ const pickerDefs = computed(() => {
   return offered === 'all' ? connectorDefs.value : connectorDefs.value.filter(def => offered.has(def.type))
 })
 
-// Both uses are advisory: a failed load hides the scope notice and keeps every card.
+// Advisory only, the backend enforces both: a failed load shows every card and no deletion notice.
 async function loadConnectorTypes() {
   offeredTypes.value = 'loading'
   try {

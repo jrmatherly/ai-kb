@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	// DocsURLEnv is the public documentation base URL the UI links to.
+	// DocsURLEnv holds the docs base URL the UI links to.
 	DocsURLEnv = "AIKB_DOCS_URL"
 	// DefaultDocsURL is the public docs site, used when DocsURLEnv is unset.
 	DefaultDocsURL = "https://ai-kb.matherly.net/docs/"
@@ -43,7 +43,7 @@ func GitHubLinkEnabled() bool {
 	return err == nil && parsed
 }
 
-// CurrentSystemLinks reads both variables at call time.
+// CurrentSystemLinks is the GET /system/links body.
 func CurrentSystemLinks() SystemLinks {
 	links := SystemLinks{DocsURL: DocsURL()}
 	if GitHubLinkEnabled() {

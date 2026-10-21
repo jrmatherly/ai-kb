@@ -409,7 +409,7 @@ func ConnectorTypeEnabled(connectorType string) bool {
 	return ok
 }
 
-// enabledConnectorTypes reads the allow-list on every call, so a changed env applies without a restart.
+// enabledConnectorTypes is not cached: tests set the env per case (t.Setenv).
 func enabledConnectorTypes() map[string]struct{} {
 	known := slices.Collect(maps.Keys(ConnectorMetadataRegistry))
 	enabled, unknown := envlist.Parse(os.Getenv(ConnectorTypesEnv), known)
