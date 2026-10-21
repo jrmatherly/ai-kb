@@ -784,6 +784,7 @@ watch(visible, (v) => {
   driveRootLoaded.value = false
   rssAuthHeaders.value = []
   gitlabProjects.value = []
+  void loadConnectorTypes()
 
   if (isEdit.value && props.dataSource) {
     // Reset edit/replace toggle every open so an aborted replace doesn't
@@ -792,7 +793,6 @@ watch(visible, (v) => {
     replaceCredentialsMode.value = false
     credentialsConfigured.value = false
     refreshCredentialsStatus()
-    void loadDeselectionDeletes()
     testResult.value = credentialsConfigured.value ? 'success' : ''
     const editConfig = props.dataSource.config || {}
     form.value = {
@@ -1272,15 +1272,22 @@ async function handleDrawerConfirm() {
 // selection: those declaring the backend's full_sync_reconcile capability.
 const deselectionDeletes = ref(new Set<string>())
 
-// The scope notice is advisory, so a failed load only leaves it hidden.
-async function loadDeselectionDeletes() {
+// Types the deployment offers (AIKB_DATASOURCE_TYPES); null shows every card.
+const offeredTypes = ref<Set<string> | null>(null)
+const pickerDefs = computed(() =>
+  connectorDefs.value.filter(def => !offeredTypes.value || offeredTypes.value.has(def.type)))
+
+// Both uses are advisory: a failed load hides the scope notice and keeps every card.
+async function loadConnectorTypes() {
   try {
     const res: any = await getConnectorTypes()
     const connectors: ConnectorMeta[] = Array.isArray(res) ? res : res?.data || []
+    offeredTypes.value = new Set(connectors.map(c => c.type))
     deselectionDeletes.value = new Set(
       connectors.filter(c => c.capabilities?.includes('full_sync_reconcile')).map(c => c.type),
     )
   } catch {
+    offeredTypes.value = null
     deselectionDeletes.value = new Set()
   }
 }
@@ -1461,7 +1468,7 @@ const drawerConfirmText = computed(() => {
       <h4 class="setting-drawer__section-title">{{ t('datasource.step.selectType') }}</h4>
       <div class="ds-type-grid">
         <button
-          v-for="def in connectorDefs"
+          v-for="def in pickerDefs"
           :key="def.type"
           type="button"
           :class="['ds-type-card', { disabled: !def.available }]"

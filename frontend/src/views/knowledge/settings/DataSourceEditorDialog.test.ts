@@ -211,6 +211,15 @@ test('new GitLab data sources continue to test credentials without persistence',
   } finally { f.close() }
 })
 
+test('the type picker offers only the connector types the deployment lists', async () => {
+  const f = await fixture({ create: true })
+  try {
+    await flush()
+    assert.deepEqual([...f.vm.pickerDefs.map((def: any) => def.type)], ['feishu', 'notion', 'confluence', 'dingtalk'])
+    assert.ok(f.vm.connectorDefs.some((def: any) => def.type === 'gitlab'), 'every definition stays known for editing')
+  } finally { f.close() }
+})
+
 const seafileRepoA = '0f1e2d3c-4b5a-4968-8776-655443322110'
 const seafileRepoB = 'ffffffff-0000-4000-8000-000000000001'
 
