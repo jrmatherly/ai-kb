@@ -39,6 +39,10 @@ dev = ["ebooklib>=0.18"]
 required-version = ">=0.13.0"
 # Supply-chain cooldown: resolution skips releases younger than 7 days (stored as a span, so uv.lock stays stable).
 exclude-newer = "7 days"
+# Advisory overrides: releases that fix published advisories skip the cooldown (GHSA-8g5g-8vmr-9782 and
+# six more for pillow 13.0.0, GHSA-6q48-6c7w-9gw2 for certifi 2026.10.19). Remove after 2026-10-27, when
+# both are a week old, or the entries cap those packages at this date.
+exclude-newer-package = { pillow = "2026-10-21T00:00:00Z", certifi = "2026-10-21T00:00:00Z" }
 
 # The code imports itself as the `docreader` package, so the import root is the repository root.
 # The interpreter is the uv environment (`uv sync --project docreader`), not whatever python3 is first on PATH.

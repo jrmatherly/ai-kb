@@ -78,8 +78,8 @@ into `/app/.venv`. Each package's license text ships with it, in that package's
 `*.dist-info` directory under `site-packages`. Packages with copyleft or
 weak-copyleft licenses:
 
-- certifi `2026.7.22`, Mozilla Public License 2.0. Unmodified; source on
-  [PyPI](https://pypi.org/project/certifi/2026.7.22/) and in the
+- certifi `2026.10.19`, Mozilla Public License 2.0. Unmodified; source on
+  [PyPI](https://pypi.org/project/certifi/2026.10.19/) and in the
   [upstream repository](https://github.com/certifi/python-certifi).
 - tld `0.13.2`, MPL-1.1 OR GPL-2.0-only OR LGPL-2.1-or-later, a dependency of
   `courlan`. Unmodified; source on [PyPI](https://pypi.org/project/tld/0.13.2/)
