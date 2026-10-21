@@ -41,7 +41,7 @@ Pick the connector that matches where the content lives; the type identifier is 
 | Seafile | `seafile` | Directories and files in a library |
 | RSS / Atom | `rss` | Feed entries |
 
-A deployment can offer a subset with `AIKB_DATASOURCE_TYPES`, a comma-separated list of type identifiers (unset or empty offers every connector; unknown names are logged and ignored). Excluded types leave the connector picker and `GET /api/v1/datasource/types`, and creating one is refused with 400; an existing data source of an excluded type can still be edited and synced.
+A deployment can offer a subset with `AIKB_DATASOURCE_TYPES`, a comma-separated list of type identifiers (unset or empty offers every connector; unknown names are logged and ignored). Excluded types leave the connector picker and `GET /api/v1/datasource/types`, and creating or probing one (testing credentials or listing resources for an unsaved config) is refused with 400; an existing data source of an excluded type still syncs and updates.
 
 The formats, authentication and deletion detection of each connector are in the reference sections below.
 

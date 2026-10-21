@@ -91,9 +91,8 @@ func (s *DataSourceService) CreateDataSource(
 	if err != nil {
 		return nil, err
 	}
-	if !slices.Contains(datasource.EnabledConnectorTypes(), ds.Type) {
-		return nil, apperrors.NewBadRequestError(
-			"connector type " + ds.Type + " is disabled by this deployment (" + datasource.ConnectorTypesEnv + ")")
+	if err := connectorTypeAllowed(ds.Type); err != nil {
+		return nil, err
 	}
 
 	// Validate configuration
@@ -431,6 +430,12 @@ func (s *DataSourceService) ListResourcesForConfig(
 	ctx context.Context, config *types.DataSourceConfig, parentID string,
 ) (_ []types.Resource, err error) {
 	defer func() { err = clientError(err) }()
+	if _, err := s.connectorRegistry.Get(config.Type); err != nil {
+		return nil, err
+	}
+	if err := connectorTypeAllowed(config.Type); err != nil {
+		return nil, err
+	}
 	config.StripNonSecretCredentials(config.Type)
 	return s.listResources(ctx, config.Type, config, parentID)
 }
@@ -1278,6 +1283,9 @@ func (s *DataSourceService) ValidateCredentials(
 	if err != nil {
 		return err
 	}
+	if err := connectorTypeAllowed(connectorType); err != nil {
+		return err
+	}
 	config := &types.DataSourceConfig{
 		Type:        connectorType,
 		Credentials: credentials,
@@ -1290,6 +1298,15 @@ func (s *DataSourceService) ValidateCredentials(
 }
 
 // Helper functions
+
+// connectorTypeAllowed gates creating and probing a connector type; saved sources of an excluded type still sync.
+func connectorTypeAllowed(connectorType string) error {
+	if datasource.ConnectorTypeEnabled(connectorType) {
+		return nil
+	}
+	return apperrors.NewBadRequestError(
+		"connector type " + connectorType + " is disabled by this deployment (" + datasource.ConnectorTypesEnv + ")")
+}
 
 func (s *DataSourceService) validateDataSourceConfig(ctx context.Context, ds *types.DataSource) error {
 	connector, err := s.connectorRegistry.Get(ds.Type)

@@ -844,3 +844,31 @@ func TestCreateDataSourceHonorsConnectorAllowList(t *testing.T) {
 		})
 	}
 }
+
+// The probe endpoints (validate-credentials, list-resources for an unsaved config) are gated like create.
+func TestProbePathsHonorConnectorAllowList(t *testing.T) {
+	for _, tc := range []struct {
+		allowList   string
+		wantAllowed bool
+	}{{"", true}, {"rss,notion", true}, {"notion", false}} {
+		t.Run(tc.allowList, func(t *testing.T) {
+			t.Setenv(datasource.ConnectorTypesEnv, tc.allowList)
+			registry := datasource.NewConnectorRegistry()
+			require.NoError(t, registry.Register(rssTestConnector{}))
+			svc := &DataSourceService{connectorRegistry: registry}
+			validateErr := svc.ValidateCredentials(context.Background(), types.ConnectorTypeRSS, nil)
+			_, listErr := svc.ListResourcesForConfig(context.Background(),
+				&types.DataSourceConfig{Type: types.ConnectorTypeRSS}, "")
+			for name, err := range map[string]error{"validate": validateErr, "list": listErr} {
+				if tc.wantAllowed {
+					require.NoError(t, err, name)
+					continue
+				}
+				var appErr *apperrors.AppError
+				require.ErrorAs(t, err, &appErr, name)
+				require.Equal(t, http.StatusBadRequest, appErr.HTTPCode, name)
+				require.ErrorContains(t, err, "connector type rss is disabled by this deployment", name)
+			}
+		})
+	}
+}

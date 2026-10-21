@@ -375,8 +375,9 @@ var ConnectorMetadataRegistry = map[string]ConnectorMetadata{
 // ListAvailableConnectors returns all available connector metadata
 // sorted by priority
 func ListAvailableConnectors() []ConnectorMetadata {
-	metadata := make([]ConnectorMetadata, 0, len(ConnectorMetadataRegistry))
-	for _, connectorType := range EnabledConnectorTypes() {
+	enabled := enabledConnectorTypes()
+	metadata := make([]ConnectorMetadata, 0, len(enabled))
+	for _, connectorType := range slices.Sorted(maps.Keys(enabled)) {
 		metadata = append(metadata, ConnectorMetadataRegistry[connectorType])
 	}
 
@@ -402,14 +403,22 @@ const ConnectorTypesEnv = "AIKB_DATASOURCE_TYPES"
 
 var unknownConnectorTypeWarning sync.Once
 
-// EnabledConnectorTypes returns the allow-listed connector types, sorted.
-func EnabledConnectorTypes() []string {
-	all := slices.Sorted(maps.Keys(ConnectorMetadataRegistry))
+// ConnectorTypeEnabled reports whether the deployment allow-list admits connectorType.
+func ConnectorTypeEnabled(connectorType string) bool {
+	_, ok := enabledConnectorTypes()[connectorType]
+	return ok
+}
+
+// enabledConnectorTypes reads the allow-list on every call, so a changed env applies without a restart.
+func enabledConnectorTypes() map[string]struct{} {
 	raw := strings.TrimSpace(os.Getenv(ConnectorTypesEnv))
+	enabled := make(map[string]struct{}, len(ConnectorMetadataRegistry))
 	if raw == "" {
-		return all
+		for name := range ConnectorMetadataRegistry {
+			enabled[name] = struct{}{}
+		}
+		return enabled
 	}
-	wanted := make(map[string]bool)
 	var unknown []string
 	for _, item := range strings.FieldsFunc(raw, func(r rune) bool {
 		switch r {
@@ -421,7 +430,7 @@ func EnabledConnectorTypes() []string {
 	}) {
 		name := strings.ToLower(strings.TrimSpace(item))
 		if _, known := ConnectorMetadataRegistry[name]; known {
-			wanted[name] = true
+			enabled[name] = struct{}{}
 		} else {
 			unknown = append(unknown, name)
 		}
@@ -432,5 +441,5 @@ func EnabledConnectorTypes() []string {
 				ConnectorTypesEnv, strings.Join(unknown, ", "))
 		})
 	}
-	return slices.DeleteFunc(all, func(t string) bool { return !wanted[t] })
+	return enabled
 }
