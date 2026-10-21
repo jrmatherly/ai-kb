@@ -91,6 +91,10 @@ func (s *DataSourceService) CreateDataSource(
 	if err != nil {
 		return nil, err
 	}
+	if !slices.Contains(datasource.EnabledConnectorTypes(), ds.Type) {
+		return nil, apperrors.NewBadRequestError(
+			"connector type " + ds.Type + " is disabled by this deployment (" + datasource.ConnectorTypesEnv + ")")
+	}
 
 	// Validate configuration
 	if cfg, err := ds.ParseConfig(); err == nil && cfg != nil {

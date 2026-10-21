@@ -2,8 +2,13 @@ package datasource
 
 import (
 	"context"
+	"maps"
+	"os"
 	"slices"
+	"strings"
+	"sync"
 
+	"github.com/jrmatherly/ai-kb/internal/logger"
 	"github.com/jrmatherly/ai-kb/internal/types"
 )
 
@@ -371,8 +376,8 @@ var ConnectorMetadataRegistry = map[string]ConnectorMetadata{
 // sorted by priority
 func ListAvailableConnectors() []ConnectorMetadata {
 	metadata := make([]ConnectorMetadata, 0, len(ConnectorMetadataRegistry))
-	for _, meta := range ConnectorMetadataRegistry {
-		metadata = append(metadata, meta)
+	for _, connectorType := range EnabledConnectorTypes() {
+		metadata = append(metadata, ConnectorMetadataRegistry[connectorType])
 	}
 
 	// Sort by priority (insertion sort for simplicity)
@@ -387,4 +392,45 @@ func ListAvailableConnectors() []ConnectorMetadata {
 	}
 
 	return metadata
+}
+
+// ConnectorTypesEnv is the deployment allow-list of connector types (keys of
+// ConnectorMetadataRegistry). Unset or blank means every type; a list that
+// names only unknown types means none. Separators and case handling mirror
+// AIKB_IM_PLATFORMS (internal/im).
+const ConnectorTypesEnv = "AIKB_DATASOURCE_TYPES"
+
+var unknownConnectorTypeWarning sync.Once
+
+// EnabledConnectorTypes returns the allow-listed connector types, sorted.
+func EnabledConnectorTypes() []string {
+	all := slices.Sorted(maps.Keys(ConnectorMetadataRegistry))
+	raw := strings.TrimSpace(os.Getenv(ConnectorTypesEnv))
+	if raw == "" {
+		return all
+	}
+	wanted := make(map[string]bool)
+	var unknown []string
+	for _, item := range strings.FieldsFunc(raw, func(r rune) bool {
+		switch r {
+		case ',', ';', '|', '\n', '\t', ' ':
+			return true
+		default:
+			return false
+		}
+	}) {
+		name := strings.ToLower(strings.TrimSpace(item))
+		if _, known := ConnectorMetadataRegistry[name]; known {
+			wanted[name] = true
+		} else {
+			unknown = append(unknown, name)
+		}
+	}
+	if len(unknown) > 0 {
+		unknownConnectorTypeWarning.Do(func() {
+			logger.Warnf(context.Background(), "[DataSource] %s names unknown connector types, ignored: %s",
+				ConnectorTypesEnv, strings.Join(unknown, ", "))
+		})
+	}
+	return slices.DeleteFunc(all, func(t string) bool { return !wanted[t] })
 }

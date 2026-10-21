@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/http"
 	"strings"
 	"testing"
 	"time"
@@ -12,6 +13,7 @@ import (
 	"github.com/hibiken/asynq"
 	apprepo "github.com/jrmatherly/ai-kb/internal/application/repository"
 	"github.com/jrmatherly/ai-kb/internal/datasource"
+	apperrors "github.com/jrmatherly/ai-kb/internal/errors"
 	"github.com/jrmatherly/ai-kb/internal/types"
 	"github.com/jrmatherly/ai-kb/internal/types/interfaces"
 	"github.com/stretchr/testify/assert"
@@ -801,4 +803,44 @@ func TestIngestItem_URLCreationMetadataAttachFailure(t *testing.T) {
 	}, nil)
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "attach datasource metadata")
+}
+
+type rssTestConnector struct{ deletedItemConnector }
+
+func (rssTestConnector) Type() string { return types.ConnectorTypeRSS }
+
+func TestCreateDataSourceHonorsConnectorAllowList(t *testing.T) {
+	for _, tc := range []struct {
+		allowList   string
+		wantCreated bool
+	}{{"", true}, {"rss,notion", true}, {"notion", false}, {"no-such-type", false}} {
+		t.Run(tc.allowList, func(t *testing.T) {
+			t.Setenv(datasource.ConnectorTypesEnv, tc.allowList)
+			f := newSQLiteDataSourceDeleteFixture(t)
+			registry := datasource.NewConnectorRegistry()
+			require.NoError(t, registry.Register(rssTestConnector{}))
+			kb := &types.KnowledgeBase{ID: f.ds.KnowledgeBaseID, TenantID: f.ds.TenantID}
+			svc := &DataSourceService{
+				dsRepo: f.dsRepo, scheduler: f.scheduler, connectorRegistry: registry,
+				kbService: &processSyncKBService{kb: kb},
+			}
+			ds := *f.ds
+			ds.ID = "allow-list"
+			ds.Type = types.ConnectorTypeRSS
+			ds.SyncSchedule = ""
+			ds.Config = []byte(`{"type":"rss"}`)
+			_, err := svc.CreateDataSource(context.Background(), &ds)
+			_, getErr := svc.GetDataSource(context.Background(), ds.ID)
+			if tc.wantCreated {
+				require.NoError(t, err)
+				require.NoError(t, getErr)
+				return
+			}
+			var appErr *apperrors.AppError
+			require.ErrorAs(t, err, &appErr)
+			require.Equal(t, http.StatusBadRequest, appErr.HTTPCode)
+			require.ErrorContains(t, err, "connector type rss is disabled by this deployment")
+			require.Error(t, getErr, "a rejected create stores nothing")
+		})
+	}
 }
