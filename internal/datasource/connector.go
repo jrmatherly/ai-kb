@@ -393,21 +393,40 @@ func ListAvailableConnectors() []ConnectorMetadata {
 }
 
 // ConnectorTypesEnv is the deployment allow-list of connector types (keys of
-// ConnectorMetadataRegistry). Unset or blank means every type; a list that
-// names only unknown types means none. Parsed by internal/envlist.
+// ConnectorMetadataRegistry). Unset or blank means DefaultConnectorTypes,
+// AllConnectorTypes on its own means every type, and a list that names only
+// unknown types means none. Parsed by internal/envlist.
 const ConnectorTypesEnv = "AIKB_DATASOURCE_TYPES"
+
+// AllConnectorTypes is the ConnectorTypesEnv value that, on its own, enables
+// every connector type, registered types without a metadata entry included.
+const AllConnectorTypes = "all"
+
+// DefaultConnectorTypes are the types offered when ConnectorTypesEnv is unset or blank.
+var DefaultConnectorTypes = []string{types.ConnectorTypeNotion, types.ConnectorTypeConfluence}
 
 var unknownConnectorTypeWarning sync.Once
 
 // ConnectorTypeEnabled reports whether the deployment allow-list admits connectorType.
 func ConnectorTypeEnabled(connectorType string) bool {
-	return enabledConnectorTypes()[connectorType]
+	return allConnectorTypes() || enabledConnectorTypes()[connectorType]
+}
+
+func allConnectorTypes() bool {
+	return strings.EqualFold(strings.TrimSpace(os.Getenv(ConnectorTypesEnv)), AllConnectorTypes)
 }
 
 // enabledConnectorTypes is not cached: tests set the env per case (t.Setenv).
 func enabledConnectorTypes() map[string]bool {
 	known := slices.Collect(maps.Keys(ConnectorMetadataRegistry))
-	enabled, unknown := envlist.Parse(os.Getenv(ConnectorTypesEnv), known)
+	value := os.Getenv(ConnectorTypesEnv)
+	switch {
+	case allConnectorTypes():
+		value = "" // envlist.Parse enables every known name for a blank value.
+	case strings.TrimSpace(value) == "":
+		value = strings.Join(DefaultConnectorTypes, ",")
+	}
+	enabled, unknown := envlist.Parse(value, known)
 	if len(unknown) > 0 {
 		unknownConnectorTypeWarning.Do(func() {
 			logger.Warnf(context.Background(), "[DataSource] %s names unknown connector types, ignored: %s",

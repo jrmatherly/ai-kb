@@ -813,7 +813,7 @@ func TestCreateDataSourceHonorsConnectorAllowList(t *testing.T) {
 	for _, tc := range []struct {
 		allowList   string
 		wantCreated bool
-	}{{"", true}, {"rss,notion", true}, {"notion", false}, {"no-such-type", false}} {
+	}{{"", false}, {"all", true}, {"rss,notion", true}, {"notion", false}, {"no-such-type", false}} {
 		t.Run(tc.allowList, func(t *testing.T) {
 			t.Setenv(datasource.ConnectorTypesEnv, tc.allowList)
 			f := newSQLiteDataSourceDeleteFixture(t)
@@ -850,7 +850,7 @@ func TestProbePathsHonorConnectorAllowList(t *testing.T) {
 	for _, tc := range []struct {
 		allowList   string
 		wantAllowed bool
-	}{{"", true}, {"rss,notion", true}, {"notion", false}} {
+	}{{"", false}, {"all", true}, {"rss,notion", true}, {"notion", false}} {
 		t.Run(tc.allowList, func(t *testing.T) {
 			t.Setenv(datasource.ConnectorTypesEnv, tc.allowList)
 			registry := datasource.NewConnectorRegistry()

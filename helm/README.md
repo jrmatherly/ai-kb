@@ -504,7 +504,7 @@ Deployment gates that are not chart values also ride `app.extraEnv`, for example
 `AIKB_WEKNORACLOUD_ENABLED` (default off; set `true` only with WeKnoraCloud
 credentials), `AIKB_IM_PLATFORMS` (the IM platforms offered to workspaces;
 unset means all), `AIKB_DATASOURCE_TYPES` (the data source connector types
-offered; unset means all), `AIKB_OLLAMA_ENABLED` (default off; shows the Ollama
+offered; unset means Notion and Confluence, `all` opens the full catalog), `AIKB_OLLAMA_ENABLED` (default off; shows the Ollama
 settings section) and `AIKB_GITHUB_LINK_ENABLED` (default off; shows links to
 the GitHub repository):
 

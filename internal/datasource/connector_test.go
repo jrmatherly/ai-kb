@@ -57,8 +57,12 @@ func TestListAvailableConnectorsMarksAllowList(t *testing.T) {
 		return got
 	}
 	t.Setenv(ConnectorTypesEnv, "")
+	if got := enabled(); !slices.Equal(got, []string{"notion", "confluence"}) {
+		t.Fatalf("blank allow-list enabled %v, want [notion confluence]", got)
+	}
+	t.Setenv(ConnectorTypesEnv, " ALL ")
 	if got := len(enabled()); got != len(ConnectorMetadataRegistry) {
-		t.Fatalf("blank allow-list enables %d connectors, want all %d", got, len(ConnectorMetadataRegistry))
+		t.Fatalf("allow-list all enables %d connectors, want all %d", got, len(ConnectorMetadataRegistry))
 	}
 	// Mixed separators and case; priority order puts Feishu before RSS.
 	t.Setenv(ConnectorTypesEnv, " RSS; feishu|no-such-type ")
@@ -68,5 +72,26 @@ func TestListAvailableConnectorsMarksAllowList(t *testing.T) {
 	t.Setenv(ConnectorTypesEnv, "no-such-type")
 	if got := enabled(); len(got) != 0 {
 		t.Fatalf("an allow-list of unknown names enabled %v, want none", got)
+	}
+}
+
+func TestConnectorTypeEnabled(t *testing.T) {
+	for _, value := range []string{"", "  "} {
+		t.Setenv(ConnectorTypesEnv, value)
+		if !ConnectorTypeEnabled(types.ConnectorTypeNotion) || !ConnectorTypeEnabled(types.ConnectorTypeConfluence) ||
+			ConnectorTypeEnabled(types.ConnectorTypeFeishu) || ConnectorTypeEnabled("fake") {
+			t.Fatalf("allow-list %q must admit only notion and confluence", value)
+		}
+	}
+	for _, value := range []string{"all", " All "} {
+		t.Setenv(ConnectorTypesEnv, value)
+		if !ConnectorTypeEnabled("fake") || !ConnectorTypeEnabled(types.ConnectorTypeFeishu) {
+			t.Fatalf("allow-list %q rejects a type", value)
+		}
+	}
+	t.Setenv(ConnectorTypesEnv, "rss")
+	if !ConnectorTypeEnabled(types.ConnectorTypeRSS) || ConnectorTypeEnabled(types.ConnectorTypeNotion) ||
+		ConnectorTypeEnabled("fake") {
+		t.Fatal(`allow-list "rss" must admit rss and nothing else`)
 	}
 }
