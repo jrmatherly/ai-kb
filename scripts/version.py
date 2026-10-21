@@ -302,7 +302,7 @@ def bump(group, target, remote):
     print(f"committed chore(release): {name} ({len(paths)} files)")
     if prefix is None:
         if group == "helm-chart":
-            print("no tag: helm.yml pushes the chart to oci://ghcr.io/jrmatherly/ai-kb/charts/ai-kb when this commit lands on main")
+            print(f"no tag: helm.yml pushes the {group} to oci://ghcr.io/jrmatherly/ai-kb/charts/ai-kb when this commit lands on main")
         else:
             print(f"no tag: nothing publishes {group}")
         return
