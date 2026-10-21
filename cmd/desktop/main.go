@@ -178,7 +178,10 @@ window.open=function(url){
 
 // wailsThemeSyncJS matches the first-paint script in index.html. It runs again on DomReady to
 // cover the moment the runtime becomes ready after Ctrl+R.
-const wailsThemeSyncJS = `(function(){try{var t=localStorage.getItem('AIKB_boot_theme')||'system';` +
+const wailsThemeSyncJS = `(function(){try{var t=localStorage.getItem('AIKB_boot_theme');` +
+	`if(!t)for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);` +
+	`if(!/^AIKB_[^_]+_theme$/.test(k))continue;var v=localStorage.getItem(k);if(t&&v!==t){t='';break}t=v}` +
+	`t=t||'system';` +
 	`if(t==='system')t=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';` +
 	`var bg=t==='dark'?'#181818':'#eee';document.documentElement.setAttribute('theme-mode',t);` +
 	`document.documentElement.style.background=bg;document.documentElement.style.minHeight='100%';` +
