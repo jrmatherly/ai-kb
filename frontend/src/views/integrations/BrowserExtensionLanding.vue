@@ -90,7 +90,7 @@
     <template #footer>
       <div class="landing-footer-bar" role="note">
         <p class="landing-footer-bar__note">{{ $t('integrations.browser.footerNote') }}</p>
-        <a :href="EXTENSION_RELEASES_URL" target="_blank" rel="noopener noreferrer" class="landing-meta">
+        <a v-if="siteLinks.githubUrl" :href="`${siteLinks.githubUrl}/releases?q=extension`" target="_blank" rel="noopener noreferrer" class="landing-meta">
           {{ $t('integrations.browser.releases') }}
         </a>
         <a :href="docsUrl('browserExtension')" target="_blank" rel="noopener noreferrer" class="landing-meta">
@@ -103,7 +103,8 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { EXTENSION_RELEASES_URL, EXTENSION_STORE_URL } from '@/config/integrations'
+import { EXTENSION_STORE_URL } from '@/config/integrations'
+import { useSiteLinksStore } from '@/stores/siteLinks'
 import { useApiBaseUrlDisplay } from '@/composables/useApiBaseUrlDisplay'
 import { copyWithToast } from '@/utils/clipboard'
 import { docsUrl } from '@/utils/docsUrl'
@@ -112,6 +113,7 @@ import IntegrationExternalCta from './IntegrationExternalCta.vue'
 import { useIntegrationNav } from './useIntegrationNav'
 
 const { openExternal, openApiSettings } = useIntegrationNav()
+const siteLinks = useSiteLinksStore()
 const { apiBaseUrlDisplay } = useApiBaseUrlDisplay()
 
 const featureKeys = ['qa', 'clip', 'select', 'note', 'shortcuts'] as const

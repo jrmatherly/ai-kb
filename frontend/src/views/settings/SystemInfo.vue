@@ -145,13 +145,15 @@
                 target="_blank"
                 rel="noopener noreferrer"
               >{{ $t('system.dbMigrationViewDocs') }}</t-link>
-              <span class="migration-error-actions-sep">·</span>
-              <t-link
-                theme="primary"
-                :href="reportIssueURL"
-                target="_blank"
-                rel="noopener noreferrer"
-              >{{ $t('system.dbMigrationReportIssue') }}</t-link>
+              <template v-if="siteLinks.githubUrl">
+                <span class="migration-error-actions-sep">·</span>
+                <t-link
+                  theme="primary"
+                  :href="reportIssueURL"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >{{ $t('system.dbMigrationReportIssue') }}</t-link>
+              </template>
             </div>
           </template>
         </t-alert>
@@ -200,11 +202,13 @@ import type { SystemInfo } from '@/api/system'
 import { useEditorResourcesStore } from '@/stores/editorResources'
 import { useI18n } from 'vue-i18n'
 import { docsUrl } from '@/utils/docsUrl'
+import { useSiteLinksStore } from '@/stores/siteLinks'
 
 const { t, locale } = useI18n()
 
 // Reactive state
 const editorResources = useEditorResourcesStore()
+const siteLinks = useSiteLinksStore()
 const systemInfo = ref<SystemInfo | null>(null)
 const loading = ref(true)
 const error = ref('')
@@ -254,7 +258,7 @@ const troubleshootingDocsURL = computed(() => docsUrl('troubleshootingMigrations
 // paste it manually. Body is intentionally minimal - the bug template will fill
 // in the rest. Encode aggressively to survive newlines / quotes.
 const reportIssueURL = computed(() => {
-  const base = 'https://github.com/jrmatherly/ai-kb/issues/new'
+  const base = `${siteLinks.githubUrl}/issues/new`
   const params = new URLSearchParams({
     template: 'bug_report.yml',
     title: '[Bug]: Database migration failed at startup',

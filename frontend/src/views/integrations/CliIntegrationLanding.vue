@@ -8,7 +8,7 @@
       <IntegrationExternalCta
         :label="$t('integrations.cli.docs')"
         :hint="$t('integrations.cli.docsHint')"
-        @click="openExternal(CLI_README_URL)"
+        @click="openExternal(docsUrl('cli'))"
       >
         <template #icon><t-icon name="code" /></template>
       </IntegrationExternalCta>
@@ -74,12 +74,12 @@
 import { computed } from 'vue'
 import { useApiBaseUrlDisplay } from '@/composables/useApiBaseUrlDisplay'
 import { copyWithToast } from '@/utils/clipboard'
+import { docsUrl } from '@/utils/docsUrl'
 import IntegrationLandingLayout from './IntegrationLandingLayout.vue'
 import IntegrationExternalCta from './IntegrationExternalCta.vue'
 import { buildCLIConnectCommand } from './cliIntegration'
 import { useIntegrationNav } from './useIntegrationNav'
 
-const CLI_README_URL = 'https://github.com/jrmatherly/ai-kb/blob/main/cli/README.md'
 const { openExternal } = useIntegrationNav()
 
 const { apiBaseUrlDisplay } = useApiBaseUrlDisplay()

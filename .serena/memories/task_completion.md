@@ -10,4 +10,4 @@ Run `scripts/validate.sh` (or `--base <rev>`): it runs the areas below that the 
 6. `docreader/**`: unittest discover under `uv run --project docreader`; `go test ./docreader/client ./docreader/proto` if proto or client changed.
 7. Swagger annotations changed: `make docs`, commit `docs/docs.go` + `swagger.{json,yaml}`.
 8. `scripts/check-english-only.sh <changed files>` and `scripts/check-emdash.sh` exit 0; changed Markdown passes markdownlint.
-9. Commit locally only when asked, conventional-commit subject; never push.
+9. Commit only when asked, conventional-commit subject; push only when asked or when the task needs it.
