@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Bug Fixes
 
-- **FIXED**: docreader takes pillow 13.0.0 (seven advisories, among them a critical heap overflow in the JPEG decoder, GHSA-8g5g-8vmr-9782) and certifi 2026.10.19 (GHSA-6q48-6c7w-9gw2, emSign roots with compromised intermediate keys) ahead of the 7-day cooldown, through `exclude-newer-package` entries in `docreader/pyproject.toml` that are due for removal after 2026-10-27. Dependabot cannot write these updates itself while docreader requires uv 0.13 and Dependabot ships 0.12.18.
+- **FIXED**: docreader takes pillow 13.0.0 (seven advisories, among them a critical heap overflow in the JPEG decoder, GHSA-8g5g-8vmr-9782) and certifi 2026.10.19 (GHSA-6q48-6c7w-9gw2, emSign roots with compromised intermediate keys) ahead of the 7-day cooldown, through `exclude-newer-package` entries in `docreader/pyproject.toml` that are due for removal after 2026-10-27. Dependabot cannot write these updates itself while docreader requires uv 0.13 and Dependabot ships 0.12.18. The MCP server and the MCP demo take the same certifi release the same way.
 
 ### Features
 
