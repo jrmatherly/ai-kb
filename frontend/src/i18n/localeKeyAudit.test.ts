@@ -220,6 +220,11 @@ test('Seafile picker texts are localized', () => {
   assertLocalized(keys)
 })
 
+test('the GitHub and GitLab form label groups have the same members', () => {
+  const en = LOCALE_BUNDLES["en-US"] as any
+  assert.deepEqual(Object.keys(en.datasource.github).sort(), [...Object.keys(en.datasource.gitlab), "baseUrlHint"].sort())
+})
+
 test('DingTalk configuration texts are localized', () => {
   const keys = [
     'connector.dingtalk', 'connectorDesc.dingtalk',

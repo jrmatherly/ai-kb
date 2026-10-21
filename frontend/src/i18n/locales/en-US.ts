@@ -800,6 +800,7 @@ export default {
     channelConfluence: 'Confluence',
     channelYuque: 'Yuque',
     channelGitLab: 'GitLab',
+    channelGitHub: 'GitHub',
     channelSeafile: 'Seafile',
     channelIma: 'Tencent IMA',
     channelUpload: 'Upload',
@@ -6768,6 +6769,16 @@ export default {
       paths: 'Directories', pathsPlaceholder: 'One directory per line; leave empty to sync the whole project',
       addProject: 'Add project', projectRequired: 'Add at least one GitLab project',
     },
+    github: {
+      baseUrl: 'GitHub API URL',
+      baseUrlHint: 'Leave empty for github.com; for GitHub Enterprise Server or a ghe.com enterprise enter the host, for example https://ghe.example.com',
+      accessToken: 'Personal access token', projects: 'GitHub repositories',
+      projectsHint: 'Enter a repository as owner/repo, with optional branch and directories.',
+      project: 'Repository', projectId: 'Repository', projectIdPlaceholder: 'For example: owner/repo',
+      ref: 'Branch', refPlaceholder: 'Leave empty to use the default branch',
+      paths: 'Directories', pathsPlaceholder: 'One directory per line; leave empty to sync the whole repository',
+      addProject: 'Add repository', projectRequired: 'Add at least one GitHub repository',
+    },
     seafile: {
       baseUrl: 'Seafile URL', apiToken: 'API token',
       apiTokenHint: 'Generate it under "Settings → Web API token" in Seafile; the account only needs read access to the libraries you select, and the token is never sent with file downloads.',
@@ -6854,6 +6865,7 @@ export default {
       rss: 'RSS / Atom Feed',
       ima: 'Tencent IMA',
       gitlab: 'GitLab',
+      github: 'GitHub',
       seafile: 'Seafile'
     },
     connectorDesc: {
@@ -6868,6 +6880,7 @@ export default {
       rss: 'Sync articles from RSS / Atom feeds',
       ima: 'Sync documents, notes and files from Tencent IMA knowledge bases (AI sessions and video parses are not supported)',
       gitlab: 'Sync files from GitLab projects',
+      github: 'Sync files from GitHub repositories',
       seafile: 'Sync folders and files from Seafile libraries'
     },
     drive: {

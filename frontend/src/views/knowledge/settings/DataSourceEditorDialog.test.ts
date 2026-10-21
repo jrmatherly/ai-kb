@@ -23,6 +23,9 @@ const connectorTypesModule = ts.transpileModule(
   { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } },
 ).outputText
 
+// Copies a value out of the component's vm realm so deepEqual compares structure only.
+const plain = (value: unknown) => JSON.parse(JSON.stringify(value))
+
 // Lets un-awaited API calls (e.g. loadResources fired by nextStep) settle.
 const flush = async () => {
   await new Promise(resolve => setImmediate(resolve))
@@ -187,6 +190,7 @@ test('Next tests the replacement and final save commits credentials before setti
     ])
     assert.equal(f.storedToken(), 'rotated-token')
     assert.deepEqual(f.calls[2].args[1].config.credentials, {})
+    assert.deepEqual(f.calls[2].args[1].config.settings, { projects: [{ project_id: '123', ref: '', paths: [] }] })
   } finally { f.close() }
 })
 
@@ -232,6 +236,30 @@ test('new GitLab data sources continue to test credentials without persistence',
     await f.replace()
     await f.vm.testConnection()
     assert.equal(f.vm.testResult, 'success')
+    assert.deepEqual(f.calls.map(call => call.method), ['validateCredentials'])
+  } finally { f.close() }
+})
+
+test('saved GitHub repositories hydrate the shared git form', async () => {
+  const f = await fixture({ type: 'github', settings: { repositories: [{ repository: 'o/r', ref: 'main', paths: ['docs'] }] } })
+  try {
+    assert.deepEqual(plain(f.vm.gitProjects), [{ project_id: 'o/r', ref: 'main', pathsText: 'docs' }])
+    f.vm.syncGitProjectsToSettings()
+    assert.deepEqual(plain(f.vm.form.config.settings), { repositories: [{ repository: 'o/r', ref: 'main', paths: ['docs'] }] })
+  } finally { f.close() }
+})
+
+test('switching the git connector type resets the repository rows', async () => {
+  const f = await fixture({ create: true })
+  try {
+    f.vm.selectType(f.vm.connectorDefs.find((def: any) => def.type === 'gitlab'))
+    f.vm.gitProjects[0].project_id = '123'
+    f.vm.syncGitProjectsToSettings()
+    f.vm.selectType(f.vm.connectorDefs.find((def: any) => def.type === 'github'))
+    assert.deepEqual(plain(f.vm.gitProjects), [{ project_id: '', ref: '', pathsText: '' }])
+    assert.equal(f.vm.form.config.settings.projects, undefined)
+    await f.replace()
+    await f.vm.testConnection()
     assert.deepEqual(f.calls.map(call => call.method), ['validateCredentials'])
   } finally { f.close() }
 })

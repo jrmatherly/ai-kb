@@ -266,7 +266,7 @@ const driveFolderToken = ref('')
 const driveFolderTokenError = ref('')
 const driveRootLoaded = ref(false)
 const isDriveConnector = (type: string) => type === 'feishu_drive' || type === 'lark_drive'
-const isGitLabConnector = (type: string) => type === 'gitlab'
+const isGitConnector = (type: string) => type === 'gitlab' || type === 'github'
 // Seafile resource IDs are "<repo_id>:<path>"; one data source syncs one
 // library, so the picker refuses a selection that spans two libraries.
 const isSeafileConnector = (type: string) => type === 'seafile'
@@ -280,19 +280,23 @@ function seafileWithin(id: string, parent: string): boolean {
     (parentPath === '/' || path === parentPath || path.startsWith(parentPath + '/'))
 }
 
-interface GitLabProjectInput { project_id: string; ref: string; pathsText: string }
-const gitlabProjects = ref<GitLabProjectInput[]>([])
-function syncGitLabProjectsToSettings() {
-  if (!isGitLabConnector(form.value.type)) return
-  form.value.config.settings.projects = gitlabProjects.value
+// GitLab and GitHub share one row form; only the settings keys and labels differ.
+interface GitProjectInput { project_id: string; ref: string; pathsText: string }
+const gitProjects = ref<GitProjectInput[]>([])
+const gitSettingsKey = computed(() => form.value.type === 'github' ? 'repositories' : 'projects')
+const gitItemKey = computed(() => form.value.type === 'github' ? 'repository' : 'project_id')
+const gitLabelsKey = computed(() => form.value.type === 'github' ? 'datasource.github' : 'datasource.gitlab')
+function syncGitProjectsToSettings() {
+  if (!isGitConnector(form.value.type)) return
+  form.value.config.settings[gitSettingsKey.value] = gitProjects.value
     .filter(project => project.project_id.trim())
     .map(project => ({
-      project_id: project.project_id.trim(), ref: project.ref.trim(),
+      [gitItemKey.value]: project.project_id.trim(), ref: project.ref.trim(),
       paths: project.pathsText.split(/[\n,]/).map(path => path.trim()).filter(Boolean),
     }))
 }
-function addGitLabProject() { gitlabProjects.value.push({ project_id: '', ref: '', pathsText: '' }) }
-function removeGitLabProject(index: number) { gitlabProjects.value.splice(index, 1); syncGitLabProjectsToSettings() }
+function addGitProject() { gitProjects.value.push({ project_id: '', ref: '', pathsText: '' }) }
+function removeGitProject(index: number) { gitProjects.value.splice(index, 1); syncGitProjectsToSettings() }
 
 // extractDriveFolderToken accepts either a bare folder_token or a Drive folder
 // URL (https://xxx.feishu.cn/drive/folder/<token> or the Lark equivalent
@@ -741,6 +745,15 @@ const connectorDefs = computed<ConnectorDef[]>(() => [
     ],
   },
   {
+    type: 'github', available: true,
+    docUrl: 'https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens',
+    permissionDocUrl: '', permissionPageUrl: '', requiredPermissions: [],
+    fields: [
+      { key: 'base_url', labelKey: 'datasource.github.baseUrl', placeholder: 'https://api.github.com', optional: true, hintKey: 'datasource.github.baseUrlHint' },
+      { key: 'access_token', labelKey: 'datasource.github.accessToken', placeholder: '', secret: true },
+    ],
+  },
+  {
     type: 'seafile', available: true, docUrl: 'https://help.seafile.com/',
     permissionDocUrl: '', permissionPageUrl: '', requiredPermissions: [],
     fields: [
@@ -782,7 +795,7 @@ watch(visible, (v) => {
   driveFolderTokenError.value = ''
   driveRootLoaded.value = false
   rssAuthHeaders.value = []
-  gitlabProjects.value = []
+  gitProjects.value = []
   void loadConnectorTypes()
 
   if (isEdit.value && props.dataSource) {
@@ -810,10 +823,10 @@ watch(visible, (v) => {
       sync_deletions: props.dataSource.sync_deletions,
     }
     selectedResourceIds.value = form.value.config?.resource_ids || []
-    if (isGitLabConnector(form.value.type)) {
-      const savedProjects = Array.isArray(form.value.config.settings.projects) ? form.value.config.settings.projects : []
-      gitlabProjects.value = savedProjects.map((project: any) => ({
-        project_id: String(project.project_id || ''), ref: String(project.ref || ''),
+    if (isGitConnector(form.value.type)) {
+      const saved = form.value.config.settings[gitSettingsKey.value]
+      gitProjects.value = (Array.isArray(saved) ? saved : []).map((project: any) => ({
+        project_id: String(project[gitItemKey.value] || ''), ref: String(project.ref || ''),
         pathsText: Array.isArray(project.paths) ? project.paths.join('\n') : '',
       }))
     }
@@ -891,7 +904,12 @@ function selectType(def: ConnectorDef) {
   if (def.type === 'yuque' && !isEdit.value) {
     form.value.config.settings = { ...form.value.config.settings, folder_mode: 'toc' }
   }
-  if (isGitLabConnector(def.type)) addGitLabProject()
+  if (isGitConnector(def.type)) {
+    gitProjects.value = []
+    delete form.value.config.settings.projects
+    delete form.value.config.settings.repositories
+    addGitProject()
+  }
   rssAuthHeaders.value = []
   step.value = 1
 }
@@ -1127,10 +1145,10 @@ async function nextStep() {
     }
     driveFolderTokenError.value = ''
   }
-  if (step.value === 2 && isGitLabConnector(form.value.type)) {
-    syncGitLabProjectsToSettings()
-    if (!gitlabProjects.value.some(project => project.project_id.trim())) {
-      MessagePlugin.warning(t('datasource.gitlab.projectRequired'))
+  if (step.value === 2 && isGitConnector(form.value.type)) {
+    syncGitProjectsToSettings()
+    if (!gitProjects.value.some(project => project.project_id.trim())) {
+      MessagePlugin.warning(t(`${gitLabelsKey.value}.projectRequired`))
       return
     }
   }
@@ -1151,7 +1169,7 @@ async function nextStep() {
       }
       return
     }
-    if (isGitLabConnector(form.value.type)) return
+    if (isGitConnector(form.value.type)) return
     loadResources()
   }
 }
@@ -1170,7 +1188,7 @@ function prevStep() {
 // commitCredentialsIfNeeded). Sending an empty map keeps the backend
 // validator happy.
 function buildConfigPayload(): Record<string, unknown> {
-  syncGitLabProjectsToSettings()
+  syncGitProjectsToSettings()
   syncConfluencePublicFieldsToSettings()
   return {
     credentials: isEdit.value ? {} : { ...form.value.config.credentials },
@@ -1396,7 +1414,7 @@ const drawerConfirmText = computed(() => {
     v-model:visible="visible"
     :title="drawerTitle"
     :description="drawerDescription"
-    :class="[form.type ? `datasource-editor-drawer datasource-editor-drawer--${form.type}` : 'datasource-editor-drawer', { 'ds-fixed-step': step === 2 && !isGitLabConnector(form.type) }]"
+    :class="[form.type ? `datasource-editor-drawer datasource-editor-drawer--${form.type}` : 'datasource-editor-drawer', { 'ds-fixed-step': step === 2 && !isGitConnector(form.type) }]"
     :hide-footer="step === 0"
     :confirm-text="drawerConfirmText"
     :confirm-loading="submitting || (step === 1 && testing)"
@@ -1743,23 +1761,23 @@ const drawerConfirmText = computed(() => {
 
     <!-- Step 2: Select resources -->
     <section v-if="step === 2" class="setting-drawer__section ds-resource-section">
-      <template v-if="isGitLabConnector(form.type)">
-        <h4 class="setting-drawer__section-title">{{ t('datasource.gitlab.projects') }}</h4>
-        <p class="ds-resource-hint">{{ t('datasource.gitlab.projectsHint') }}</p>
+      <template v-if="isGitConnector(form.type)">
+        <h4 class="setting-drawer__section-title">{{ t(`${gitLabelsKey}.projects`) }}</h4>
+        <p class="ds-resource-hint">{{ t(`${gitLabelsKey}.projectsHint`) }}</p>
         <div class="gitlab-project-list">
-          <div v-for="(project, index) in gitlabProjects" :key="index" class="gitlab-project-row">
+          <div v-for="(project, index) in gitProjects" :key="index" class="gitlab-project-row">
             <div class="gitlab-project-row__header">
-              <strong>{{ t('datasource.gitlab.project') }} {{ index + 1 }}</strong>
-              <t-button variant="text" size="small" theme="danger" @click="removeGitLabProject(index)"><t-icon name="delete" /></t-button>
+              <strong>{{ t(`${gitLabelsKey}.project`) }} {{ index + 1 }}</strong>
+              <t-button variant="text" size="small" theme="danger" @click="removeGitProject(index)"><t-icon name="delete" /></t-button>
             </div>
-            <label class="form-label required">{{ t('datasource.gitlab.projectId') }}</label>
-            <t-input v-model="project.project_id" :placeholder="t('datasource.gitlab.projectIdPlaceholder')" />
-            <label class="form-label">{{ t('datasource.gitlab.ref') }}</label>
-            <t-input v-model="project.ref" :placeholder="t('datasource.gitlab.refPlaceholder')" />
-            <label class="form-label">{{ t('datasource.gitlab.paths') }}</label>
-            <t-textarea v-model="project.pathsText" :placeholder="t('datasource.gitlab.pathsPlaceholder')" :autosize="{ minRows: 2, maxRows: 5 }" />
+            <label class="form-label required">{{ t(`${gitLabelsKey}.projectId`) }}</label>
+            <t-input v-model="project.project_id" :placeholder="t(`${gitLabelsKey}.projectIdPlaceholder`)" />
+            <label class="form-label">{{ t(`${gitLabelsKey}.ref`) }}</label>
+            <t-input v-model="project.ref" :placeholder="t(`${gitLabelsKey}.refPlaceholder`)" />
+            <label class="form-label">{{ t(`${gitLabelsKey}.paths`) }}</label>
+            <t-textarea v-model="project.pathsText" :placeholder="t(`${gitLabelsKey}.pathsPlaceholder`)" :autosize="{ minRows: 2, maxRows: 5 }" />
           </div>
-          <t-button variant="outline" @click="addGitLabProject"><template #icon><t-icon name="add" /></template>{{ t('datasource.gitlab.addProject') }}</t-button>
+          <t-button variant="outline" @click="addGitProject"><template #icon><t-icon name="add" /></template>{{ t(`${gitLabelsKey}.addProject`) }}</t-button>
         </div>
       </template>
       <template v-else>
