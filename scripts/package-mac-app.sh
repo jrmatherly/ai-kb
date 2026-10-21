@@ -92,6 +92,9 @@ if [ -d web ]; then
     cp -r web "${RESOURCES_DIR}/"
 fi
 
+# Signs only when a Developer ID identity is in the keychain; see the script for its environment.
+bash ./scripts/sign-mac-app.sh sign-app "${DIST_DIR}"
+
 # Note: the working directory of the binary Wails build produces defaults to the app's Contents/MacOS directory
 # The code that reads config file paths may need adjusting later.
 

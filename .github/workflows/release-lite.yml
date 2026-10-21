@@ -240,6 +240,7 @@ jobs:
       CGO_ENABLED: 1
       PLATFORM: ${{ matrix.platform }}
       ARCH_LABEL: ${{ matrix.arch_label }}
+      HAS_MACOS_CERT: ${{ secrets.MACOS_CERT_P12 != '' && secrets.MACOS_CERT_PASSWORD != '' }}
     steps:
       - name: 📥 Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -340,8 +341,41 @@ jobs:
             -ldflags="${LDFLAGS}" \
             -o "AI KB Lite"
 
+      # Without the certificate secrets the DMGs ship unsigned, unless the notary API key secrets are set:
+      # then sign-mac-app.sh fails the job. Non-interactive `security` takes passwords only on argv, so this
+      # step cannot keep secrets in files as extension.yml does. The one-hour lock timeout replaces the
+      # 300s default, which could lock the keychain before the DMG's codesign.
+      - name: 🔐 Import the Developer ID certificate
+        if: runner.os == 'macOS' && env.HAS_MACOS_CERT == 'true'
+        env:
+          MACOS_CERT_P12: ${{ secrets.MACOS_CERT_P12 }}
+          MACOS_CERT_PASSWORD: ${{ secrets.MACOS_CERT_PASSWORD }}
+        run: |
+          KEYCHAIN="$RUNNER_TEMP/signing.keychain-db"
+          KEYCHAIN_PASSWORD="$(openssl rand -base64 32)"
+          echo "::add-mask::${KEYCHAIN_PASSWORD}"
+          P12="$RUNNER_TEMP/cert.p12"
+          printf '%s' "$MACOS_CERT_P12" | base64 --decode > "$P12"
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          security set-keychain-settings -lut 3600 "$KEYCHAIN"
+          security default-keychain -s "$KEYCHAIN"
+          # The runner's bash is 3.2, so no mapfile.
+          EXISTING=()
+          while IFS= read -r k; do EXISTING+=("$k"); done < <(security list-keychains -d user | sed 's/^ *"\(.*\)"$/\1/')
+          security list-keychains -d user -s "$KEYCHAIN" "${EXISTING[@]}"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          security import "$P12" -k "$KEYCHAIN" -P "$MACOS_CERT_PASSWORD" -f pkcs12 -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN" > /dev/null
+          rm -f "$P12"
+          # An untrusted chain lists no valid identity; required turns that into a failed job, not an unsigned DMG.
+          echo "MACOS_SIGN_REQUIRED=1" >> "$GITHUB_ENV"
+
       - name: 📦 Package macOS app
         if: runner.os == 'macOS'
+        env:
+          APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
+          APPLE_API_ISSUER_ID: ${{ secrets.APPLE_API_ISSUER_ID }}
+          APPLE_API_KEY_P8: ${{ secrets.APPLE_API_KEY_P8 }}
         run: |
           APP_BUNDLE="AI KB Lite.app"
           SRC="cmd/desktop/build/bin/${APP_BUNDLE}"
@@ -355,6 +389,8 @@ jobs:
           cp -r migrations/sqlite/* "${RESOURCES}/migrations/sqlite/"
           cp -r config/* "${RESOURCES}/config/"
 
+          bash ./scripts/sign-mac-app.sh sign-app "${SRC}"
+
           DMG_NAME="ai-kb-lite-app_${TAG}_${ARCH_LABEL}"
 
           DMG_SRC="dmg_staging"
@@ -366,6 +402,8 @@ jobs:
             -srcfolder "${DMG_SRC}" \
             -ov -format UDZO \
             "${DMG_NAME}.dmg"
+
+          bash ./scripts/sign-mac-app.sh sign-dmg "${DMG_NAME}.dmg"
 
           shasum -a 256 "${DMG_NAME}.dmg" > "${DMG_NAME}.dmg.sha256"
 
