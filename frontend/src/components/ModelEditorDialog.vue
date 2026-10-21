@@ -106,7 +106,8 @@
             class="ollama-unavailable-tip">
             <t-icon name="error-circle-filled" class="tip-icon" />
             <span class="tip-text">{{ $t('model.editor.ollamaUnavailable') }}</span>
-            <t-button variant="text" size="small" @click="goToOllamaSettings" class="tip-link">
+            <t-button v-if="ollamaSettingsAvailable" variant="text" size="small" @click="goToOllamaSettings"
+              class="tip-link">
               <template #icon><t-icon name="jump" /></template>
               {{ $t('model.editor.goToOllamaSettings') }}
             </t-button>
@@ -629,6 +630,7 @@ import {
 import { useI18n } from 'vue-i18n'
 import { useUIStore } from '@/stores/ui'
 import { useModelProvidersStore } from '@/stores/modelProviders'
+import { useDeploymentCapabilitiesStore } from '@/stores/deploymentCapabilities'
 import {
   credentialLabelForModelType,
   extraFieldLabel,
@@ -1438,6 +1440,10 @@ const checkOllamaServiceStatus = async () => {
     formData.value.source = 'remote'
   }
 }
+
+// The Ollama settings section exists only where AIKB_OLLAMA_ENABLED is on.
+const deploymentCapabilities = useDeploymentCapabilitiesStore()
+const ollamaSettingsAvailable = computed(() => deploymentCapabilities.isSupported('settings.ollama'))
 
 // Open the Ollama settings window
 const goToOllamaSettings = async () => {

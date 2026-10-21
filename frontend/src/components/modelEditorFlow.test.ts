@@ -95,6 +95,7 @@ async function fixture(options: {
         } },
       }
       if (name === '@/stores/modelProviders') return { useModelProvidersStore: () => providersStore }
+      if (name === '@/stores/deploymentCapabilities') return { useDeploymentCapabilitiesStore: () => ({ isSupported: () => true }) }
       if (name === '@/api/model') return { getWeKnoraCloudStatus: async () => ({ has_models: true, needs_reinit: false }) }
       if (name === '@/utils/weknoraCloudModels') return require('../utils/weknoraCloudModels.ts')
       if (name === '@/utils/docsUrl') return { docsUrl: (page: string) => `https://docs.test/${page}` }
