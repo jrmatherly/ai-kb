@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Bug Fixes
+
+- **FIXED**: Go toolchain 1.26.10, which carries the crypto/x509 denylist for the compromised emSign intermediates (GO-2026-6809, CVE-2026-111943); the govulncheck gate on main failed on 1.26.9. CI and the Docker images float to it; local builds pick it up from `go.mod`.
+
 ## [2026.10.21] - 2026-10-21
 
 ### Bug Fixes
