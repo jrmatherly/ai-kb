@@ -79,7 +79,7 @@ The client is a **native WeChat Mini Program**. It uses no cross-platform framew
 - `miniprogram/app.js`: the standard `App({...})` entry point; `onLaunch` writes default settings to local storage.
 - `miniprogram/app.json`: the standard global mini program configuration (`pages`, `window`, `tabBar`).
 - `miniprogram/app.wxss`: global styles. Each page is a set of four files: `js`, `wxml`, `wxss` and `json`.
-- `miniprogram/package.json`: package name `ai-kb-miniprogram` (version `2026.10.21.2`), `description` "WeChat Mini Program plugin for AI KB", **no `dependencies`**, and a single test script (see "Tests" above).
+- `miniprogram/package.json`: package name `ai-kb-miniprogram` (version `2026.10.21.3`), `description` "WeChat Mini Program plugin for AI KB", **no `dependencies`**, and a single test script (see "Tests" above).
 - `miniprogram/project.config.json`: `compileType: "miniprogram"`, `libVersion: "latest"` (the latest base library). Compile options enable `es6`, `enhance`, `postcss`, `minified`, `minifyWXSS` and `minifyWXML`, and `urlCheck: true` (domain allowlist check) is on. The file currently carries an `appid` field; your own AppID comes from the private config file (see "Build and release").
 
 Global window style: navigation bar title `AI KB`, background `#0d3b2a` (dark green), white text.

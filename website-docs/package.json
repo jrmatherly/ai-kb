@@ -28,7 +28,7 @@
     "vitepress-plugin-mermaid": "^2.0.17",
     "vue": "^3.5.44"
   },
-  "version": "2026.10.21.2",
+  "version": "2026.10.21.3",
   "engines": {
     "node": ">=24.0.0"
   },
