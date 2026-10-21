@@ -552,10 +552,10 @@ func TestFetchStreamRevertAfterPendingCheckpointReplacesThePendingBody(t *testin
 		repositories(t, next))
 }
 
-// interruptedGuidesSync syncs a cursor of {c1, main, [docs]} under main with
+// interruptedGuidesSync syncs a cursor of {c1, main, [docs]} under ref with
 // [docs, guides] (2 docs files, 120 guides files) and fails at the 101st emit,
 // returning the server, the pending checkpoint and the guides file names.
-func interruptedGuidesSync(t *testing.T) (*fakeServer, *types.SyncCursor, []string) {
+func interruptedGuidesSync(t *testing.T, ref string) (*fakeServer, *types.SyncCursor, []string) {
 	t.Helper()
 	files := map[string]string{"docs/a.md": "a", "docs/b.md": "b"}
 	var guides []string
@@ -571,17 +571,38 @@ func interruptedGuidesSync(t *testing.T) (*fakeServer, *types.SyncCursor, []stri
 	old := oldCursor(map[string]repositoryCursor{"o/r": {Head: "c1", Ref: "main", Paths: []string{"docs"}}})
 
 	h := &gitHubStreamRecorder{failAt: 101}
-	_, err := stream(t, server, old, h, selection("o/r", "main", "docs", "guides"))
+	_, err := stream(t, server, old, h, selection("o/r", ref, "docs", "guides"))
 	require.EqualError(t, err, "ingest failed")
 	require.Equal(t, map[string]repositoryCursor{"o/r": {
 		Head: "c1", Ref: "main", Paths: []string{"docs"},
-		Pending: &pendingCursor{Head: "c1", Ref: "main", Paths: []string{"docs", "guides"}, Done: 100},
+		Pending: &pendingCursor{Head: "c1", Ref: ref, Paths: []string{"docs", "guides"}, Done: 100},
 	}}, repositories(t, h.checkpoints[1]))
 	return server, h.checkpoints[1], guides
 }
 
+// A ref change interrupted after 100 entries (2 main deletions, then docs/a,
+// docs/b and 96 guides under release) and retried with fewer paths: the
+// pending guides are tombstoned, the docs files are not, since the new diff
+// re-emits them under release.
+func TestFetchStreamPathsShrinkAfterPendingRefChangeKeepsReAddedItems(t *testing.T) {
+	server, pending, guides := interruptedGuidesSync(t, "release")
+
+	resumed := &gitHubStreamRecorder{}
+	next, err := stream(t, server, pending, resumed, selection("o/r", "release", "docs"))
+	require.NoError(t, err)
+	var want []string
+	for _, name := range guides[:96] {
+		want = append(want, "-o/r:release:"+name)
+	}
+	want = append(want,
+		"-o/r:main:docs/a.md", "-o/r:main:docs/b.md", "+o/r:release:docs/a.md=a", "+o/r:release:docs/b.md=b")
+	require.Equal(t, want, summary(server.base(), resumed.items))
+	require.Equal(t, map[string]repositoryCursor{"o/r": {Head: "c1", Ref: "release", Paths: []string{"docs"}}},
+		repositories(t, next))
+}
+
 func TestFetchStreamSelectionChangeAfterPendingCheckpointRestartsTheDiff(t *testing.T) {
-	server, pending, guides := interruptedGuidesSync(t)
+	server, pending, guides := interruptedGuidesSync(t, "main")
 
 	resumed := &gitHubStreamRecorder{}
 	next, err := stream(t, server, pending, resumed, selection("o/r", "release", "docs", "guides"))
@@ -602,7 +623,7 @@ func TestFetchStreamSelectionChangeAfterPendingCheckpointRestartsTheDiff(t *test
 }
 
 func TestFetchStreamPathsShrinkAfterPendingCheckpointTombstonesPendingItems(t *testing.T) {
-	server, pending, guides := interruptedGuidesSync(t)
+	server, pending, guides := interruptedGuidesSync(t, "main")
 
 	resumed := &gitHubStreamRecorder{}
 	next, err := stream(t, server, pending, resumed, selection("o/r", "main", "docs"))

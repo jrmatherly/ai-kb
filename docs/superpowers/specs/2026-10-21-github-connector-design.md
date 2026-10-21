@@ -48,7 +48,7 @@ Checked against docs.github.com (API version 2022-11-28) and the live API on 202
 
 Credentials: `{"base_url": "", "access_token": "<token>"}`; `base_url` optional.
 
-Settings: `{"repositories": [{"repository": "owner/repo", "ref": "main", "paths": ["docs"]}]}`. `repository` is required, unique after normalisation, `owner/repo` with exactly one slash and no empty part; it is trimmed of spaces and slashes, stripped of a trailing `.git` and lowercased; a URL is rejected. `ref` empty means the default branch. `paths` are forward-slash relative directories, normalised and collapsed as for GitLab; empty means the whole repository.
+Settings: `{"repositories": [{"repository": "owner/repo", "ref": "main", "paths": ["docs"]}]}`. `repository` is required, unique after normalisation, `owner/repo` with exactly one slash and no empty part; it is trimmed of spaces and slashes, lowercased and stripped of a trailing `.git`; a URL is rejected, and owner and repo may contain only letters, digits, dots, underscores and hyphens. `ref` empty means the default branch. `paths` are forward-slash relative directories, normalised and collapsed as for GitLab; empty means the whole repository.
 
 Cursor: `{"repositories": {"owner/repo": {"head": "<sha>", "ref": "main", "paths": ["docs"], "pending": {"head": "<sha>", "ref": "main", "paths": ["docs"], "done": 120}}}, "raw": "<json>"}`; `pending` is absent once a repository is complete.
 

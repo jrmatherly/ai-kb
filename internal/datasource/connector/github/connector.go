@@ -294,14 +294,19 @@ func (c *Connector) streamRepository(
 			}
 			prevRef = ref
 		default:
-			// The interrupted run's items are under a ref this run does not
-			// sync. A path the baseline holds under that ref is left to the
-			// new diff, which deletes it under the same ref.
+			// The interrupted run's items are under p.Ref, which differs from
+			// ref or from the baseline's ref. One the new snapshot re-emits
+			// under the same ref must not be deleted first (the service would
+			// drop the row before re-adding it), and one the baseline holds
+			// under that ref is left to the new diff, which deletes it there.
 			pending, err := c.effectiveBaseline(ctx, key, rc, prev)
 			if err != nil {
 				return err
 			}
 			for _, path := range slices.Sorted(maps.Keys(pending)) {
+				if _, inNew := snap[path]; inNew && p.Ref == ref {
+					continue
+				}
 				if _, inBaseline := prev[path]; inBaseline && rc.Ref == p.Ref {
 					continue
 				}
@@ -361,7 +366,8 @@ func (c *Connector) baseline(ctx context.Context, key string, rc repositoryCurso
 // continues where that run stopped, and a path it emitted that the new head
 // lacks, or reverted to the old content, falls out as a deletion or a change.
 // The overlay starts empty when the completed cursor was under another ref or
-// had no head. A pending head whose tree is gone contributes nothing.
+// had no head. When the pending head's tree is gone nothing is known about
+// what that run emitted, so the baseline is returned as it is.
 func (c *Connector) effectiveBaseline(
 	ctx context.Context, key string, rc repositoryCursor, prev snapshot,
 ) (snapshot, error) {
@@ -369,8 +375,12 @@ func (c *Connector) effectiveBaseline(
 	pendingSnap, err := c.snapshot(ctx, key, p.Head, p.Paths)
 	if errors.Is(err, errMissingCommit) {
 		logger.Infof(ctx, "[GitHub] %s: pending head %s is gone, nothing to reconcile", key, p.Head)
-		pendingSnap = nil
-	} else if err != nil {
+		if rc.Ref == p.Ref {
+			return prev, nil
+		}
+		return snapshot{}, nil
+	}
+	if err != nil {
 		return nil, err
 	}
 	emitted := diff(prev, pendingSnap, rc.Ref == p.Ref)
