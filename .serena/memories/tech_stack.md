@@ -4,7 +4,7 @@
 - Lint: golangci-lint v2 config `.golangci.yml`: `lll` 120 cols (tab width 4), `govet`, `revive`; formatters `gofmt` + `gofumpt`. CI lints modules `.`, `cli`, `client` when the config changes.
 - Hot reload: Air (`.air.toml`) builds `./cmd/server` with ldflags from `scripts/get_version.sh ldflags`.
 - Frontend: Vue 3, TypeScript, Vite, Less; TDesign components are registered per template by `unplugin-vue-components` (`TDesignResolver`, `dts: 'src/components.d.ts'` committed) in both entries, with no shared TDesign chunk; `vue-tsc --build` for types, tests via Node's `node:test` run by `tsx --test` (no eslint/vitest/jest in devDependencies). npm with `package-lock.json`, Node >= 24. Dockerfile at `frontend/Dockerfile`, nginx confs beside it.
-- Dependency cooldown: npm `min-release-age=7` (`frontend/.npmrc`; override a security fix with `--min-release-age=0`) and uv `exclude-newer = "7 days"` (`docreader/pyproject.toml`, `dataset/pyproject.toml`, `examples/mcp-demo/pyproject.toml`).
+- Dependency cooldown: npm `min-release-age=2` (`frontend/.npmrc`; override a security fix with `--min-release-age=0`) and uv `exclude-newer = "2 days"` (`docreader/pyproject.toml`, `dataset/pyproject.toml`, `examples/mcp-demo/pyproject.toml`).
 - docreader: Python >= 3.14, `uv` >= 0.13.0 (`uv.lock`), tests with stdlib `unittest discover`; Playwright (webkit) needed for some parsers.
 - dataset (`dataset/`): uv project (`pyproject.toml`, `uv.lock`), 12 offline unittest cases, CI `dataset.yml`, local `scripts/validate.sh --area dataset`.
 - CLI (`cli/`): own Go module, CI runs `go test -race`, `go vet`, `cli/scripts/check-skill-wire-vocab.sh`, `cli/scripts/check-secret-tokens.sh`.

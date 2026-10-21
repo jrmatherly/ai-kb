@@ -7,4 +7,4 @@ dependencies = ["openai>=2", "pandas>=2.2", "pyarrow>=17"]
 
 [tool.uv]
 required-version = ">=0.13.0"
-exclude-newer = "7 days"
+exclude-newer = "2 days"

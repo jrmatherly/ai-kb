@@ -19,7 +19,7 @@ A comprehensive tool for sampling QA datasets and generating answers using OpenA
 
 ### Install Dependencies
 
-`dataset/pyproject.toml` pins the dependencies (`uv.lock`, 7-day release cooldown like the other uv projects in this repo); run the tool through it from the repository root:
+`dataset/pyproject.toml` pins the dependencies (`uv.lock`, 2-day release cooldown like the other uv projects in this repo); run the tool through it from the repository root:
 
 ```bash
 uv run --project dataset --locked python dataset/qa_dataset.py ...
