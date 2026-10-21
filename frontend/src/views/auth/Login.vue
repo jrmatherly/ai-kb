@@ -181,7 +181,9 @@
           </div>
 
           <div class="form-content">
-            <template v-if="oidcEnabled">
+            <!-- Holds the space until the OIDC config decides between the form and the OIDC button. -->
+            <div v-if="!loginConfigLoaded" class="login-config-placeholder" aria-busy="true"></div>
+            <template v-else-if="oidcEnabled">
               <t-button theme="primary" size="large" block :loading="oidcLoading" :disabled="loading"
                 class="oidc-button" @click="handleOIDCLogin">
                 {{ oidcLoading ? $t('auth.redirectingToOIDC') : oidcLoginText }}
@@ -194,7 +196,7 @@
                 <span>{{ $t('auth.orContinueWith') }}</span>
               </div>
             </template>
-            <t-form v-if="!oidcEnabled || showPasswordLogin" ref="formRef" :data="formData" :rules="formRules"
+            <t-form v-if="loginConfigLoaded && (!oidcEnabled || showPasswordLogin)" ref="formRef" :data="formData" :rules="formRules"
               @submit="handleLogin" layout="vertical" label-align="top">
               <t-form-item :label="$t('auth.email')" name="email">
                 <t-input v-model="formData.email" :placeholder="$t('auth.emailPlaceholder')" type="text"
@@ -210,16 +212,17 @@
                 {{ loading ? $t('auth.loggingIn') : $t('auth.login') }}
               </t-button>
 
-              <div class="register-cta" v-if="registrationEnabled">
-                <div class="register-cta__divider">
-                  <span>{{ $t('auth.firstTime') }}</span>
-                </div>
-                <t-button theme="default" variant="outline" size="large" block class="register-cta__button"
-                  :disabled="loading" @click="toggleMode">
-                  {{ $t('auth.createAccount') }}
-                </t-button>
-              </div>
             </t-form>
+
+            <div class="register-cta" v-if="loginConfigLoaded && registrationEnabled">
+              <div class="register-cta__divider">
+                <span>{{ $t('auth.firstTime') }}</span>
+              </div>
+              <t-button theme="default" variant="outline" size="large" block class="register-cta__button"
+                :disabled="loading" @click="toggleMode">
+                {{ $t('auth.createAccount') }}
+              </t-button>
+            </div>
 
             <!-- Features list -->
             <div class="login-features">
@@ -401,6 +404,8 @@ const oidcLoading = ref(false)
 const isRegisterMode = ref(false)
 const oidcEnabled = ref(false)
 const showPasswordLogin = ref(false)
+// False until the OIDC config answers, so the password form never paints and then collapses.
+const loginConfigLoaded = ref(false)
 const oidcProviderName = ref('')
 // Wait for configuration before showing a registration entry.
 const registrationMode = ref('')
@@ -552,6 +557,8 @@ const loadOIDCConfig = async () => {
   } catch {
     oidcEnabled.value = false
     oidcProviderName.value = ''
+  } finally {
+    loginConfigLoaded.value = true
   }
 }
 
@@ -1423,6 +1430,10 @@ onMounted(async () => {
     top: 50%;
     border-top: 1px solid var(--td-component-stroke);
   }
+}
+
+.login-config-placeholder {
+  height: 46px;
 }
 
 .oidc-divider--above-form {
