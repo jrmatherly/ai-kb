@@ -1271,7 +1271,8 @@ async function handleDrawerConfirm() {
 // selection: those declaring the backend's full_sync_reconcile capability.
 const deselectionDeletes = ref(new Set<string>())
 
-// Types the deployment offers (AIKB_DATASOURCE_TYPES). 'all' after a failed load shows every card.
+// Types the deployment enables (AIKB_DATASOURCE_TYPES); the catalog lists excluded ones too.
+// 'all' after a failed load shows every card.
 const offeredTypes = ref<Set<string> | 'loading' | 'all'>('loading')
 const pickerDefs = computed(() => {
   const offered = offeredTypes.value
@@ -1283,7 +1284,7 @@ async function loadConnectorTypes() {
   offeredTypes.value = 'loading'
   try {
     const connectors = await fetchConnectorTypes()
-    offeredTypes.value = new Set(connectors.map(c => c.type))
+    offeredTypes.value = new Set(connectors.filter(c => c.enabled !== false).map(c => c.type))
     deselectionDeletes.value = new Set(
       connectors.filter(c => c.capabilities?.includes('full_sync_reconcile')).map(c => c.type),
     )

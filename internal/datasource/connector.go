@@ -1,6 +1,7 @@
 package datasource
 
 import (
+	"cmp"
 	"context"
 	"maps"
 	"os"
@@ -176,6 +177,8 @@ type ConnectorMetadata struct {
 	Priority     int      `json:"priority"`     // Priority order for UI display (lower = higher priority)
 	AuthType     string   `json:"auth_type"`    // "oauth2", "api_key", "token", etc.
 	Capabilities []string `json:"capabilities"` // "incremental", "webhook", "deletion_sync", etc.
+	// Enabled is false for a type AIKB_DATASOURCE_TYPES excludes. The registry leaves it unset.
+	Enabled bool `json:"enabled"`
 }
 
 // CapabilityFullSyncReconcile marks a connector type that can set
@@ -373,26 +376,19 @@ var ConnectorMetadataRegistry = map[string]ConnectorMetadata{
 	},
 }
 
-// ListAvailableConnectors returns all available connector metadata
-// sorted by priority
+// ListAvailableConnectors returns the whole connector catalog sorted by
+// priority, each entry's Enabled set from the allow-list. Excluded types stay
+// listed because saved sources of those types still sync and need their
+// capabilities.
 func ListAvailableConnectors() []ConnectorMetadata {
 	enabled := enabledConnectorTypes()
-	metadata := make([]ConnectorMetadata, 0, len(enabled))
-	for _, connectorType := range slices.Sorted(maps.Keys(enabled)) {
-		metadata = append(metadata, ConnectorMetadataRegistry[connectorType])
+	metadata := slices.Collect(maps.Values(ConnectorMetadataRegistry))
+	for i := range metadata {
+		metadata[i].Enabled = enabled[metadata[i].Type]
 	}
-
-	// Sort by priority (insertion sort for simplicity)
-	for i := 1; i < len(metadata); i++ {
-		key := metadata[i]
-		j := i - 1
-		for j >= 0 && metadata[j].Priority > key.Priority {
-			metadata[j+1] = metadata[j]
-			j--
-		}
-		metadata[j+1] = key
-	}
-
+	slices.SortFunc(metadata, func(a, b ConnectorMetadata) int {
+		return cmp.Or(cmp.Compare(a.Priority, b.Priority), cmp.Compare(a.Type, b.Type))
+	})
 	return metadata
 }
 

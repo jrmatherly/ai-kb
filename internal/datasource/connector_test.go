@@ -38,25 +38,35 @@ func TestFeishuMetadataDoesNotAdvertiseWebhook(t *testing.T) {
 	}
 }
 
-func TestListAvailableConnectorsHonorsAllowList(t *testing.T) {
-	listed := func() []string {
+func TestListAvailableConnectorsMarksAllowList(t *testing.T) {
+	enabled := func() []string {
 		var got []string
-		for _, meta := range ListAvailableConnectors() {
-			got = append(got, meta.Type)
+		listed := ListAvailableConnectors()
+		if len(listed) != len(ConnectorMetadataRegistry) {
+			t.Fatalf("listed %d connectors, want the whole catalog of %d", len(listed), len(ConnectorMetadataRegistry))
+		}
+		for i, meta := range listed {
+			if i > 0 && listed[i-1].Priority > meta.Priority {
+				t.Fatalf("%s (priority %d) listed after %s (priority %d)",
+					meta.Type, meta.Priority, listed[i-1].Type, listed[i-1].Priority)
+			}
+			if meta.Enabled {
+				got = append(got, meta.Type)
+			}
 		}
 		return got
 	}
 	t.Setenv(ConnectorTypesEnv, "")
-	if got := len(listed()); got != len(ConnectorMetadataRegistry) {
-		t.Fatalf("blank allow-list lists %d connectors, want all %d", got, len(ConnectorMetadataRegistry))
+	if got := len(enabled()); got != len(ConnectorMetadataRegistry) {
+		t.Fatalf("blank allow-list enables %d connectors, want all %d", got, len(ConnectorMetadataRegistry))
 	}
-	// Mixed separators and case; the listing keeps priority order, Feishu before RSS.
+	// Mixed separators and case; priority order puts Feishu before RSS.
 	t.Setenv(ConnectorTypesEnv, " RSS; feishu|no-such-type ")
-	if got := listed(); !slices.Equal(got, []string{"feishu", "rss"}) {
-		t.Fatalf("listed %v, want [feishu rss]", got)
+	if got := enabled(); !slices.Equal(got, []string{"feishu", "rss"}) {
+		t.Fatalf("enabled %v, want [feishu rss]", got)
 	}
 	t.Setenv(ConnectorTypesEnv, "no-such-type")
-	if got := listed(); len(got) != 0 {
-		t.Fatalf("an allow-list of unknown names listed %v, want none", got)
+	if got := enabled(); len(got) != 0 {
+		t.Fatalf("an allow-list of unknown names enabled %v, want none", got)
 	}
 }

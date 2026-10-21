@@ -91,7 +91,8 @@ async function fixture({
       calls.push({ method: 'resolveResourceAncestors', args: [id, ids] })
       return { data: { ancestors: [] } }
     },
-    // GET /datasource/types answers with a bare array.
+    // GET /datasource/types answers with a bare array: the whole catalog, an excluded
+    // type marked enabled: false. The others omit the field, as an older backend does.
     async getConnectorTypes() {
       typesCalls++
       await typesReply
@@ -101,6 +102,7 @@ async function fixture({
         { type: 'confluence', capabilities: ['incremental', 'deletion_sync', 'full_sync_reconcile'] },
         { type: 'dingtalk', capabilities: ['incremental', 'deletion_sync', 'full_sync_reconcile'] },
         { type: 'notion', capabilities: ['incremental'] },
+        { type: 'lark', capabilities: ['incremental', 'deletion_sync', 'full_sync_reconcile'], enabled: false },
       ]
     },
   }
@@ -572,6 +574,15 @@ test('turning off DingTalk uploaded files shows the scope notice', async () => {
   try {
     assert.equal(f.vm.scopeNarrowed, false)
     f.vm.dingtalkIncludeUploadedFiles = false
+    assert.equal(f.vm.scopeNarrowed, true)
+  } finally { f.close() }
+})
+
+test('a saved source of a type the deployment excludes keeps the scope notice', async () => {
+  const f = await scopeFixture(savedSource('lark', ['space-a', 'space-b']))
+  try {
+    assert.ok(!f.vm.pickerDefs.some((def: any) => def.type === 'lark'), 'the excluded type leaves the picker')
+    f.vm.selectedResourceIds = ['space-a']
     assert.equal(f.vm.scopeNarrowed, true)
   } finally { f.close() }
 })

@@ -84,6 +84,8 @@ export interface ConnectorMeta {
   priority: number
   auth_type: string
   capabilities: string[]
+  /** False when AIKB_DATASOURCE_TYPES excludes the type; absent from a backend older than the field. */
+  enabled?: boolean
 }
 
 export interface Resource {

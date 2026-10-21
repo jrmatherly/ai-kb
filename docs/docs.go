@@ -2184,7 +2184,7 @@ const docTemplate = `{
         },
         "/datasource/types": {
             "get": {
-                "description": "Get list of available data source connectors",
+                "description": "Get the whole connector catalog; enabled is false for a type AIKB_DATASOURCE_TYPES excludes",
                 "produces": [
                     "application/json"
                 ],
@@ -19292,6 +19292,10 @@ const docTemplate = `{
                 },
                 "description": {
                     "type": "string"
+                },
+                "enabled": {
+                    "description": "Enabled is false for a type AIKB_DATASOURCE_TYPES excludes. The registry leaves it unset.",
+                    "type": "boolean"
                 },
                 "icon": {
                     "type": "string"

@@ -310,9 +310,9 @@ Errors from the connected service (validating a connection or credentials, listi
 
 ### GET /api/v1/datasource/types
 
-Purpose: the available connector catalog, sorted by `priority` and limited to the types `AIKB_DATASOURCE_TYPES` allows (unset means all). `POST /datasource`, `POST /datasource/validate-credentials` and `POST /datasource/list-resources` answer 400 for an excluded type. Permission: Viewer+.
+Purpose: the whole connector catalog, sorted by `priority`. `enabled` is false for a type `AIKB_DATASOURCE_TYPES` excludes (unset means every type is enabled); excluded types stay listed so the capabilities of saved sources of that type remain known. `POST /datasource`, `POST /datasource/validate-credentials` and `POST /datasource/list-resources` answer 400 for an excluded type. Permission: Viewer+.
 
-Response: 200 `[{type,name,description,icon,priority,auth_type,capabilities}]`
+Response: 200 `[{type,name,description,icon,priority,auth_type,capabilities,enabled}]`
 
 ```bash
 curl $BASE/api/v1/datasource/types -H "Authorization: Bearer $TOKEN"

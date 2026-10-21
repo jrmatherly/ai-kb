@@ -680,7 +680,7 @@ func (h *DataSourceHandler) GetSyncLog(c *gin.Context) {
 
 // GetAvailableConnectors godoc
 // @Summary Get available connectors
-// @Description Get list of available data source connectors
+// @Description Get the whole connector catalog; enabled is false for a type AIKB_DATASOURCE_TYPES excludes
 // @Tags DataSource
 // @Produce json
 // @Success 200 {object} []datasource.ConnectorMetadata
