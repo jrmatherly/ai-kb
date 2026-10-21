@@ -1272,13 +1272,17 @@ async function handleDrawerConfirm() {
 // selection: those declaring the backend's full_sync_reconcile capability.
 const deselectionDeletes = ref(new Set<string>())
 
-// Types the deployment offers (AIKB_DATASOURCE_TYPES); null shows every card.
-const offeredTypes = ref<Set<string> | null>(null)
-const pickerDefs = computed(() =>
-  connectorDefs.value.filter(def => !offeredTypes.value || offeredTypes.value.has(def.type)))
+// Types the deployment offers (AIKB_DATASOURCE_TYPES). 'all' after a failed load shows every card.
+const offeredTypes = ref<Set<string> | 'loading' | 'all'>('loading')
+const pickerDefs = computed(() => {
+  const offered = offeredTypes.value
+  if (offered === 'loading') return []
+  return offered === 'all' ? connectorDefs.value : connectorDefs.value.filter(def => offered.has(def.type))
+})
 
 // Both uses are advisory: a failed load hides the scope notice and keeps every card.
 async function loadConnectorTypes() {
+  offeredTypes.value = 'loading'
   try {
     const res: any = await getConnectorTypes()
     const connectors: ConnectorMeta[] = Array.isArray(res) ? res : res?.data || []
@@ -1287,8 +1291,9 @@ async function loadConnectorTypes() {
       connectors.filter(c => c.capabilities?.includes('full_sync_reconcile')).map(c => c.type),
     )
   } catch {
-    offeredTypes.value = null
+    offeredTypes.value = 'all'
     deselectionDeletes.value = new Set()
+    MessagePlugin.warning(t('datasource.typesLoadFailed'))
   }
 }
 
@@ -1466,7 +1471,8 @@ const drawerConfirmText = computed(() => {
     <!-- Step 0: Select connector type -->
     <section v-if="step === 0" class="setting-drawer__section">
       <h4 class="setting-drawer__section-title">{{ t('datasource.step.selectType') }}</h4>
-      <div class="ds-type-grid">
+      <div v-if="offeredTypes === 'loading'" class="ds-loading-center"><t-loading /></div>
+      <div v-else class="ds-type-grid">
         <button
           v-for="def in pickerDefs"
           :key="def.type"

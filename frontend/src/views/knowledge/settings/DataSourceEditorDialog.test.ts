@@ -31,6 +31,8 @@ async function fixture({
   settings = { projects: [{ project_id: '123', paths: [] }] },
   resources = [],
   dataSource = null,
+  typesReply = Promise.resolve(),
+  typesFail = false,
 }: {
   configured?: boolean
   create?: boolean
@@ -38,6 +40,8 @@ async function fixture({
   settings?: Record<string, unknown>
   resources?: any[]
   dataSource?: any
+  typesReply?: Promise<void>
+  typesFail?: boolean
 } = {}) {
   const calls: Array<{ method: string; args: any[] }> = []
   const warnings: string[] = []
@@ -84,6 +88,8 @@ async function fixture({
     },
     // GET /datasource/types answers with a bare array.
     async getConnectorTypes() {
+      await typesReply
+      if (typesFail) throw new Error('network')
       return [
         { type: 'feishu', capabilities: ['incremental', 'deletion_sync', 'full_sync_reconcile'] },
         { type: 'confluence', capabilities: ['incremental', 'deletion_sync', 'full_sync_reconcile'] },
@@ -217,6 +223,28 @@ test('the type picker offers only the connector types the deployment lists', asy
     await flush()
     assert.deepEqual([...f.vm.pickerDefs.map((def: any) => def.type)], ['feishu', 'notion', 'confluence', 'dingtalk'])
     assert.ok(f.vm.connectorDefs.some((def: any) => def.type === 'gitlab'), 'every definition stays known for editing')
+  } finally { f.close() }
+})
+
+test('the type picker shows no cards until the types reply lands', async () => {
+  let reply!: () => void
+  const f = await fixture({ create: true, typesReply: new Promise<void>(resolve => { reply = resolve }) })
+  try {
+    await flush()
+    assert.equal(f.vm.pickerDefs.length, 0)
+    reply()
+    await flush()
+    assert.deepEqual([...f.vm.pickerDefs.map((def: any) => def.type)], ['feishu', 'notion', 'confluence', 'dingtalk'])
+    assert.deepEqual(f.warnings, [])
+  } finally { f.close() }
+})
+
+test('a failed types request falls back to every card with one warning', async () => {
+  const f = await fixture({ create: true, typesFail: true })
+  try {
+    await flush()
+    assert.equal(f.vm.pickerDefs.length, f.vm.connectorDefs.length)
+    assert.deepEqual(f.warnings, ['datasource.typesLoadFailed'])
   } finally { f.close() }
 })
 
