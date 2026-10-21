@@ -361,7 +361,6 @@ const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
 const siteLinks = useSiteLinksStore()
-void siteLinks.ensureLoaded()
 const { t, tm } = useI18n()
 const { formatRole, roleIcon } = useRoleLabel()
 

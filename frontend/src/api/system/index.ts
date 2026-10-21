@@ -67,8 +67,9 @@ export interface SystemLinks {
   github_url: string
 }
 
+// main.ts awaits this before mount, so a hung backend must not hold first paint for the default 30 s.
 export function getSystemLinks(): Promise<SystemLinks> {
-  return get('/api/v1/system/links') as unknown as Promise<SystemLinks>
+  return get<SystemLinks>('/api/v1/system/links', { timeout: 3000 })
 }
 
 export interface PlaceholderDefinition {
