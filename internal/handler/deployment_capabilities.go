@@ -73,6 +73,14 @@ func supportedDeploymentCapability(supported bool) DeploymentCapability {
 	return DeploymentCapability{Supported: false, Reason: "route_not_registered"}
 }
 
+// deploymentToggle is a capability an env switch turns on; off reads as disabled_by_deployment.
+func deploymentToggle(on bool) DeploymentCapability {
+	if on {
+		return DeploymentCapability{Supported: true}
+	}
+	return DeploymentCapability{Reason: "disabled_by_deployment"}
+}
+
 // BuildDeploymentCapabilities derives the deployment capability snapshot.
 func BuildDeploymentCapabilities(
 	edition string,
@@ -119,16 +127,6 @@ func BuildDeploymentCapabilities(
 		imCap = DeploymentCapability{Supported: false, Reason: "no_platform_enabled"}
 	}
 
-	weKnoraCloud := DeploymentCapability{Supported: available.WeKnoraCloud}
-	if !available.WeKnoraCloud {
-		weKnoraCloud.Reason = "disabled_by_deployment"
-	}
-
-	ollama := DeploymentCapability{Supported: available.Ollama}
-	if !available.Ollama {
-		ollama.Reason = "disabled_by_deployment"
-	}
-
 	return DeploymentCapabilitiesData{
 		Edition:     edition,
 		IMPlatforms: imPlatforms,
@@ -147,8 +145,8 @@ func BuildDeploymentCapabilities(
 			"settings.sandbox.docker": sandboxDocker,
 			"settings.sandbox.host":   sandboxHost,
 			"settings.sandbox.remote": sandboxRemote,
-			"settings.weknoracloud":   weKnoraCloud,
-			"settings.ollama":         ollama,
+			"settings.weknoracloud":   deploymentToggle(available.WeKnoraCloud),
+			"settings.ollama":         deploymentToggle(available.Ollama),
 		},
 	}
 }
