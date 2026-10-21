@@ -358,6 +358,7 @@ pre-existing Service name does not automatically transfer its ownership to Helm.
 | `app.image.tag` | Image tag | `""` (uses appVersion) |
 | `app.resources` | Resource limits | See values.yaml |
 | `app.env` | Environment variables | See values.yaml |
+| `app.docsUrl` | Docs base URL the UI links to (`AIKB_DOCS_URL`). Empty: `https://<ingress.host>/docs/` (`http://` without TLS) when `website.enabled` and `ingress.enabled`, otherwise unset (the app default) | `""` |
 | `app.extraEnv` | Additional env vars | `[]` |
 | `app.extraEnvFrom` | Additional `envFrom` sources (ConfigMaps or Secrets loaded whole) | `[]` |
 | `app.startupProbe` | Startup probe; holds off liveness while boot migrations run | `httpGet /health`, `periodSeconds: 5`, `failureThreshold: 60` |
@@ -501,8 +502,11 @@ the provider's variables).
 
 Deployment gates that are not chart values also ride `app.extraEnv`, for example
 `AIKB_WEKNORACLOUD_ENABLED` (default off; set `true` only with WeKnoraCloud
-credentials) and `AIKB_IM_PLATFORMS` (the IM platforms offered to workspaces;
-unset means all):
+credentials), `AIKB_IM_PLATFORMS` (the IM platforms offered to workspaces;
+unset means all), `AIKB_DATASOURCE_TYPES` (the data source connector types
+offered; unset means all), `AIKB_OLLAMA_ENABLED` (default off; shows the Ollama
+settings section) and `AIKB_GITHUB_LINK_ENABLED` (default off; shows links to
+the GitHub repository):
 
 ```yaml
 app:
@@ -511,6 +515,12 @@ app:
       value: "true"
     - name: AIKB_IM_PLATFORMS
       value: "slack,telegram,mattermost"
+    - name: AIKB_DATASOURCE_TYPES
+      value: "confluence,notion,rss"
+    - name: AIKB_OLLAMA_ENABLED
+      value: "true"
+    - name: AIKB_GITHUB_LINK_ENABLED
+      value: "true"
 ```
 
 ### Ingress annotations

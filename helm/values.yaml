@@ -127,6 +127,10 @@ app:
     # the daemon socket or points at a remote tcp:// daemon with TLS.
     AIKB_SANDBOX_DOCKER_ENABLED: "false"
 
+  # -- Docs base URL the UI links to (AIKB_DOCS_URL). Empty: the in-chart website at
+  # https://<ingress.host>/docs/ when website and ingress are both enabled, else the app default.
+  docsUrl: ""
+
   # -- Additional environment variables
   extraEnv: []
   # - name: OLLAMA_BASE_URL

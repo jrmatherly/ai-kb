@@ -180,6 +180,13 @@ spec:
             # whatever Engine API this process can reach (often host root).
             - name: AIKB_SANDBOX_DOCKER_ENABLED
               value: {{ .Values.app.env.AIKB_SANDBOX_DOCKER_ENABLED | default "false" | quote }}
+            {{- if .Values.app.docsUrl }}
+            - name: AIKB_DOCS_URL
+              value: {{ .Values.app.docsUrl | quote }}
+            {{- else if and .Values.website.enabled .Values.ingress.enabled }}
+            - name: AIKB_DOCS_URL
+              value: {{ printf "%s://%s/docs/" (ternary "https" "http" .Values.ingress.tls.enabled) .Values.ingress.host | quote }}
+            {{- end }}
             {{- if $neo4jURI }}
             # Neo4j configuration (for GraphRAG)
             # NEO4J_ENABLE is the only knowledge graph switch (the Go code reads it, not ENABLE_GRAPH_RAG).
