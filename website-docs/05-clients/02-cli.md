@@ -10,7 +10,7 @@ The console page Settings → Publish & Integrations → CLI walks through setup
 2. **Connect**: `aikb profile add aikb --host '<current server address>' --use && aikb auth login` creates and activates a profile named `aikb`, then signs in with your email and password. The server address keeps any reverse proxy path prefix and does not end in `/api/v1`. If a profile with that name already exists, pick another name.
 3. **Verify**: run `aikb doctor` and `aikb kb list` to confirm that the server and the credential work.
 
-The right side of the page lists common commands (upload, search, ask, list agents) and an MCP client configuration example (`"args": ["--profile", "aikb", "mcp", "serve"]`).
+The right side of the page lists common commands (upload, search, ask, list agents) and an MCP client configuration example (`"args": ["--profile", "aikb", "mcp", "serve"]`). Its documentation button opens this page on the deployment's docs site (`AIKB_DOCS_URL`).
 
 <Screenshot
   src="/screenshots/integration-cli.png"
