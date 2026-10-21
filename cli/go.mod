@@ -2,6 +2,8 @@ module github.com/jrmatherly/ai-kb/cli
 
 go 1.26.0
 
+toolchain go1.26.10
+
 require (
 	github.com/charmbracelet/huh v1.0.0
 	github.com/itchyny/gojq v0.12.19

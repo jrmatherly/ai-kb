@@ -29,7 +29,7 @@ ARG TARGETARCH
 RUN bash scripts/build_browserskill.sh /opt/ai-kb/browserskill "${TARGETOS}/${TARGETARCH}"
 
 # Build stage
-FROM golang:1.26-bookworm AS builder
+FROM golang:1.26.10-bookworm@sha256:5b1f78db1f54cc8cb46e652c51d3f854441c4310a449161b6fe9fb553edab505 AS builder
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 WORKDIR /app

@@ -3,7 +3,7 @@
 
   version.py check                         product strings equal VERSION; each library agrees with itself
   version.py bump [YYYY.M.D[.MICRO]]       product CalVer bump (default: today, then .1, .2 ...) plus a helm-chart patch, one commit
-  version.py bump-lib <lib> <part|x.y.z>   library semver bump (part: patch, minor, major), one commit
+  version.py bump-lib <lib> <part|x.y.z>   library or Go toolchain semver bump (part: patch, minor, major), one commit
 
 Each touchpoint is a regex whose group `v` must match exactly once, so a file that changes shape fails
 loudly instead of being skipped. A bump rewrites only that group, which keeps formatting, line endings
@@ -88,6 +88,9 @@ TOUCHPOINTS = [
     ),
     Touchpoint("helm-chart", "helm/Chart.yaml", r"^version: (?P<v>\S+)$"),
     Touchpoint("helm-chart", "helm/README.md", r"charts/ai-kb --version (?P<v>\S+)"),
+    Touchpoint("go", "go.mod", r"^toolchain go(?P<v>\S+)$"),
+    Touchpoint("go", "cli/go.mod", r"^toolchain go(?P<v>\S+)$"),
+    Touchpoint("go", "docker/Dockerfile.app", r"^FROM golang:(?P<v>[^-@\s]+)-bookworm@sha256:[0-9a-f]{64} AS builder$"),
 ]
 # The tag each publish workflow expects; None: nothing publishes it.
 TAG_PREFIX = {
@@ -96,6 +99,7 @@ TAG_PREFIX = {
     "extension": "extension-v",
     "mcp-server": "mcp-server-v",
     "helm-chart": None,
+    "go": None,
 }
 # Lockfiles uv can verify offline after their version line changes.
 UV_PROJECTS = {"product": ["docreader"], "mcp-server": ["mcp-server"]}
@@ -231,6 +235,23 @@ def next_semver(current, arg):
     return arg
 
 
+def pin_go_image(version):
+    """Point the builder image's index digest at the new tag; a tag rewrite alone keeps the old image."""
+    ref = f"golang:{version}-bookworm"
+    digest = subprocess.run(
+        ["docker", "buildx", "imagetools", "inspect", ref, "--format", "{{.Manifest.Digest}}"],
+        capture_output=True, text=True, check=True,
+    ).stdout.strip()
+    if not re.fullmatch(r"sha256:[0-9a-f]{64}", digest):
+        raise Fail(f"{ref}: unexpected digest {digest!r}")
+    path = "docker/Dockerfile.app"
+    text, n = re.subn(rf"(?m)^(FROM {re.escape(ref)}@)sha256:[0-9a-f]{{64}}", rf"\g<1>{digest}", read_text(path))
+    if n != 1:
+        raise Fail(f"{path}: builder line for {ref} matched {n} times, want 1")
+    with open(ROOT / path, "w", encoding="utf-8", newline="") as f:
+        f.write(text)
+
+
 def bump(group, target, remote):
     errors = check()
     if errors:
@@ -258,6 +279,8 @@ def bump(group, target, remote):
     try:
         for tp, value in writes:
             write(tp, value)
+        if group == "go":
+            pin_go_image(target)
         for project in UV_PROJECTS.get(group, []):
             subprocess.run(["uv", "lock", "--check", "--offline", "--project", project], cwd=ROOT, check=True)
         errors = check()
@@ -276,7 +299,10 @@ def bump(group, target, remote):
         raise
     print(f"committed chore(release): {name} ({len(paths)} files)")
     if prefix is None:
-        print(f"no tag: helm.yml pushes the {group} to oci://ghcr.io/jrmatherly/ai-kb/charts/ai-kb when this commit lands on main")
+        if group == "helm-chart":
+            print("no tag: helm.yml pushes the chart to oci://ghcr.io/jrmatherly/ai-kb/charts/ai-kb when this commit lands on main")
+        else:
+            print(f"no tag: nothing publishes {group}")
         return
     branch = git("rev-parse", "--abbrev-ref", "HEAD").strip()
     print(
