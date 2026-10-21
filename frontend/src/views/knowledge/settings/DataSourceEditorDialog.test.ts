@@ -17,6 +17,10 @@ const script = compileScript(descriptor, { id: 'datasource-editor-test' }).conte
 const compiled = ts.transpileModule(script, {
   compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
 }).outputText
+const connectorTypesModule = ts.transpileModule(
+  readFileSync(fileURLToPath(new URL('./connectorTypes.ts', import.meta.url)), 'utf8'),
+  { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } },
+).outputText
 
 // Lets un-awaited API calls (e.g. loadResources fired by nextStep) settle.
 const flush = async () => {
@@ -44,6 +48,7 @@ async function fixture({
   typesFail?: boolean
 } = {}) {
   const calls: Array<{ method: string; args: any[] }> = []
+  let typesCalls = 0
   const warnings: string[] = []
   let storedToken = configured ? 'expired-token' : ''
   const api = {
@@ -88,6 +93,7 @@ async function fixture({
     },
     // GET /datasource/types answers with a bare array.
     async getConnectorTypes() {
+      typesCalls++
       await typesReply
       if (typesFail) throw new Error('network')
       return [
@@ -116,6 +122,11 @@ async function fixture({
       if (name === 'vue-i18n') return { useI18n: () => ({ t: (key: string) => key }) }
       if (name === 'tdesign-vue-next') return { MessagePlugin: { warning(msg: string) { warnings.push(msg) }, success() {}, error() {} } }
       if (name === '@/api/datasource') return api
+      if (name === './connectorTypes') {
+        const cache: any = {}
+        runInNewContext(connectorTypesModule, { exports: cache, require: () => api })
+        return cache
+      }
       return { default: {} }
     },
     URL, console,
@@ -138,7 +149,10 @@ async function fixture({
     vm.form.config.credentials = { base_url: 'https://gitlab.example.com', access_token: token }
     await nextTick()
   }
-  return { vm, calls, warnings, replace, storedToken: () => storedToken, close: () => app.unmount() }
+  return {
+    vm, calls, warnings, replace, props, typesCalls: () => typesCalls,
+    storedToken: () => storedToken, close: () => app.unmount(),
+  }
 }
 
 test('rotated GitLab credentials are tested without updating the saved data source', async () => {
@@ -226,12 +240,12 @@ test('the type picker offers only the connector types the deployment lists', asy
   } finally { f.close() }
 })
 
-test('the type picker shows no cards until the types reply lands', async () => {
+test('the type picker stays in the loading state until the types reply lands', async () => {
   let reply!: () => void
   const f = await fixture({ create: true, typesReply: new Promise<void>(resolve => { reply = resolve }) })
   try {
     await flush()
-    assert.equal(f.vm.pickerDefs.length, 0)
+    assert.equal(f.vm.offeredTypes, 'loading')
     reply()
     await flush()
     assert.deepEqual([...f.vm.pickerDefs.map((def: any) => def.type)], ['feishu', 'notion', 'confluence', 'dingtalk'])
@@ -245,6 +259,32 @@ test('a failed types request falls back to every card with one warning', async (
     await flush()
     assert.equal(f.vm.pickerDefs.length, f.vm.connectorDefs.length)
     assert.deepEqual(f.warnings, ['datasource.typesLoadFailed'])
+  } finally { f.close() }
+})
+
+test('reopening the editor reuses the connector types', async () => {
+  const f = await fixture({ create: true })
+  try {
+    await flush()
+    f.props.visible = false
+    await flush()
+    f.props.visible = true
+    await flush()
+    assert.equal(f.typesCalls(), 1)
+    assert.deepEqual([...f.vm.pickerDefs.map((def: any) => def.type)], ['feishu', 'notion', 'confluence', 'dingtalk'])
+  } finally { f.close() }
+})
+
+test('a failed types request is retried on the next open', async () => {
+  const f = await fixture({ create: true, typesFail: true })
+  try {
+    await flush()
+    f.props.visible = false
+    await flush()
+    f.props.visible = true
+    await flush()
+    assert.equal(f.typesCalls(), 2)
+    assert.deepEqual(f.warnings, ['datasource.typesLoadFailed', 'datasource.typesLoadFailed'])
   } finally { f.close() }
 })
 

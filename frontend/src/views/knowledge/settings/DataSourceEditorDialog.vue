@@ -13,14 +13,13 @@ import {
   resolveResourceAncestors,
   putDataSourceCredentials,
   deleteDataSourceCredentials,
-  getConnectorTypes,
-  type ConnectorMeta,
   type DataSource,
   type Resource,
 } from '@/api/datasource'
 import SettingDrawer from '@/components/settings/SettingDrawer.vue'
 import DataSourceTypeIcon from './DataSourceTypeIcon.vue'
 import { getDatasourceIconUrl } from './datasourceIcons'
+import { fetchConnectorTypes } from './connectorTypes'
 
 const props = defineProps<{
   kbId: string
@@ -1276,16 +1275,14 @@ const deselectionDeletes = ref(new Set<string>())
 const offeredTypes = ref<Set<string> | 'loading' | 'all'>('loading')
 const pickerDefs = computed(() => {
   const offered = offeredTypes.value
-  if (offered === 'loading') return []
-  return offered === 'all' ? connectorDefs.value : connectorDefs.value.filter(def => offered.has(def.type))
+  return offered instanceof Set ? connectorDefs.value.filter(def => offered.has(def.type)) : connectorDefs.value
 })
 
 // Advisory only, the backend enforces both: a failed load shows every card and no deletion notice.
 async function loadConnectorTypes() {
   offeredTypes.value = 'loading'
   try {
-    const res: any = await getConnectorTypes()
-    const connectors: ConnectorMeta[] = Array.isArray(res) ? res : res?.data || []
+    const connectors = await fetchConnectorTypes()
     offeredTypes.value = new Set(connectors.map(c => c.type))
     deselectionDeletes.value = new Set(
       connectors.filter(c => c.capabilities?.includes('full_sync_reconcile')).map(c => c.type),
