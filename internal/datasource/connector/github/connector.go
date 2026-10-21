@@ -182,12 +182,12 @@ type repositoryCursor struct {
 // A pendingCursor records the head, ref and paths the interrupted diff was
 // computed against, because the diff's order (and so what Done counts) depends
 // on all three. A resumed sync with the same selection recomputes the same
-// diff and skips the first Done entries. A selection changed in between is
-// reconciled first: the items the interrupted run emitted under the pending
-// selection are the only record of them (Head, Ref and Paths still describe
-// the last completed selection), so the resume rebuilds that prefix and
-// tombstones what the new selection does not own before emitting its own diff
-// from the start.
+// diff and skips the first Done entries. Otherwise the first Done entries are
+// the only record of what the interrupted run put in the index (Head, Ref and
+// Paths still describe the last completed selection), so the resume rebuilds
+// that prefix. Under the same ref it becomes the effective baseline, so the
+// new diff continues from what is already indexed; under another ref what the
+// new selection does not own is tombstoned before its own diff starts over.
 type pendingCursor struct {
 	Head  string   `json:"head"`
 	Ref   string   `json:"ref"`
@@ -283,29 +283,41 @@ func (c *Connector) streamRepository(
 	if err != nil {
 		return err
 	}
-	changes := diff(prev, snap, rc.Ref == ref)
-	start := 0
+	prevRef, start := rc.Ref, 0
 	if p := rc.Pending; p != nil {
-		if p.Head == head && p.Ref == ref && slices.Equal(p.Paths, selection.Paths) {
+		switch {
+		case p.Head == head && p.Ref == ref && slices.Equal(p.Paths, selection.Paths):
 			start = p.Done
-		} else {
-			tombstones, err := c.supersededPendingTombstones(ctx, key, rc, prev, ref, snap)
+		case p.Ref == ref && (rc.Ref == ref || len(prev) == 0):
+			if prev, err = c.effectiveBaseline(ctx, key, rc, prev); err != nil {
+				return err
+			}
+			prevRef = ref
+		default:
+			// The interrupted run's items are under a ref this run does not
+			// sync. A path the baseline holds under that ref is left to the
+			// new diff, which deletes it under the same ref.
+			pending, err := c.effectiveBaseline(ctx, key, rc, prev)
 			if err != nil {
 				return err
 			}
-			for _, item := range tombstones {
-				if err := h.Emit(ctx, item); err != nil {
+			for _, path := range slices.Sorted(maps.Keys(pending)) {
+				if _, inBaseline := prev[path]; inBaseline && rc.Ref == p.Ref {
+					continue
+				}
+				if err := h.Emit(ctx, c.deleted(key, p.Ref, path)); err != nil {
 					return err
 				}
 			}
 		}
 	}
+	changes := diff(prev, snap, prevRef == ref)
 	for i := start; i < len(changes); i++ {
 		ch := changes[i]
 		var item types.FetchedItem
 		switch {
 		case ch.Deleted:
-			item = c.deleted(key, rc.Ref, ch.Path)
+			item = c.deleted(key, prevRef, ch.Path)
 		case snap[ch.Path].Size > c.client.rawLimit:
 			item = c.errorItem(repo, key, ref, ch.Path, reasonFileTooLarge)
 		default:
@@ -343,14 +355,16 @@ func (c *Connector) baseline(ctx context.Context, key string, rc repositoryCurso
 	return prev, err
 }
 
-// supersededPendingTombstones reconstructs the items an interrupted run emitted
-// under rc.Pending's selection and tombstones those the current run (ref, snap)
-// will not own: an item is kept only when it is at the same ref and still in
-// the new snapshot. A path the baseline already holds under the pending ref is
-// left to the new diff, which deletes it under that same ref.
-func (c *Connector) supersededPendingTombstones(
-	ctx context.Context, key string, rc repositoryCursor, prev snapshot, ref string, snap snapshot,
-) ([]types.FetchedItem, error) {
+// effectiveBaseline is prev with the prefix an interrupted run emitted (the
+// first Done entries of the diff it was computing) applied: what the index
+// holds under the pending ref before this run. Diffing the new head against it
+// continues where that run stopped, and a path it emitted that the new head
+// lacks, or reverted to the old content, falls out as a deletion or a change.
+// The overlay starts empty when the completed cursor was under another ref or
+// had no head. A pending head whose tree is gone contributes nothing.
+func (c *Connector) effectiveBaseline(
+	ctx context.Context, key string, rc repositoryCursor, prev snapshot,
+) (snapshot, error) {
 	p := rc.Pending
 	pendingSnap, err := c.snapshot(ctx, key, p.Head, p.Paths)
 	if errors.Is(err, errMissingCommit) {
@@ -360,21 +374,18 @@ func (c *Connector) supersededPendingTombstones(
 		return nil, err
 	}
 	emitted := diff(prev, pendingSnap, rc.Ref == p.Ref)
-	emitted = emitted[:min(p.Done, len(emitted))]
-	var out []types.FetchedItem
-	for _, ch := range emitted {
-		if ch.Deleted {
-			continue
-		}
-		if _, inNew := snap[ch.Path]; inNew && p.Ref == ref {
-			continue
-		}
-		if _, inBaseline := prev[ch.Path]; inBaseline && rc.Ref == p.Ref {
-			continue
-		}
-		out = append(out, c.deleted(key, p.Ref, ch.Path))
+	overlay := snapshot{}
+	if rc.Ref == p.Ref {
+		maps.Copy(overlay, prev)
 	}
-	return out, nil
+	for _, ch := range emitted[:min(p.Done, len(emitted))] {
+		if ch.Deleted {
+			delete(overlay, ch.Path)
+		} else {
+			overlay[ch.Path] = pendingSnap[ch.Path]
+		}
+	}
+	return overlay, nil
 }
 
 func (c *Connector) externalID(key, ref, file string) string {

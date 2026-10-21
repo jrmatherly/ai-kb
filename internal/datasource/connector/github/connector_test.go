@@ -469,14 +469,11 @@ func TestFetchStreamSelectionChangeTombstonesOldRefAndEmitsNewRoots(t *testing.T
 }
 
 func TestFetchStreamResumesInsideRepositoryFromPendingCursor(t *testing.T) {
-	files := map[string]string{}
 	var all []string
 	for i := 1; i <= 120; i++ {
-		name := fmt.Sprintf("docs/f%03d.md", i)
-		files[name] = fmt.Sprint(i)
-		all = append(all, fmt.Sprintf("+o/r:main:%s=%d", name, i))
+		all = append(all, fmt.Sprintf("+o/r:main:docs/f%03d.md=%d", i, i))
 	}
-	server := fakeGitHub(t, fakeRepo{commits: map[string]fakeCommit{"c1": {files: files}}})
+	server := fakeGitHub(t, fakeRepo{commits: map[string]fakeCommit{"c1": {files: numberedDocs(120)}}})
 
 	h := &gitHubStreamRecorder{failAt: 101}
 	next, err := stream(t, server, nil, h, selection("o/r", "main", "docs"))
@@ -494,6 +491,64 @@ func TestFetchStreamResumesInsideRepositoryFromPendingCursor(t *testing.T) {
 	require.Equal(t, all[100:], summary(server.base(), resumed.items))
 	require.False(t, next.CompleteListing)
 	require.Equal(t, map[string]repositoryCursor{"o/r": {Head: "c1", Ref: "main", Paths: []string{"docs"}}},
+		repositories(t, next))
+}
+
+// numberedDocs returns docs/f001.md..docs/f<n>.md with their index as the body.
+func numberedDocs(n int) map[string]string {
+	files := map[string]string{}
+	for i := 1; i <= n; i++ {
+		files[fmt.Sprintf("docs/f%03d.md", i)] = fmt.Sprint(i)
+	}
+	return files
+}
+
+func TestFetchStreamHeadMovedAfterPendingCheckpointContinuesFromPendingPrefix(t *testing.T) {
+	c2 := numberedDocs(121)
+	c2["docs/f050.md"] = "changed"
+	repo := fakeRepo{
+		commits: map[string]fakeCommit{"c1": {files: numberedDocs(120)}, "c2": {files: c2}},
+		refs:    map[string]string{"main": "c1"},
+	}
+	server := fakeGitHub(t, repo)
+	h := &gitHubStreamRecorder{failAt: 101}
+	_, err := stream(t, server, nil, h, selection("o/r", "main", "docs"))
+	require.EqualError(t, err, "ingest failed")
+	require.Equal(t, map[string]repositoryCursor{
+		"o/r": {Pending: &pendingCursor{Head: "c1", Ref: "main", Paths: []string{"docs"}, Done: 100}},
+	}, repositories(t, h.checkpoints[1]))
+
+	repo.refs["main"] = "c2"
+	resumed := &gitHubStreamRecorder{}
+	next, err := stream(t, server, h.checkpoints[1], resumed, selection("o/r", "main", "docs"))
+	require.NoError(t, err)
+	want := []string{"+o/r:main:docs/f050.md=changed"}
+	for i := 101; i <= 121; i++ {
+		want = append(want, fmt.Sprintf("+o/r:main:docs/f%03d.md=%d", i, i))
+	}
+	require.Equal(t, want, summary(server.base(), resumed.items))
+	require.Equal(t, map[string]repositoryCursor{"o/r": {Head: "c2", Ref: "main", Paths: []string{"docs"}}},
+		repositories(t, next))
+}
+
+func TestFetchStreamRevertAfterPendingCheckpointReplacesThePendingBody(t *testing.T) {
+	c0 := map[string]string{"docs/a.md": "old", "docs/b.md": "old"}
+	c1 := map[string]string{"docs/a.md": "new", "docs/b.md": "new", "docs/c.md": "c"}
+	c2 := map[string]string{"docs/a.md": "old", "docs/b.md": "new"}
+	server := fakeGitHub(t, fakeRepo{
+		commits: map[string]fakeCommit{"c0": {files: c0}, "c1": {files: c1}, "c2": {files: c2}},
+		refs:    map[string]string{"main": "c2"},
+	})
+	pending := oldCursor(map[string]repositoryCursor{"o/r": {
+		Head: "c0", Ref: "main", Paths: []string{"docs"},
+		Pending: &pendingCursor{Head: "c1", Ref: "main", Paths: []string{"docs"}, Done: 2},
+	}})
+
+	h := &gitHubStreamRecorder{}
+	next, err := stream(t, server, pending, h, selection("o/r", "main", "docs"))
+	require.NoError(t, err)
+	require.Equal(t, []string{"+o/r:main:docs/a.md=old"}, summary(server.base(), h.items))
+	require.Equal(t, map[string]repositoryCursor{"o/r": {Head: "c2", Ref: "main", Paths: []string{"docs"}}},
 		repositories(t, next))
 }
 
