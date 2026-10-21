@@ -170,9 +170,8 @@ func (c *Connector) FetchIncremental(
 // head alone. The previous snapshot is rebuilt from the recorded ref and paths,
 // so a changed ref tombstones every old-ref item and a changed directory list
 // emits exactly the added and removed files. Pending marks a repository whose
-// ordered diff was partly emitted: a resumed sync at the same head recomputes
-// the same diff and skips the first Done entries, so a run cut off by the
-// hourly rate limit continues where it stopped instead of restarting.
+// ordered diff was partly emitted, so a run cut off by the hourly rate limit
+// continues where it stopped instead of restarting.
 type repositoryCursor struct {
 	Head    string         `json:"head"`
 	Ref     string         `json:"ref"`
@@ -180,9 +179,16 @@ type repositoryCursor struct {
 	Pending *pendingCursor `json:"pending,omitempty"`
 }
 
+// A pendingCursor records the head, ref and paths the interrupted diff was
+// computed against, because the diff's order (and so what Done counts) depends
+// on all three. A resumed sync with the same selection recomputes the same
+// diff and skips the first Done entries; a selection changed in between
+// recomputes a different diff and emits it from the start.
 type pendingCursor struct {
-	Head string `json:"head"`
-	Done int    `json:"done"`
+	Head  string   `json:"head"`
+	Ref   string   `json:"ref"`
+	Paths []string `json:"paths"`
+	Done  int      `json:"done"`
 }
 
 type cursor struct {
@@ -282,8 +288,8 @@ func (c *Connector) streamRepository(
 		}
 	}
 	start := 0
-	if rc.Pending != nil && rc.Pending.Head == head {
-		start = rc.Pending.Done
+	if p := rc.Pending; p != nil && p.Head == head && p.Ref == ref && slices.Equal(p.Paths, selection.Paths) {
+		start = p.Done
 	}
 	for i := start; i < len(changes); i++ {
 		ch := changes[i]
@@ -302,7 +308,7 @@ func (c *Connector) streamRepository(
 			return err
 		}
 		if n := i + 1; n%checkpointEvery == 0 {
-			rc.Pending = &pendingCursor{Head: head, Done: n}
+			rc.Pending = &pendingCursor{Head: head, Ref: ref, Paths: selection.Paths, Done: n}
 			next.Repositories[key] = rc
 			if err := h.Checkpoint(ctx, gitHubCursor(next, false)); err != nil {
 				return err

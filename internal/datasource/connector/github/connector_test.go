@@ -485,7 +485,7 @@ func TestFetchStreamResumesInsideRepositoryFromPendingCursor(t *testing.T) {
 	require.Equal(t, all[:100], summary(server.base(), h.items))
 	require.Len(t, h.checkpoints, 2)
 	require.Equal(t, map[string]repositoryCursor{
-		"o/r": {Pending: &pendingCursor{Head: "c1", Done: 100}},
+		"o/r": {Pending: &pendingCursor{Head: "c1", Ref: "main", Paths: []string{"docs"}, Done: 100}},
 	}, repositories(t, h.checkpoints[1]))
 
 	resumed := &gitHubStreamRecorder{}
@@ -494,6 +494,40 @@ func TestFetchStreamResumesInsideRepositoryFromPendingCursor(t *testing.T) {
 	require.Equal(t, all[100:], summary(server.base(), resumed.items))
 	require.False(t, next.CompleteListing)
 	require.Equal(t, map[string]repositoryCursor{"o/r": {Head: "c1", Ref: "main", Paths: []string{"docs"}}},
+		repositories(t, next))
+}
+
+func TestFetchStreamSelectionChangeAfterPendingCheckpointRestartsTheDiff(t *testing.T) {
+	files := map[string]string{"docs/a.md": "a", "docs/b.md": "b"}
+	var guides []string
+	for i := 1; i <= 120; i++ {
+		name := fmt.Sprintf("guides/g%03d.md", i)
+		files[name] = fmt.Sprint(i)
+		guides = append(guides, fmt.Sprintf("+o/r:release:%s=%d", name, i))
+	}
+	server := fakeGitHub(t, fakeRepo{
+		commits: map[string]fakeCommit{"c1": {files: files}},
+		refs:    map[string]string{"main": "c1", "release": "c1"},
+	})
+	old := oldCursor(map[string]repositoryCursor{"o/r": {Head: "c1", Ref: "main", Paths: []string{"docs"}}})
+
+	h := &gitHubStreamRecorder{failAt: 101}
+	_, err := stream(t, server, old, h, selection("o/r", "main", "docs", "guides"))
+	require.EqualError(t, err, "ingest failed")
+	require.Equal(t, map[string]repositoryCursor{"o/r": {
+		Head: "c1", Ref: "main", Paths: []string{"docs"},
+		Pending: &pendingCursor{Head: "c1", Ref: "main", Paths: []string{"docs", "guides"}, Done: 100},
+	}}, repositories(t, h.checkpoints[1]))
+
+	resumed := &gitHubStreamRecorder{}
+	next, err := stream(t, server, h.checkpoints[1], resumed, selection("o/r", "release", "docs", "guides"))
+	require.NoError(t, err)
+	want := append([]string{
+		"-o/r:main:docs/a.md", "-o/r:main:docs/b.md", "+o/r:release:docs/a.md=a", "+o/r:release:docs/b.md=b",
+	}, guides...)
+	require.Equal(t, want, summary(server.base(), resumed.items))
+	require.Equal(t,
+		map[string]repositoryCursor{"o/r": {Head: "c1", Ref: "release", Paths: []string{"docs", "guides"}}},
 		repositories(t, next))
 }
 
