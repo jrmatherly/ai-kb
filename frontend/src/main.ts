@@ -19,6 +19,7 @@ import { installTDesignIconOfflineGuard } from "@/utils/tdesign-icon-offline";
 import { installAutofillGuard } from "@/utils/disable-autofill";
 import { useAuthStore } from "@/stores/auth";
 import { useDeploymentCapabilitiesStore } from "@/stores/deploymentCapabilities";
+import { useSiteLinksStore } from "@/stores/siteLinks";
 
 // Must run before Vue components mount, so tdesign-icons does not request tdesign.gtimg.com at run time
 installTDesignIconOfflineGuard();
@@ -36,6 +37,9 @@ async function bootstrap() {
 
   const pinia = createPinia();
   app.use(pinia);
+
+  // Awaited before mount: some pages build doc links once, at setup.
+  const siteLinks = useSiteLinksStore().ensureLoaded();
 
   // Capabilities (can_create_tenant, auto_accept_invitation) are not cached
   // in localStorage - reconcile once before first paint when a session exists.
@@ -58,7 +62,7 @@ async function bootstrap() {
   app.use(i18n);
 
   // Mount after the first route (navigation guards and Lite auto-login included) resolves, so the default page does not flash before the redirect
-  await router.isReady();
+  await Promise.all([router.isReady(), siteLinks]);
   app.mount("#app");
   installAutofillGuard();
 }

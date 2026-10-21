@@ -61,6 +61,16 @@ export function getDeploymentCapabilities(): Promise<{ data: DeploymentCapabilit
   return get('/api/v1/system/capabilities')
 }
 
+/** GET /system/links, unauthenticated. An empty string means "no link". */
+export interface SystemLinks {
+  docs_url: string
+  github_url: string
+}
+
+export function getSystemLinks(): Promise<SystemLinks> {
+  return get('/api/v1/system/links') as unknown as Promise<SystemLinks>
+}
+
 export interface PlaceholderDefinition {
   name: string
   label: string

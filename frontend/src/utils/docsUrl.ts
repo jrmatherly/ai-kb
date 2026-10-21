@@ -1,5 +1,5 @@
-/** Public deployment of website-docs (VitePress, base `/docs/`). */
-export const DOCS_BASE_URL = 'https://ai-kb.matherly.net/docs/'
+import { getActivePinia } from 'pinia'
+import { DEFAULT_DOCS_URL, useSiteLinksStore } from '@/stores/siteLinks'
 
 /**
  * Doc pages linked from the UI, as website-docs paths without the `.md`
@@ -21,5 +21,6 @@ export const DOC_PAGES = {
 export type DocPage = keyof typeof DOC_PAGES
 
 export function docsUrl(page: DocPage): string {
-  return DOCS_BASE_URL + DOC_PAGES[page]
+  const base = getActivePinia() ? useSiteLinksStore().docsUrl : DEFAULT_DOCS_URL
+  return base + DOC_PAGES[page]
 }
