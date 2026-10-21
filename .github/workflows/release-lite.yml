@@ -359,7 +359,9 @@ jobs:
           security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
           security set-keychain-settings -lut 3600 "$KEYCHAIN"
           security default-keychain -s "$KEYCHAIN"
-          mapfile -t EXISTING < <(security list-keychains -d user | sed 's/^ *"\(.*\)"$/\1/')
+          # The runner's bash is 3.2, so no mapfile.
+          EXISTING=()
+          while IFS= read -r k; do EXISTING+=("$k"); done < <(security list-keychains -d user | sed 's/^ *"\(.*\)"$/\1/')
           security list-keychains -d user -s "$KEYCHAIN" "${EXISTING[@]}"
           security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
           security import "$P12" -k "$KEYCHAIN" -P "$MACOS_CERT_PASSWORD" -f pkcs12 -T /usr/bin/codesign
