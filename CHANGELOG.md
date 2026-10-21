@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [2026.10.21.3] - 2026-10-21
+
+### Changes
+
+- **CHANGED**: The macOS desktop DMGs are notarized by Apple and stapled, so they open from a download without a Gatekeeper warning. Release Lite now has the App Store Connect API key that `scripts/sign-mac-app.sh` uses; no code changed.
+
 ## [2026.10.21.2] - 2026-10-21
 
 ### Changes
