@@ -295,10 +295,10 @@ var ConnectorMetadataRegistry = map[string]ConnectorMetadata{
 	types.ConnectorTypeGitHub: {
 		Type:         types.ConnectorTypeGitHub,
 		Name:         "GitHub",
-		Description:  "Sync repositories, wikis, and issues from GitHub",
+		Description:  "Sync files from GitHub repositories",
 		Priority:     4,
-		AuthType:     "oauth2",
-		Capabilities: []string{"incremental"},
+		AuthType:     "token",
+		Capabilities: []string{"incremental", "hierarchical", "deletion_sync", CapabilityFullSyncReconcile},
 	},
 	types.ConnectorTypeGoogleDrive: {
 		Type:         types.ConnectorTypeGoogleDrive,

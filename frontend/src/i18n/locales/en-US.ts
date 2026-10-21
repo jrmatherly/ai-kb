@@ -7032,6 +7032,7 @@ export default {
       seafile_invalid_response: 'Seafile returned a response that could not be parsed; check the server version and reverse proxy.',
       seafile_ssrf_blocked: 'The Seafile download URL was blocked by the SSRF policy; add the fileserver host to SSRF_WHITELIST.',
       seafile_fetch_failed: 'Failed to fetch the file from Seafile; the next sync retries it.',
+      github_file_too_large: 'The GitHub file exceeds the 100 MB API limit; GitHub does not serve larger blobs.',
       deletion_guard_tripped: 'Deletions held back: {count} item(s), {percent}% of the {owned} this data source owns ({deselected} from resources removed from the selection). If this is expected, use "Sync and apply deletions".',
       reconcile_listing_empty: 'Deletions held back: the source listed nothing while this data source owns {owned} item(s), which usually means lost access. If the source really is empty, use "Sync and apply deletions".',
       reconcile_listing_incomplete: 'Deletions were not reconciled: the connector could not confirm a complete listing (a resumed or partial run). Deletions the connector reports itself still apply.'

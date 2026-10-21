@@ -80,6 +80,40 @@ func TestCreateKnowledgeFromFileGitLabPreservesSourcePaths(t *testing.T) {
 	require.ErrorAs(t, err, &dupErr, "incomplete source identity retains content deduplication")
 }
 
+func TestCreateKnowledgeFromFileGitHubUsesSourceIdentity(t *testing.T) {
+	db := setupKnowledgeSharedAccessDB(t)
+	sqlDB, err := db.DB()
+	require.NoError(t, err)
+	t.Cleanup(func() { _ = sqlDB.Close() })
+	svc := &knowledgeService{
+		repo:      &gitLabKnowledgeRepo{KnowledgeRepository: repository.NewKnowledgeRepository(db)},
+		kbService: &createKnowledgeFileKBServiceStub{kb: &types.KnowledgeBase{ID: "kb-1"}},
+		fileSvc:   &createKnowledgeFileServiceStub{},
+		task:      &createKnowledgeTaskEnqueuerStub{},
+	}
+	ctx := newCreateKnowledgeFileContext()
+	create := func(source, file string) (*types.Knowledge, error) {
+		t.Helper()
+		return svc.CreateKnowledgeFromFile(ctx, "kb-1", newMultipartFileHeader(t, "README.md", "# same content"),
+			map[string]string{"datasource_id": source, "external_id": "github:https://api.github.com:o/r:main:" + file},
+			nil, "r-main/"+file, nil, types.ConnectorTypeGitHub, nil)
+	}
+
+	first, err := create("ds-1", "README.md")
+	require.NoError(t, err)
+	nested, err := create("ds-1", "docs/README.md")
+	require.NoError(t, err, "identical content at a different repository path must still be imported")
+	require.NotEqual(t, first.ID, nested.ID)
+	otherSource, err := create("ds-2", "README.md")
+	require.NoError(t, err, "another data source must retain its own file")
+	require.NotEqual(t, first.ID, otherSource.ID)
+
+	duplicate, err := create("ds-1", "docs/README.md")
+	var dupErr *types.DuplicateKnowledgeError
+	require.ErrorAs(t, err, &dupErr)
+	require.Equal(t, nested.ID, duplicate.ID, "a retry must match this path's own knowledge")
+}
+
 func TestCreateKnowledgeFromFileConfluencePreservesCopiedPages(t *testing.T) {
 	db := setupKnowledgeSharedAccessDB(t)
 	sqlDB, err := db.DB()
