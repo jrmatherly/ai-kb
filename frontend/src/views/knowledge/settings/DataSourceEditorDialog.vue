@@ -2984,6 +2984,11 @@ const drawerConfirmText = computed(() => {
   object-fit: contain;
 }
 
+/* The GitHub mark is monochrome black and loads through <img>, so currentColor cannot reach it. */
+html[theme-mode="dark"] .datasource-editor-drawer--github .datasource-header-icon__img {
+  filter: invert(1);
+}
+
 /* Step 2 "Select scope": the step does not scroll as a whole. The token input stays fixed and the resource area below
    (placeholder / loading / empty state / folder tree) fills the drawer's remaining height; the tree list scrolls inside. */
 .ds-fixed-step {
