@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/jrmatherly/ai-kb/internal/envlist"
 	"github.com/jrmatherly/ai-kb/internal/sandbox"
 )
 
@@ -30,15 +29,8 @@ var DeploymentCapabilityKeys = []string{
 	"settings.ollama",
 }
 
-// OllamaEnabledEnv gates the Ollama settings section; off by default.
-const OllamaEnabledEnv = "AIKB_OLLAMA_ENABLED"
-
-// OllamaEnabled reports OllamaEnabledEnv; unset or unparsable is false.
-func OllamaEnabled() bool {
-	return envlist.Bool(OllamaEnabledEnv)
-}
-
 // DeploymentCapability describes whether a deployment exposes a feature route.
+// settings.ollama gates only the Settings section, not the Ollama API routes.
 type DeploymentCapability struct {
 	Supported bool   `json:"supported"`
 	Reason    string `json:"reason,omitempty"`

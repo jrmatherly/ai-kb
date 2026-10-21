@@ -4,6 +4,7 @@ import (
 	"github.com/jrmatherly/ai-kb/internal/handler"
 	"github.com/jrmatherly/ai-kb/internal/im"
 	"github.com/jrmatherly/ai-kb/internal/infrastructure/docparser"
+	"github.com/jrmatherly/ai-kb/internal/models/utils/ollama"
 	"github.com/jrmatherly/ai-kb/internal/sandbox"
 )
 
@@ -31,6 +32,6 @@ func deploymentCapabilitiesFromRouter(params RouterParams) handler.DeploymentCap
 		SandboxHost:   params.HostSandbox.Manager != nil,
 		SandboxRemote: params.SandboxConfigHandler != nil && !params.HostSandbox.Desktop,
 		WeKnoraCloud:  docparser.WeKnoraCloudEnabled(),
-		Ollama:        handler.OllamaEnabled(),
+		Ollama:        ollama.Enabled(),
 	})
 }
