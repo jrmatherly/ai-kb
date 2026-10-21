@@ -2,11 +2,10 @@ package handler
 
 import (
 	"net/http"
-	"os"
-	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/jrmatherly/ai-kb/internal/envlist"
 	"github.com/jrmatherly/ai-kb/internal/sandbox"
 )
 
@@ -36,8 +35,7 @@ const OllamaEnabledEnv = "AIKB_OLLAMA_ENABLED"
 
 // OllamaEnabled reports OllamaEnabledEnv; unset or unparsable is false.
 func OllamaEnabled() bool {
-	parsed, err := strconv.ParseBool(strings.TrimSpace(os.Getenv(OllamaEnabledEnv)))
-	return err == nil && parsed
+	return envlist.Bool(OllamaEnabledEnv)
 }
 
 // DeploymentCapability describes whether a deployment exposes a feature route.

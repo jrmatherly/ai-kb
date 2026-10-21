@@ -1,10 +1,6 @@
 package docparser
 
-import (
-	"os"
-	"strconv"
-	"strings"
-)
+import "github.com/jrmatherly/ai-kb/internal/envlist"
 
 // WeKnoraCloudEnabledEnv opts a deployment into the hosted WeKnoraCloud
 // parser and model provider. Off by default: it is a client for Tencent's
@@ -14,8 +10,7 @@ const WeKnoraCloudEnabledEnv = "AIKB_WEKNORACLOUD_ENABLED"
 // WeKnoraCloudEnabled is read at call time, never in init(): the desktop
 // binary loads .env after package initialization.
 func WeKnoraCloudEnabled() bool {
-	parsed, err := strconv.ParseBool(strings.TrimSpace(os.Getenv(WeKnoraCloudEnabledEnv)))
-	return err == nil && parsed
+	return envlist.Bool(WeKnoraCloudEnabledEnv)
 }
 
 // WeKnoraCloudDisabledReason is the user-facing reason every gated surface

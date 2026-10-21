@@ -3,10 +3,10 @@ package handler
 import (
 	"net/http"
 	"os"
-	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/jrmatherly/ai-kb/internal/envlist"
 )
 
 const (
@@ -39,8 +39,7 @@ func DocsURL() string {
 
 // GitHubLinkEnabled reports GitHubLinkEnabledEnv; unset or unparsable is false.
 func GitHubLinkEnabled() bool {
-	parsed, err := strconv.ParseBool(strings.TrimSpace(os.Getenv(GitHubLinkEnabledEnv)))
-	return err == nil && parsed
+	return envlist.Bool(GitHubLinkEnabledEnv)
 }
 
 // CurrentSystemLinks is the GET /system/links body.

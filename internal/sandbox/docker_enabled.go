@@ -2,10 +2,9 @@ package sandbox
 
 import (
 	"errors"
-	"os"
-	"strconv"
-	"strings"
 	"sync/atomic"
+
+	"github.com/jrmatherly/ai-kb/internal/envlist"
 )
 
 // DockerBackendEnabledEnv is the process-level fallback for the Docker
@@ -52,8 +51,7 @@ func DockerBackendEnabled() bool {
 	if p := dockerBackendEnabledOverride.Load(); p != nil {
 		return *p
 	}
-	parsed, err := strconv.ParseBool(strings.TrimSpace(os.Getenv(DockerBackendEnabledEnv)))
-	return err == nil && parsed
+	return envlist.Bool(DockerBackendEnabledEnv)
 }
 
 // EnsureDockerBackendAllowed is the choke point for every path that would

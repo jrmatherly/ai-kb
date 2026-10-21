@@ -6,6 +6,18 @@ import (
 	"testing"
 )
 
+func TestBool(t *testing.T) {
+	const name = "AIKB_ENVLIST_TEST_BOOL"
+	for value, want := range map[string]bool{
+		"": false, "true": true, " TRUE\n": true, "1": true, "false": false, "0": false, "yes": false,
+	} {
+		t.Setenv(name, value)
+		if got := Bool(name); got != want {
+			t.Errorf("Bool with %q = %v, want %v", value, got, want)
+		}
+	}
+}
+
 func TestParse(t *testing.T) {
 	known := []string{"rss", "notion", "feishu"}
 	for _, tc := range []struct {
