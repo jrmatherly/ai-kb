@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Changes
+
+- **CHANGED**: `AIKB_GITHUB_LINK_ENABLED` now also gates the browser extension's release-packages link and the report-an-issue link on a failed database migration, so a deployment with it off shows no GitHub link anywhere. The CLI page's documentation button opens the CLI page on the docs site (`AIKB_DOCS_URL`) instead of the README on GitHub.
+
 ### Bug Fixes
 
 - **FIXED**: Go toolchain 1.26.10, which carries the crypto/x509 denylist for the compromised emSign intermediates (GO-2026-6809, CVE-2026-111943); the govulncheck gate on main failed on 1.26.9. CI and the app image now take the Go version from `go.mod` and `docker/Dockerfile.app` (the builder image pinned by digest) through `scripts/version.py` (`make bump-lib LIB=go`) instead of floating on "1.26", which had built the v2026.10.21 release with three different patch versions (go1.26.7 on macOS, 1.26.8 on Windows, 1.26.9 on Linux).

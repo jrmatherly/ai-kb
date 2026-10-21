@@ -506,7 +506,8 @@ credentials), `AIKB_IM_PLATFORMS` (the IM platforms offered to workspaces;
 unset means all), `AIKB_DATASOURCE_TYPES` (the data source connector types
 offered; unset means Notion and Confluence, `all` opens the full catalog), `AIKB_OLLAMA_ENABLED` (default off; shows the Ollama
 settings section) and `AIKB_GITHUB_LINK_ENABLED` (default off; shows links to
-the GitHub repository):
+the GitHub repository on the login page, the user menu, the extension releases
+link and the migration report-an-issue link):
 
 ```yaml
 app:
