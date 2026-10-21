@@ -41,7 +41,7 @@ func EnabledPlatforms() []Platform {
 	}
 	enabled := make([]Platform, 0, len(wanted))
 	for _, p := range all {
-		if _, ok := wanted[string(p)]; ok {
+		if wanted[string(p)] {
 			enabled = append(enabled, p)
 		}
 	}

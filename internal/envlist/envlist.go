@@ -21,18 +21,18 @@ func Bool(name string) bool {
 // each name and enables those in known. A blank value enables every known
 // name. Names outside known come back in unknown, in input order, for the
 // caller to log or ignore.
-func Parse(value string, known []string) (enabled map[string]struct{}, unknown []string) {
-	enabled = make(map[string]struct{}, len(known))
+func Parse(value string, known []string) (enabled map[string]bool, unknown []string) {
+	enabled = make(map[string]bool, len(known))
 	if strings.TrimSpace(value) == "" {
 		for _, name := range known {
-			enabled[name] = struct{}{}
+			enabled[name] = true
 		}
 		return enabled, nil
 	}
 	for _, item := range strings.FieldsFunc(value, isSeparator) {
 		name := strings.ToLower(strings.TrimSpace(item))
 		if slices.Contains(known, name) {
-			enabled[name] = struct{}{}
+			enabled[name] = true
 		} else {
 			unknown = append(unknown, name)
 		}

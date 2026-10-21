@@ -21,11 +21,7 @@ func Supported() []string {
 // AllowedMap returns which providers are permitted by STORAGE_ALLOW_LIST.
 // Unknown names are ignored without a warning.
 func AllowedMap() map[string]bool {
-	enabled, _ := envlist.Parse(os.Getenv(AllowListEnv), supported)
-	allowed := make(map[string]bool, len(enabled))
-	for provider := range enabled {
-		allowed[provider] = true
-	}
+	allowed, _ := envlist.Parse(os.Getenv(AllowListEnv), supported)
 	return allowed
 }
 

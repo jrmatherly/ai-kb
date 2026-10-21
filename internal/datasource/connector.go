@@ -405,12 +405,11 @@ var unknownConnectorTypeWarning sync.Once
 
 // ConnectorTypeEnabled reports whether the deployment allow-list admits connectorType.
 func ConnectorTypeEnabled(connectorType string) bool {
-	_, ok := enabledConnectorTypes()[connectorType]
-	return ok
+	return enabledConnectorTypes()[connectorType]
 }
 
 // enabledConnectorTypes is not cached: tests set the env per case (t.Setenv).
-func enabledConnectorTypes() map[string]struct{} {
+func enabledConnectorTypes() map[string]bool {
 	known := slices.Collect(maps.Keys(ConnectorMetadataRegistry))
 	enabled, unknown := envlist.Parse(os.Getenv(ConnectorTypesEnv), known)
 	if len(unknown) > 0 {

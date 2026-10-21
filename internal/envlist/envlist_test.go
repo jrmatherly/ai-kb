@@ -35,6 +35,11 @@ func TestParse(t *testing.T) {
 		if got := slices.Sorted(maps.Keys(enabled)); !slices.Equal(got, tc.wantEnabled) {
 			t.Errorf("Parse(%q) enabled %v, want %v", tc.value, got, tc.wantEnabled)
 		}
+		for _, name := range tc.wantEnabled {
+			if !enabled[name] {
+				t.Errorf("Parse(%q)[%q] = false, want true", tc.value, name)
+			}
+		}
 		if !slices.Equal(unknown, tc.wantUnknown) {
 			t.Errorf("Parse(%q) unknown %v, want %v", tc.value, unknown, tc.wantUnknown)
 		}
