@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changes
 
-- **CHANGED**: `AIKB_GITHUB_LINK_ENABLED` now also gates the browser extension's release-packages link and the report-an-issue link on a failed database migration, so a deployment with it off shows no GitHub link anywhere. The CLI page's documentation button opens the CLI page on the docs site (`AIKB_DOCS_URL`) instead of the README on GitHub.
+- **CHANGED**: `AIKB_GITHUB_LINK_ENABLED` now also gates the browser extension's release-packages link and the report-an-issue link on a failed database migration, so a deployment with it off shows no link to the AI KB GitHub repository. The CLI page's documentation button opens the CLI page on the docs site (`AIKB_DOCS_URL`) instead of the README on GitHub.
 
 ### Bug Fixes
 
