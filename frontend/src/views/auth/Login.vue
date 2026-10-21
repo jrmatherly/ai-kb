@@ -181,7 +181,7 @@
           </div>
 
           <div class="form-content">
-            <!-- Holds the space until the OIDC config answers, so the password form never paints and then collapses. -->
+            <!-- Stands in until the OIDC config answers, so on OIDC deployments the password form never paints and then collapses. -->
             <div v-if="!loginConfigLoaded" class="login-config-placeholder" aria-busy="true"></div>
             <template v-else>
               <template v-if="oidcEnabled">
