@@ -53,14 +53,16 @@ func (e *apiError) Error() string {
 	return fmt.Sprintf("github API %s: status %d", e.endpoint, e.status)
 }
 
-// Is maps 401 and 403 to the datasource sentinels. A rate-limited 403 never
-// reaches here: it becomes errRateLimited instead.
+// Is maps 401, 403 and 404 to the datasource sentinels. A rate-limited 403
+// never reaches here: it becomes errRateLimited instead.
 func (e *apiError) Is(target error) bool {
 	switch target {
 	case datasource.ErrInvalidCredentials:
 		return e.status == http.StatusUnauthorized
 	case datasource.ErrPermissionDenied:
 		return e.status == http.StatusForbidden
+	case datasource.ErrResourceNotFound:
+		return e.status == http.StatusNotFound
 	}
 	return false
 }

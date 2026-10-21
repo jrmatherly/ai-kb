@@ -310,6 +310,13 @@ func TestValidateUsesDataSourceCredentials(t *testing.T) {
 	require.ErrorIs(t, err, datasource.ErrInvalidCredentials)
 }
 
+func TestFetchStreamMissingRepositoryIsResourceNotFound(t *testing.T) {
+	server := fakeGitHub(t, fakeRepo{commits: map[string]fakeCommit{"c1": {}}})
+	_, err := stream(t, server, nil, &gitHubStreamRecorder{}, selection("o/gone", "", "docs"))
+	require.ErrorIs(t, err, datasource.ErrResourceNotFound)
+	require.Equal(t, []string{"/api/v3/repos/o/gone"}, server.requests())
+}
+
 func TestListResourcesListsRepositoriesThenDirectories(t *testing.T) {
 	server := fakeGitHub(t, fakeRepo{commits: map[string]fakeCommit{"c1": {files: map[string]string{
 		"docs/a.md": "a", "docs/sub/b.md": "b", "src/c.md": "c", "README.md": "r",

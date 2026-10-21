@@ -695,7 +695,7 @@ func TestCompareRejectsPayloadAboveCompareCap(t *testing.T) {
 	}
 }
 
-func TestConnectorValidateMapsAuthStatusesToSentinels(t *testing.T) {
+func TestConnectorValidateMapsStatusesToSentinels(t *testing.T) {
 	allowLocalGitLabServer(t)
 	for _, tc := range []struct {
 		status   int
@@ -703,6 +703,7 @@ func TestConnectorValidateMapsAuthStatusesToSentinels(t *testing.T) {
 	}{
 		{http.StatusUnauthorized, datasource.ErrInvalidCredentials},
 		{http.StatusForbidden, datasource.ErrPermissionDenied},
+		{http.StatusNotFound, datasource.ErrResourceNotFound},
 	} {
 		t.Run(http.StatusText(tc.status), func(t *testing.T) {
 			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {

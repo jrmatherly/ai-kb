@@ -87,12 +87,13 @@ func TestRequestsCarryGitHubHeaders(t *testing.T) {
 
 func TestAPIErrorMapsToSentinels(t *testing.T) {
 	for _, tc := range []struct {
-		status             int
-		invalid, forbidden bool
+		status                       int
+		invalid, forbidden, notFound bool
 	}{
-		{http.StatusUnauthorized, true, false},
-		{http.StatusForbidden, false, true},
-		{http.StatusNotFound, false, false},
+		{http.StatusUnauthorized, true, false, false},
+		{http.StatusForbidden, false, true, false},
+		{http.StatusNotFound, false, false, true},
+		{http.StatusInternalServerError, false, false, false},
 	} {
 		t.Run(strconv.Itoa(tc.status), func(t *testing.T) {
 			server := newTestServer(t, func(w http.ResponseWriter, _ *http.Request) {
@@ -102,6 +103,7 @@ func TestAPIErrorMapsToSentinels(t *testing.T) {
 			require.Error(t, err)
 			require.Equal(t, tc.invalid, errors.Is(err, datasource.ErrInvalidCredentials))
 			require.Equal(t, tc.forbidden, errors.Is(err, datasource.ErrPermissionDenied))
+			require.Equal(t, tc.notFound, errors.Is(err, datasource.ErrResourceNotFound))
 		})
 	}
 }
