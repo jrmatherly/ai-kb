@@ -25,7 +25,7 @@
 <body>
 <script>
 (function(){
-  var t=localStorage.getItem('AIKB_theme')||'system';
+  var t=localStorage.getItem('AIKB_boot_theme')||'system';
   if(t==='system')t=window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';
   document.documentElement.setAttribute('theme-mode',t);
   /* Matches --td-bg-color-page in theme.css, so the page background does not jump from #fff to #eee and flash when styles load */
@@ -68,7 +68,7 @@
 <div id="app"><div class="aikb-boot" role="status"><div class="aikb-boot-spinner"></div>Loading AI KB</div></div>
 <script>
 (function(){
-  var t=localStorage.getItem('AIKB_theme')||'system';
+  var t=localStorage.getItem('AIKB_boot_theme')||'system';
   if(t==='system')t=window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';
   var bg=t==='dark'?'#181818':'#eee';
   var el=document.getElementById('app');

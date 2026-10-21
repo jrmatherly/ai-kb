@@ -177,7 +177,16 @@ window.open=function(url){
 
 // wailsThemeSyncJS matches the first-paint script in index.html. It runs again on DomReady to
 // cover the moment the runtime becomes ready after Ctrl+R.
-const wailsThemeSyncJS = `(function(){try{var t=localStorage.getItem('AIKB_theme')||'light';if(t==='system')t=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';var bg=t==='dark'?'#181818':'#eee';document.documentElement.setAttribute('theme-mode',t);document.documentElement.style.background=bg;document.documentElement.style.minHeight='100%';document.documentElement.style.colorScheme=t==='dark'?'dark':'light';if(document.body){document.body.style.background=bg;document.body.style.minHeight='100%';}var w=window.runtime;if(!w)return;if(t==='dark'){if(w.WindowSetDarkTheme)w.WindowSetDarkTheme();if(w.WindowSetBackgroundColour)w.WindowSetBackgroundColour(24,24,24,255);}else{if(w.WindowSetLightTheme)w.WindowSetLightTheme();if(w.WindowSetBackgroundColour)w.WindowSetBackgroundColour(238,238,238,255);}}catch(e){}})()`
+const wailsThemeSyncJS = `(function(){try{var t=localStorage.getItem('AIKB_boot_theme')||'system';` +
+	`if(t==='system')t=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';` +
+	`var bg=t==='dark'?'#181818':'#eee';document.documentElement.setAttribute('theme-mode',t);` +
+	`document.documentElement.style.background=bg;document.documentElement.style.minHeight='100%';` +
+	`document.documentElement.style.colorScheme=t==='dark'?'dark':'light';` +
+	`if(document.body){document.body.style.background=bg;document.body.style.minHeight='100%';` +
+	`}var w=window.runtime;if(!w)return;if(t==='dark'){if(w.WindowSetDarkTheme)w.WindowSetDarkTheme();` +
+	`if(w.WindowSetBackgroundColour)w.WindowSetBackgroundColour(24,24,24,255);` +
+	`}else{if(w.WindowSetLightTheme)w.WindowSetLightTheme();` +
+	`if(w.WindowSetBackgroundColour)w.WindowSetBackgroundColour(238,238,238,255);}}catch(e){}})()`
 
 const aikbGitHubRepoURL = "https://github.com/jrmatherly/ai-kb"
 

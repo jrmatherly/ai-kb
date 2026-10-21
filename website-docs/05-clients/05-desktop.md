@@ -78,7 +78,7 @@ Key settings of `wails.Run(&options.App{...})` in `cmd/desktop/main.go`:
 
 On `OnDomReady` the shell injects three scripts into the WebView:
 
-1. `wailsThemeSyncJS`: syncs the light or dark theme and the window background color from the `AIKB_theme` key in `localStorage`.
+1. `wailsThemeSyncJS`: syncs the light or dark theme and the window background color from the `AIKB_boot_theme` key in `localStorage`, which the frontend rewrites on every theme change; with no key it follows the OS.
 2. `dragHandlerJS`: custom window dragging. It bypasses Wails' CSS-variable drag detection and uses `el.closest()` DOM traversal plus a 40px title bar region at the top, and sends `drag` through the WKWebView message bridge. It also intercepts external `http(s)` links and `window.open` and opens them in the system browser (`BrowserOpenURL`).
 3. `window.__AIKB_API_BASE__` (the real API root, `http://127.0.0.1:<port>/api/v1`) and, when set, `window.__AIKB_API_LAN_BASE__` (the LAN address).
 

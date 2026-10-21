@@ -3,11 +3,14 @@ import {
   loadPreference,
   savePreference,
   migratePreferencesIntoUser,
+  safeSetItem,
 } from './preferenceStorage'
 
 export type ThemeMode = 'light' | 'dark' | 'system'
 
 const THEME_KEY = 'theme'
+/** Read by the pre-paint scripts in index.html, which run before the user id is known. Outside the migration's suffix list. */
+export const BOOT_THEME_KEY = 'AIKB_boot_theme'
 
 function loadTheme(): ThemeMode {
   const v = loadPreference(THEME_KEY)
@@ -61,6 +64,7 @@ function syncWailsNativeChrome(effective: 'light' | 'dark') {
 }
 
 function applyTheme(mode: ThemeMode) {
+  safeSetItem(BOOT_THEME_KEY, mode)
   const effective = mode === 'system' ? getSystemTheme() : mode
   if (lastEffective === effective) return
   lastEffective = effective
