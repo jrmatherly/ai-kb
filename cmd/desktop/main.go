@@ -33,6 +33,7 @@ import (
 	"github.com/jrmatherly/ai-kb/internal/handler"
 	"github.com/jrmatherly/ai-kb/internal/handler/session"
 	"github.com/jrmatherly/ai-kb/internal/logger"
+	"github.com/jrmatherly/ai-kb/internal/models/utils/ollama"
 	"github.com/jrmatherly/ai-kb/internal/runtime"
 	"github.com/jrmatherly/ai-kb/internal/stream"
 	"github.com/jrmatherly/ai-kb/internal/types/interfaces"
@@ -227,6 +228,10 @@ func main() {
 	if strings.TrimSpace(os.Getenv("REDIS_ADDR")) == "" &&
 		strings.EqualFold(strings.TrimSpace(os.Getenv("STREAM_MANAGER_TYPE")), stream.TypeRedis) {
 		_ = os.Setenv("STREAM_MANAGER_TYPE", stream.TypeMemory)
+	}
+	// Ollama is the desktop app's local model backend, and its bundled .env does not set the switch.
+	if strings.TrimSpace(os.Getenv(ollama.EnabledEnv)) == "" {
+		_ = os.Setenv(ollama.EnabledEnv, "true")
 	}
 	configureDesktopStorage(execPath)
 	configureDesktopFileStorage(execPath)

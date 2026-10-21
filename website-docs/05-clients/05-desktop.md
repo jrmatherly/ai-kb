@@ -16,6 +16,8 @@ The desktop application has three parts, all in the same process:
 2. **Wails window (WebView)**: `wails.Run()` creates the native window. Page requests go through a **reverse proxy** mounted as `assetserver.Options.Handler` (`httputil.ReverseProxy`) to the embedded backend, so the WebView loads the SPA that the backend serves from its `./web` directory.
 3. **Go binding layer**: the `App` struct in `cmd/desktop/app.go` is exposed to frontend JavaScript through `Bind` (`window.go.main.App.*`).
 
+Ollama is the desktop app's local model backend, so `main.go` sets `AIKB_OLLAMA_ENABLED=true` before the container is built when the variable is unset or empty. Settings then shows the Ollama section; set it to `false` in the environment to hide it.
+
 ```mermaid
 flowchart LR
     subgraph D["AI KB Lite desktop process"]
