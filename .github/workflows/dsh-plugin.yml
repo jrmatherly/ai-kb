@@ -37,10 +37,6 @@ permissions:
   contents: read
 
 env:
-  # The contract's Go half lives in this repository's module. app.yml runs it
-  # only for a Go diff, so a change to the fixture or to the plugin alone would
-  # otherwise skip the side that checks AI KB still serves those calls.
-  GO_VERSION: "1.26"
   # `dsh plugin add` shells out to pnpm to install into the profile, and the
   # runner image ships only npm and yarn. The profile it writes carries its
   # settings in pnpm-workspace.yaml, which pnpm 10 is the first to read.
@@ -78,10 +74,13 @@ jobs:
       - name: 🧪 Unit and contract tests
         run: node --test "test/*.test.mjs"
 
+      # The contract's Go half lives in this repository's module. app.yml runs it
+      # only for a Go diff, so a change to the fixture or to the plugin alone would
+      # otherwise skip the side that checks AI KB still serves those calls.
       - name: 🐹 Set up Go
         uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
-          go-version: ${{ env.GO_VERSION }}
+          go-version-file: go.mod
           cache: false
 
       - name: 🧪 Contract tests against AI KB's Go types
