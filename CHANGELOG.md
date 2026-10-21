@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [2026.10.21] - 2026-10-21
+
 ### Bug Fixes
 
 - **FIXED**: docreader takes pillow 13.0.0 (seven advisories, among them a critical heap overflow in the JPEG decoder, GHSA-8g5g-8vmr-9782) and certifi 2026.10.19 (GHSA-6q48-6c7w-9gw2, emSign roots with compromised intermediate keys) ahead of the release cooldown; certifi still needs the dated `exclude-newer-package` entry in `docreader/pyproject.toml` until 2026-10-22. Dependabot cannot write these updates itself while docreader requires uv 0.13 and Dependabot ships 0.12.18. The MCP server and the MCP demo take the same certifi release the same way.
