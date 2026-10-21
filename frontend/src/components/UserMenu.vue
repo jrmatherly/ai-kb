@@ -118,7 +118,7 @@
             </svg>
           </span>
         </div>
-        <div class="menu-item" :title="$t('common.githubStarTip')" @click="openGithub">
+        <div v-if="siteLinks.githubUrl" class="menu-item" :title="$t('common.githubStarTip')" @click="openGithub">
           <t-icon name="logo-github" class="menu-icon" />
           <span class="menu-text-with-icon">
             <span>{{ $t('common.github') }}</span>
@@ -216,11 +216,13 @@ import { getRootZoom, rectToCssPx, cssViewportSize } from '@/utils/zoom'
 import { openNewUserGuide } from '@/config/contextualGuides'
 import { SETTINGS_MANAGEMENT_SHORTCUT_MIN_ROLE } from '@/config/settingsAccess'
 import { docsUrl } from '@/utils/docsUrl'
+import { useSiteLinksStore } from '@/stores/siteLinks'
 const { t } = useI18n()
 
 const router = useRouter()
 const uiStore = useUIStore()
 const authStore = useAuthStore()
+const siteLinks = useSiteLinksStore()
 const { formatRole, roleIcon } = useRoleLabel()
 const { homeTenantId, isHomeTenantActive, isHomeTenant } = useHomeTenant()
 
@@ -501,7 +503,7 @@ const openDocs = () => {
 // Open GitHub
 const openGithub = () => {
   menuVisible.value = false
-  window.open('https://github.com/jrmatherly/ai-kb', '_blank')
+  window.open(siteLinks.githubUrl, '_blank')
 }
 
 // Log out

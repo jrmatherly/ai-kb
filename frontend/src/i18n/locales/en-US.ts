@@ -2580,6 +2580,7 @@ export default {
     oidcLoginWithProvider: 'Sign in with {provider}',
     redirectingToOIDC: 'Redirecting to identity provider...',
     orContinueWith: 'Or continue with',
+    signInWithPassword: 'Sign in with email and password',
     oidcLoginFailed: 'OIDC login failed',
     username: 'Username',
     email: 'Email',
