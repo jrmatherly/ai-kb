@@ -1906,9 +1906,6 @@ func initConnectorRegistry() (*datasource.ConnectorRegistry, error) {
 		errs = errors.Join(errs, fmt.Errorf("register seafile connector: %w", err))
 	}
 
-	// Future connectors will be registered here:
-	// if err := registry.Register(githubConnector.NewConnector()); err != nil { ... }
-
 	if errs != nil {
 		return nil, errs
 	}

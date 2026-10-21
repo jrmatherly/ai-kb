@@ -19,12 +19,16 @@ func TestParseConfigNormalisesRepository(t *testing.T) {
 		"owner/repo":     "owner/repo",
 		"/OWNER/Repo/":   "owner/repo",
 		"owner/repo.git": "owner/repo",
+		"owner/Repo.GIT": "owner/repo",
 	} {
 		cfg, err := parseConfig(settings(in))
 		require.NoError(t, err, in)
 		require.Equal(t, want, cfg.Repositories[0].Repository)
 	}
-	for _, in := range []string{"https://github.com/owner/repo", "owner", "owner/repo/extra", ""} {
+	for _, in := range []string{
+		"https://github.com/owner/repo", "owner", "owner/repo/extra", "",
+		"git@github.com:owner/repo.git", "own er/repo",
+	} {
 		_, err := parseConfig(settings(in))
 		require.ErrorIs(t, err, datasource.ErrInvalidConfig, in)
 	}

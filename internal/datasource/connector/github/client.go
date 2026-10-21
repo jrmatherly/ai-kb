@@ -23,13 +23,11 @@ const (
 	jsonMediaType  = "application/vnd.github+json"
 	rawMediaType   = "application/vnd.github.raw+json"
 
-	// maxJSONResponseBytes bounds user, repository and commit JSON.
 	maxJSONResponseBytes int64 = 16 << 20
-	// maxTreeResponseBytes bounds a recursive tree, which lists every entry of
-	// a repository (up to the API's own 100,000-entry truncation point).
+	// A recursive tree runs about 238 bytes per entry and the API truncates
+	// it at 100,000 entries; a blob is capped by the API at 100 MB.
 	maxTreeResponseBytes int64 = 64 << 20
-	// maxRawFileBytes is the API's own limit for a blob.
-	maxRawFileBytes int64 = 100 << 20
+	maxRawFileBytes      int64 = 100 << 20
 )
 
 // maxPaginationHops bounds a single paginated walk. The next page comes from
@@ -110,12 +108,12 @@ func normalizeBaseURL(value string) string {
 		return "https://api." + strings.TrimPrefix(lower, "api.")
 	}
 	path = strings.TrimRight(strings.TrimSuffix("/"+path, "/api/v3"), "/")
-	return scheme + "://" + host + path + "/api/v3"
+	return scheme + "://" + lower + path + "/api/v3"
 }
 
 func newClient(baseURL, token string) (*client, error) {
 	if strings.TrimSpace(token) == "" {
-		return nil, fmt.Errorf("GitHub access token is missing")
+		return nil, fmt.Errorf("%w: GitHub access token is missing", datasource.ErrInvalidConfig)
 	}
 	if err := datasource.ValidateConnectorBaseURL(baseURL); err != nil {
 		return nil, err
@@ -193,7 +191,6 @@ func (c *client) getCapped(ctx context.Context, endpoint string, out any, limit 
 	return json.Unmarshal(body, out)
 }
 
-// repoPath escapes each segment of an "owner/repo" key.
 func repoPath(key string) string {
 	owner, repo, _ := strings.Cut(key, "/")
 	return "/repos/" + url.PathEscape(owner) + "/" + url.PathEscape(repo)

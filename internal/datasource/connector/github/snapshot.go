@@ -35,7 +35,9 @@ var errMissingCommit = errors.New("github commit tree is gone")
 
 // snapshot reads the recursive tree of commit, or walks its subtrees one call
 // at a time when the API truncates the listing. A 404 or 422 is reported as
-// errMissingCommit: the recorded head was garbage-collected after a force-push.
+// errMissingCommit so the caller can decide whether that commit's absence is
+// recoverable: a recorded head garbage-collected after a force-push is, the
+// head just resolved is not.
 func (c *Connector) snapshot(ctx context.Context, key, commit string, roots []string) (snapshot, error) {
 	t, err := c.client.tree(ctx, key, commit, true)
 	if err != nil {

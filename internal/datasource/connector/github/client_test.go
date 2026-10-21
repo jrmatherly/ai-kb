@@ -53,6 +53,7 @@ func TestNormalizeBaseURL(t *testing.T) {
 		"octocorp.ghe.com":                  "https://api.octocorp.ghe.com",
 		"https://api.octocorp.ghe.com/":     "https://api.octocorp.ghe.com",
 		"ghe.example.com":                   "https://ghe.example.com/api/v3",
+		"GHE.Example.com":                   "https://ghe.example.com/api/v3",
 		"https://ghe.example.com/api/v3/":   "https://ghe.example.com/api/v3",
 		"http://127.0.0.1:8080":             "http://127.0.0.1:8080/api/v3",
 		"API.Octocorp.GHE.com":              "https://api.octocorp.ghe.com",
@@ -65,7 +66,7 @@ func TestNormalizeBaseURL(t *testing.T) {
 
 func TestNewClientRejectsEmptyTokenAndBlockedHost(t *testing.T) {
 	_, err := newClient("", "")
-	require.Error(t, err, "an empty token is rejected")
+	require.ErrorIs(t, err, datasource.ErrInvalidConfig, "an empty token is a configuration error")
 	_, err = newClient("http://127.0.0.1:1", "token") // without the whitelist helper
 	require.Error(t, err, "the SSRF policy runs on a non-empty base_url")
 }

@@ -2,6 +2,7 @@ package github
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/jrmatherly/ai-kb/internal/datasource"
@@ -78,6 +79,9 @@ func parseConfig(ds *types.DataSourceConfig) (*config, error) {
 	return out, nil
 }
 
+// repositoryName matches one lowercased owner or repository name.
+var repositoryName = regexp.MustCompile(`^[a-z0-9._-]+$`)
+
 // GitHub owner and repository names are case-insensitive, so the lowercased
 // form is the identity used for uniqueness.
 func normalizeRepository(value string) (string, error) {
@@ -85,9 +89,9 @@ func normalizeRepository(value string) (string, error) {
 	if strings.Contains(v, "://") {
 		return "", fmt.Errorf("%w: repository must be owner/repo, not a URL", datasource.ErrInvalidConfig)
 	}
-	v = strings.ToLower(strings.TrimSuffix(strings.Trim(v, "/"), ".git"))
+	v = strings.TrimSuffix(strings.Trim(strings.ToLower(v), "/"), ".git")
 	owner, repo, ok := strings.Cut(v, "/")
-	if !ok || owner == "" || repo == "" || strings.Contains(repo, "/") {
+	if !ok || !repositoryName.MatchString(owner) || !repositoryName.MatchString(repo) {
 		return "", fmt.Errorf("%w: repository must be owner/repo", datasource.ErrInvalidConfig)
 	}
 	return v, nil
