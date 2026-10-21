@@ -87,7 +87,6 @@ test('docsUrl follows the deployment docs URL once loaded', async () => {
   await links.ensureLoaded()
   assert.equal(docs.docsUrl('models'), 'https://kb.example.com/docs/03-features/06-models')
   assert.equal(links.githubUrl, 'https://github.com/jrmatherly/ai-kb')
-  assert.equal(links.loaded, true)
 })
 
 test('a failed links request keeps the default docs and no GitHub link', async () => {
@@ -97,5 +96,4 @@ test('a failed links request keeps the default docs and no GitHub link', async (
   await links.ensureLoaded()
   assert.equal(docs.docsUrl('home'), 'https://ai-kb.matherly.net/docs/')
   assert.equal(links.githubUrl, '')
-  assert.equal(links.loaded, true)
 })

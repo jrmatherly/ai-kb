@@ -8,28 +8,16 @@ export const DEFAULT_DOCS_URL = 'https://ai-kb.matherly.net/docs/'
 export const useSiteLinksStore = defineStore('siteLinks', () => {
   const docsUrl = ref(DEFAULT_DOCS_URL)
   const githubUrl = ref('')
-  const loaded = ref(false)
-  let loadingPromise: Promise<void> | null = null
+  let p: Promise<void> | undefined
 
-  const ensureLoaded = async (): Promise<void> => {
-    if (loaded.value) return
-    if (loadingPromise) return loadingPromise
-    loadingPromise = (async () => {
-      try {
-        const links = await getSystemLinks()
-        if (typeof links?.docs_url === 'string' && links.docs_url) docsUrl.value = links.docs_url
-        githubUrl.value = typeof links?.github_url === 'string' ? links.github_url : ''
-      } catch {
-        // A backend older than this route answers 401.
-        docsUrl.value = DEFAULT_DOCS_URL
-        githubUrl.value = ''
-      } finally {
-        loaded.value = true
-        loadingPromise = null
-      }
-    })()
-    return loadingPromise
-  }
+  const ensureLoaded = (): Promise<void> =>
+    (p ??= getSystemLinks()
+      .then((links) => {
+        docsUrl.value = links?.docs_url || DEFAULT_DOCS_URL
+        githubUrl.value = links?.github_url || ''
+      })
+      // A backend older than this route answers 401; the defaults stay.
+      .catch(() => {}))
 
-  return { docsUrl, githubUrl, loaded, ensureLoaded }
+  return { docsUrl, githubUrl, ensureLoaded }
 })
