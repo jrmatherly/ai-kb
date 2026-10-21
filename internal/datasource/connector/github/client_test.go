@@ -121,7 +121,7 @@ func TestRateLimitIsNotPermissionDenied(t *testing.T) {
 		},
 		"secondary 403": {
 			status: http.StatusForbidden,
-			hdr:    http.Header{"Retry-After": {"60"}, "X-Ratelimit-Remaining": {"4000"}},
+			hdr:    http.Header{"Retry-After": {"120"}, "X-Ratelimit-Remaining": {"4000"}},
 			reset:  "unknown",
 		},
 		"429": {status: http.StatusTooManyRequests, hdr: http.Header{}, reset: "unknown"},
@@ -137,6 +137,42 @@ func TestRateLimitIsNotPermissionDenied(t *testing.T) {
 			require.ErrorIs(t, err, errRateLimited)
 			require.NotErrorIs(t, err, datasource.ErrPermissionDenied)
 			require.EqualError(t, err, "github API rate limit exhausted until "+tc.reset)
+		})
+	}
+}
+
+func TestShortRetryAfterIsRetriedOnce(t *testing.T) {
+	for name, tc := range map[string]struct {
+		retryAfter   string
+		limitedTimes int64
+		wantErr      error
+		wantRequests int64
+		minElapsed   time.Duration
+	}{
+		"retried then served": {retryAfter: "1", limitedTimes: 1, wantRequests: 2, minElapsed: time.Second},
+		"over the cap":        {retryAfter: "120", limitedTimes: 1, wantErr: errRateLimited, wantRequests: 1},
+		"limited twice":       {retryAfter: "1", limitedTimes: 2, wantErr: errRateLimited, wantRequests: 2},
+	} {
+		t.Run(name, func(t *testing.T) {
+			var requests int64
+			server := newTestServer(t, func(w http.ResponseWriter, _ *http.Request) {
+				if atomic.AddInt64(&requests, 1) <= tc.limitedTimes {
+					w.Header().Set("Retry-After", tc.retryAfter)
+					w.Header().Set("X-RateLimit-Remaining", "4000")
+					w.WriteHeader(http.StatusForbidden)
+					return
+				}
+				_, _ = w.Write([]byte(`{"id":42}`))
+			})
+			start := time.Now()
+			err := newTestClient(t, server).ping(context.Background())
+			if tc.wantErr != nil {
+				require.ErrorIs(t, err, tc.wantErr)
+			} else {
+				require.NoError(t, err)
+			}
+			require.Equal(t, tc.wantRequests, atomic.LoadInt64(&requests))
+			require.GreaterOrEqual(t, time.Since(start), tc.minElapsed)
 		})
 	}
 }

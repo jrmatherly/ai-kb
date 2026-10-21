@@ -144,19 +144,27 @@ func readCapped(body io.Reader, limit int64) ([]byte, error) {
 	return data, nil
 }
 
+// retryAfterMax is the longest secondary rate-limit wait fetch sits out
+// before retrying; a longer one ends the run with errRateLimited.
+const retryAfterMax = 60 * time.Second
+
 // fetch GETs an absolute URL and returns its capped body and headers.
 func (c *client) fetch(ctx context.Context, rawURL, accept string, limit int64) ([]byte, http.Header, error) {
 	endpoint := strings.TrimPrefix(rawURL, c.baseURL)
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, rawURL, nil)
+	resp, err := c.send(ctx, rawURL, accept)
 	if err != nil {
 		return nil, nil, err
 	}
-	req.Header.Set("Authorization", "Bearer "+c.token)
-	req.Header.Set("Accept", accept)
-	req.Header.Set("X-GitHub-Api-Version", apiVersion)
-	resp, err := c.http.Do(req)
-	if err != nil {
-		return nil, nil, err
+	if wait, ok := shortRetryAfter(resp); ok {
+		_ = resp.Body.Close()
+		select {
+		case <-ctx.Done():
+			return nil, nil, ctx.Err()
+		case <-time.After(wait):
+		}
+		if resp, err = c.send(ctx, rawURL, accept); err != nil {
+			return nil, nil, err
+		}
 	}
 	defer func() { _ = resp.Body.Close() }()
 	if err := statusError(endpoint, resp); err != nil {
@@ -167,6 +175,31 @@ func (c *client) fetch(ctx context.Context, rawURL, accept string, limit int64) 
 		return nil, nil, fmt.Errorf("github API %s: %w", endpoint, err)
 	}
 	return body, resp.Header, nil
+}
+
+func (c *client) send(ctx context.Context, rawURL, accept string) (*http.Response, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, rawURL, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Authorization", "Bearer "+c.token)
+	req.Header.Set("Accept", accept)
+	req.Header.Set("X-GitHub-Api-Version", apiVersion)
+	return c.http.Do(req)
+}
+
+// shortRetryAfter reports the wait of a rate-limited response whose
+// Retry-After is a whole number of seconds no longer than retryAfterMax.
+func shortRetryAfter(resp *http.Response) (time.Duration, bool) {
+	if !errors.Is(statusError("", resp), errRateLimited) {
+		return 0, false
+	}
+	sec, err := strconv.Atoi(resp.Header.Get("Retry-After"))
+	wait := time.Duration(sec) * time.Second
+	if err != nil || sec < 0 || wait > retryAfterMax {
+		return 0, false
+	}
+	return wait, true
 }
 
 func statusError(endpoint string, resp *http.Response) error {
