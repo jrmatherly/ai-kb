@@ -247,7 +247,7 @@ subject_id uses Principal.StorageID() and, together with tenant_id, isolates ide
 
 | Table | Purpose | Key columns |
 | --- | --- | --- |
-| `data_sources` | External data source connections (Feishu/Lark wiki and drive, Notion, Confluence, Yuque, DingTalk, IMA, RSS, GitLab, Seafile; 000029) | `id`, `tenant_id`, `knowledge_base_id`, `type`, `config` (JSONB credentials), `sync_schedule` (cron), `sync_mode` (incremental/full), `conflict_strategy`, `sync_deletions`, `last_sync_at`/`last_sync_cursor`/`last_sync_result` |
+| `data_sources` | External data source connections (Feishu/Lark wiki and drive, Notion, Confluence, Yuque, DingTalk, IMA, RSS, GitLab, GitHub, Seafile; 000029) | `id`, `tenant_id`, `knowledge_base_id`, `type`, `config` (JSONB credentials), `sync_schedule` (cron), `sync_mode` (incremental/full), `conflict_strategy`, `sync_deletions`, `last_sync_at`/`last_sync_cursor`/`last_sync_result` |
 | `sync_logs` | One record per sync run | `data_source_id` (FK, CASCADE), `status`, `started_at`/`finished_at`, `items_total/created/updated/deleted/skipped/failed`, `error_message` |
 | `im_channels` | IM channel settings (WeCom, Feishu, Slack and others) | `tenant_id`, `platform`, `agent_id`, `knowledge_base_id`, `mode` (websocket/webhook; DingTalk uses only websocket since 000096), `output_mode`, `session_mode`, `bot_identity`, `credentials`, `locale` (fixed reply language, an empty string uses the deployment default, 000110) |
 | `im_channel_sessions` | IM user or thread ↔ session mapping | `im_channel_id`, `session_id` (FK, CASCADE), `agent_id`, platform user and conversation identifiers |

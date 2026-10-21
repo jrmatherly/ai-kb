@@ -38,6 +38,7 @@ Pick the connector that matches where the content lives; the type identifier is 
 | DingTalk Docs | `dingtalk` | Knowledge bases, folders and online documents |
 | Tencent IMA | `ima` | Files and notes in knowledge bases |
 | GitLab | `gitlab` | Directories under a chosen branch or tag of a repository |
+| GitHub | `github` | Directories under a chosen branch or tag of a repository |
 | Seafile | `seafile` | Directories and files in a library |
 | RSS / Atom | `rss` | Feed entries |
 
@@ -51,7 +52,7 @@ Use this section to understand what a sync changed and why it failed.
 
 The first sync fetches the selected scope; later syncs update by connector cursor and modification data. Deletion detection depends on the connector and on the sync settings; entries that age out of an RSS feed do not count as source deletions. When a sync fails, read the log for credential, resource visibility or parsing errors first, then test the connection and retry.
 
-With deletion sync on, a sync of a data source whose sync mode is Full also reconciles, for Feishu/Lark (wiki and Drive), Confluence Server / Data Center, Seafile and DingTalk. There is no separate "force full sync" action; the sync mode decides. When the connector listed every selected resource completely, knowledge items of the data source missing from that listing are deleted. That removes the items of resources taken out of the selection. Confluence Cloud never reconciles, because its listing API gives no way to tell a cut-short listing from a complete one. A deletion that fails stays pending, and the next sync, incremental or full, retries it.
+With deletion sync on, a sync of a data source whose sync mode is Full also reconciles, for Feishu/Lark (wiki and Drive), Confluence Server / Data Center, Seafile, DingTalk and GitHub. There is no separate "force full sync" action; the sync mode decides. When the connector listed every selected resource completely, knowledge items of the data source missing from that listing are deleted. That removes the items of resources taken out of the selection. Confluence Cloud never reconciles, because its listing API gives no way to tell a cut-short listing from a complete one. A deletion that fails stays pending, and the next sync, incremental or full, retries it.
 
 A mass-deletion guard checks every deletion a sync would make, in every sync mode: the deletions the connector reports itself (a file gone from the source, a Confluence space or Seafile folder taken out of the selection), the full-sync reconcile's, and the ones an earlier sync held back. A sync collects them while it runs and decides once, after its listing ends. When it would delete 500 or more items, or 10 or more items that are also at least 10% of the items the data source owns, it deletes nothing and the run ends as Partial with the code `deletion_guard_tripped`. A full-sync listing that returned nothing while the data source owns items is held back the same way (`reconcile_listing_empty`). The sync log then shows how many items would go, how many of them come from resources removed from the selection, and up to 100 of their titles. Held deletions are stored with the data source's sync cursor, so later syncs keep counting them after the connector has stopped reporting them, and a held deletion is dropped only when the source reports the item, or the document it belongs to, again, or when deletion sync is turned off. While held deletions wait, every later sync holds its own deletions with them, even a batch under both limits. If the deletion is expected, choose "Sync and apply deletions" in the data source's menu: it runs one sync that applies the held deletions together with its own, without both checks, and every later sync applies them again. A run whose listing could not be confirmed complete records `reconcile_listing_incomplete` and stays a success. When a sync does delete, the log counts the items from resources removed from the selection and the items gone from the source. Seafile reports all of them as gone from the source, because its items record the library rather than the selected folder.
 
@@ -108,6 +109,18 @@ Streaming sync supports resume from a checkpoint; incremental sync updates files
 {"credentials":{"base_url":"https://gitlab.example.com","access_token":"<token>"},"settings":{"projects":[{"project_id":"123","ref":"main","paths":["docs"]}]}}
 ```
 
+#### GitHub (`connector/github/`)
+
+Choose GitHub as the data source and enter `credentials.access_token`, a personal access token that can read the contents of the selected repositories. `credentials.base_url` is optional: leave it empty for github.com, or enter a ghe.com enterprise host or a GitHub Enterprise Server host. Then pick the repositories, a branch or tag, and the directories.
+
+`config.settings.repositories` is a non-empty array whose entries hold a `repository`, an optional `ref` and `paths`. `repository` is `owner/repo` with exactly one slash; it is stored in lowercase, a trailing `.git` is dropped, a URL is rejected, and each repository can appear only once. An empty `ref` uses the default branch; empty `paths` selects the whole repository; directories are relative paths with forward slashes.
+
+Streaming sync supports resume from a checkpoint. Incremental sync diffs repository snapshots built from git trees, so a force-push, and a changed branch or directory selection, are handled: files that left the selection are reported as deleted. Progress is checkpointed every 50 files, so a sync stopped by the hourly rate limit resumes where it stopped; if the selection changes before the retry, the retry reconciles the partial run first. A file over the 100 MB API limit is reported as a failed item and the sync continues. A Git LFS file is imported as its pointer text, not its content. A forced full sync removes the data source's knowledge items the run did not list. Deletions follow `sync_deletions`. As with GitLab, files pass AI KB's file type, size and parser checks, and each file is identified by the API host, repository, branch or tag and path.
+
+```json
+{"credentials":{"base_url":"","access_token":"<token>"},"settings":{"repositories":[{"repository":"owner/repo","ref":"main","paths":["docs"]}]}}
+```
+
 #### Seafile (`connector/seafile/`)
 
 1. Obtain the user API token of a Seafile account and confirm that the account can read the target library.
@@ -131,7 +144,7 @@ Downloadable files go through document parsing, web pages are fetched by URL, an
 {"credentials":{"client_id":"<client-id>","api_key":"<api-key>"},"resource_ids":["<resource-id-from-tree>"]}
 ```
 
-Feishu/Lark sync records take their update time from the content edit time, so body changes are not missed when only the wiki node time was considered. GitLab and IMA both support deletion detection; entries that roll off an RSS feed are not treated as deletions.
+Feishu/Lark sync records take their update time from the content edit time, so body changes are not missed when only the wiki node time was considered. GitLab, GitHub and IMA support deletion detection; entries that roll off an RSS feed are not treated as deletions.
 
 #### Notion (`connector/notion/`)
 
@@ -276,7 +289,7 @@ Enqueue options: queue `types.QueueSync`, `MaxRetry(5)`, `Timeout(2*time.Hour)`.
   - **an update is delete then create**: an existing knowledge item found by the metadata `external_id` is removed with `DeleteKnowledge` and rebuilt, counted as Updated;
   - a duplicate file (`DuplicateKnowledgeError`) counts as Skipped, not as a failure;
   - every entry carries the metadata `external_id`, `source_resource_id` and `datasource_id`, plus whatever the connector adds. When the source provides times, `source_created_at` / `source_updated_at` are stored in UTC RFC3339; they are the source document's times, separate from AI KB's created_at / updated_at.
-- **Full-sync reconcile** (`reconcileDeletions`): on a full sync with `sync_deletions=true`, the service collects every emitted external_id. When the returned cursor has `CompleteListing` set, it lists the external IDs this data source owns in the knowledge base (`ListDataSourceExternalIDs`) and sends each one the run did not emit through the same `IsDeleted` path, so the counters match connector tombstones. A sub-item (`<parent>#kind#token`) whose parent was emitted is left to the subtree sweep. A connector sets `CompleteListing` only when every selected resource was listed completely and every live item was emitted: Feishu/Lark from a nil cursor with no partial listing, Confluence and Seafile on a full run that did not resume from a checkpoint (and, for Confluence, with no space listing cut short), DingTalk from `FetchAllFromCursor` with every scope scanned. These connectors declare the `full_sync_reconcile` capability, and the service only collects emitted IDs for them. Notion, Yuque, GitLab, RSS and IMA never set `CompleteListing`, so they never reconcile. A listing that emitted nothing while the data source owns items is treated as lost access and skips the reconcile.
+- **Full-sync reconcile** (`reconcileDeletions`): on a full sync with `sync_deletions=true`, the service collects every emitted external_id. When the returned cursor has `CompleteListing` set, it lists the external IDs this data source owns in the knowledge base (`ListDataSourceExternalIDs`) and sends each one the run did not emit through the same `IsDeleted` path, so the counters match connector tombstones. A sub-item (`<parent>#kind#token`) whose parent was emitted is left to the subtree sweep. A connector sets `CompleteListing` only when every selected resource was listed completely and every live item was emitted: Feishu/Lark from a nil cursor with no partial listing, Confluence and Seafile on a full run that did not resume from a checkpoint (and, for Confluence, with no space listing cut short), DingTalk from `FetchAllFromCursor` with every scope scanned, GitHub on a run that started from a nil cursor. These connectors declare the `full_sync_reconcile` capability, and the service only collects emitted IDs for them. Notion, Yuque, GitLab, RSS and IMA never set `CompleteListing`, so they never reconcile. A listing that emitted nothing while the data source owns items is treated as lost access and skips the reconcile.
 - **Auto-tagging**: `resolveAutoTagIDs` finds or creates a tag named after the data source in the target KB and attaches it to every synced entry, so the source is visible in the KB; a tagging failure does not block the sync.
 - **Result status**: every entry failed gives `failed` (`allFetchedItemsFailedError`); a partial RSS feed failure (`PartialFetchError`) or failed documents on the streaming path give `partial`; everything else is `success`. Up to 100 failure samples are kept as `SyncItemError`.
 - When a fetch fails but the connector returned a new cursor (RSS, for example), the cursor is still persisted, so a transient outage does not force a full re-fetch.
@@ -300,7 +313,7 @@ sequenceDiagram
     Q-->>S: ProcessSync(payload)
     S->>DB: Load DataSource / SyncLog, check the KB exists
     S->>S: ParseConfig() decrypts credentials
-    alt "StreamingConnector (Feishu/Lark, GitLab, Confluence, Seafile)"
+    alt "StreamingConnector (Feishu/Lark, GitLab, GitHub, Confluence, Seafile)"
         S->>C: FetchStream(config, cursor, handler)
         loop "Walk the wiki nodes"
             C->>EXT: ListWikiNodesRecursive / ExportAndDownload
@@ -415,7 +428,7 @@ type StreamingConnector interface {
 }
 ```
 
-After a task timeout, processing continues from the most recent checkpoint. The Asynq sync task timeout is 2 hours, and the streaming path advances item by item instead of buffering every file body. The Feishu/Lark (wiki and drive), GitLab, Confluence and Seafile connectors implement `StreamingConnector`; Confluence and Seafile also implement `FullStreamingConnector`, so a full sync can still reconcile deletions. DingTalk currently uses the batch `FetchAll` / `FetchIncremental` / `FetchAllFromCursor` path; very large knowledge bases should use incremental mode to avoid loading all the Markdown at once.
+After a task timeout, processing continues from the most recent checkpoint. The Asynq sync task timeout is 2 hours, and the streaming path advances item by item instead of buffering every file body. The Feishu/Lark (wiki and drive), GitLab, GitHub, Confluence and Seafile connectors implement `StreamingConnector`; Confluence and Seafile also implement `FullStreamingConnector`, so a full sync can still reconcile deletions. DingTalk currently uses the batch `FetchAll` / `FetchIncremental` / `FetchAllFromCursor` path; very large knowledge bases should use incremental mode to avoid loading all the Markdown at once.
 
 #### ConnectorRegistry: registration and lookup
 
@@ -433,10 +446,11 @@ registry.Register(dingtalkConnector.NewConnector())                 // dingtalk
 registry.Register(imaConnector.NewConnector())                      // ima
 registry.Register(rssConnector.NewConnector())                      // rss
 registry.Register(gitlabConnector.NewConnector())                   // gitlab
+registry.Register(githubConnector.NewConnector())                   // github
 registry.Register(seafileConnector.NewConnector())                  // seafile
 ```
 
-> Note: `ConnectorMetadataRegistry` in `connector.go` still lists connectors that are not implemented yet (GitHub, Google Drive, OneDrive, Web Crawler, Slack, IMAP). The types actually registered and usable are `feishu`, `lark`, `feishu_drive`, `lark_drive`, `notion`, `confluence`, `yuque`, `dingtalk`, `ima`, `rss`, `gitlab` and `seafile`. Creating a data source with an unregistered type is rejected by `connectorRegistry.Get()` with `ErrConnectorNotFound`.
+> Note: `ConnectorMetadataRegistry` in `connector.go` still lists connectors that are not implemented yet (Google Drive, OneDrive, Web Crawler, Slack, IMAP). The types actually registered and usable are `feishu`, `lark`, `feishu_drive`, `lark_drive`, `notion`, `confluence`, `yuque`, `dingtalk`, `ima`, `rss`, `gitlab`, `github` and `seafile`. Creating a data source with an unregistered type is rejected by `connectorRegistry.Get()` with `ErrConnectorNotFound`.
 
 ### Data model (internal/types/datasource.go)
 
