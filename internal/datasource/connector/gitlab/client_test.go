@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/jrmatherly/ai-kb/internal/datasource"
+	"github.com/jrmatherly/ai-kb/internal/datasource/connector/repofile"
 
 	"github.com/jrmatherly/ai-kb/internal/types"
 	secutils "github.com/jrmatherly/ai-kb/internal/utils"
@@ -313,8 +314,8 @@ func TestIsSupportedFile(t *testing.T) {
 		{file: "archive.tar.gz", want: false},
 		{file: "LICENSE", want: false},
 	} {
-		if got := isSupportedFile(tc.file); got != tc.want {
-			t.Errorf("isSupportedFile(%q) = %v, want %v", tc.file, got, tc.want)
+		if got := repofile.IsSupported(tc.file); got != tc.want {
+			t.Errorf("repofile.IsSupported(%q) = %v, want %v", tc.file, got, tc.want)
 		}
 	}
 }

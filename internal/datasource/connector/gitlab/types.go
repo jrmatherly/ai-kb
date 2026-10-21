@@ -2,11 +2,10 @@ package gitlab
 
 import (
 	"fmt"
-	"path"
-	"sort"
 	"strings"
 
 	"github.com/jrmatherly/ai-kb/internal/datasource"
+	"github.com/jrmatherly/ai-kb/internal/datasource/connector/repofile"
 	"github.com/jrmatherly/ai-kb/internal/types"
 )
 
@@ -57,52 +56,18 @@ func parseConfig(ds *types.DataSourceConfig) (*config, error) {
 				if !ok {
 					return nil, fmt.Errorf("%w: path must be a string", datasource.ErrInvalidConfig)
 				}
-				normalized, err := normalizePath(s)
+				normalized, err := repofile.NormalizePath(s)
 				if err != nil {
 					return nil, err
 				}
 				p.Paths = append(p.Paths, normalized)
 			}
 		}
-		p.Paths = collapsePaths(p.Paths)
+		p.Paths = repofile.CollapsePaths(p.Paths)
 		out.Projects = append(out.Projects, p)
 	}
 	if len(out.Projects) == 0 {
 		return nil, fmt.Errorf("%w: at least one project is required", datasource.ErrInvalidConfig)
 	}
 	return out, nil
-}
-
-func normalizePath(value string) (string, error) {
-	v := strings.Trim(strings.TrimSpace(value), "/")
-	if v == "" {
-		return "", nil
-	}
-	if strings.Contains(v, "\\") {
-		return "", fmt.Errorf("%w: path must use forward slashes", datasource.ErrInvalidConfig)
-	}
-	if path.Clean(v) != v || v == "." || strings.HasPrefix(v, "../") || strings.Contains(v, "/../") {
-		return "", fmt.Errorf("%w: invalid repository path", datasource.ErrInvalidConfig)
-	}
-	return v, nil
-}
-
-func collapsePaths(paths []string) []string {
-	if len(paths) == 0 {
-		return nil
-	}
-	sort.Strings(paths)
-	for _, p := range paths {
-		if p == "" {
-			return nil
-		}
-	}
-	out := make([]string, 0, len(paths))
-	for _, p := range paths {
-		if len(out) > 0 && (p == out[len(out)-1] || strings.HasPrefix(p, out[len(out)-1]+"/")) {
-			continue
-		}
-		out = append(out, p)
-	}
-	return out
 }
