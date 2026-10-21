@@ -86,8 +86,13 @@ func (s *DataSourceService) CreateDataSource(
 		return nil, datasource.ErrKnowledgeBaseNotFound
 	}
 
-	if _, err := s.offeredConnector(ds.Type); err != nil {
+	if _, err := s.connectorRegistry.Get(ds.Type); err != nil {
 		return nil, err
+	}
+	// Only creation is gated: saved sources of an excluded type keep syncing and stay repairable.
+	if !datasource.ConnectorTypeEnabled(ds.Type) {
+		return nil, apperrors.NewBadRequestError("connector type " + ds.Type +
+			" is disabled by this deployment (" + datasource.ConnectorTypesEnv + ")")
 	}
 
 	// Validate configuration
@@ -429,7 +434,7 @@ func (s *DataSourceService) ListResourcesForConfig(
 	ctx context.Context, config *types.DataSourceConfig, parentID string,
 ) (_ []types.Resource, err error) {
 	defer func() { err = clientError(err) }()
-	connector, err := s.offeredConnector(config.Type)
+	connector, err := s.connectorRegistry.Get(config.Type)
 	if err != nil {
 		return nil, err
 	}
@@ -1272,7 +1277,7 @@ func (s *DataSourceService) ValidateCredentials(
 	ctx context.Context, connectorType string, credentials map[string]interface{},
 ) (err error) {
 	defer func() { err = clientError(err) }()
-	connector, err := s.offeredConnector(connectorType)
+	connector, err := s.connectorRegistry.Get(connectorType)
 	if err != nil {
 		return err
 	}
@@ -1288,20 +1293,6 @@ func (s *DataSourceService) ValidateCredentials(
 }
 
 // Helper functions
-
-// offeredConnector gates creating and probing a connector type: an unknown type fails first, then one the
-// deployment excludes. Saved sources of an excluded type still sync.
-func (s *DataSourceService) offeredConnector(connectorType string) (datasource.Connector, error) {
-	connector, err := s.connectorRegistry.Get(connectorType)
-	if err != nil {
-		return nil, err
-	}
-	if !datasource.ConnectorTypeEnabled(connectorType) {
-		return nil, apperrors.NewBadRequestError("connector type " + connectorType +
-			" is disabled by this deployment (" + datasource.ConnectorTypesEnv + ")")
-	}
-	return connector, nil
-}
 
 func (s *DataSourceService) validateDataSourceConfig(ctx context.Context, ds *types.DataSource) error {
 	connector, err := s.connectorRegistry.Get(ds.Type)

@@ -845,30 +845,29 @@ func TestCreateDataSourceHonorsConnectorAllowList(t *testing.T) {
 	}
 }
 
-// The probe endpoints (validate-credentials, list-resources for an unsaved config) are gated like create.
-func TestProbePathsHonorConnectorAllowList(t *testing.T) {
-	for _, tc := range []struct {
-		allowList   string
-		wantAllowed bool
-	}{{"", false}, {"all", true}, {"rss,notion", true}, {"notion", false}} {
-		t.Run(tc.allowList, func(t *testing.T) {
-			t.Setenv(datasource.ConnectorTypesEnv, tc.allowList)
-			registry := datasource.NewConnectorRegistry()
-			require.NoError(t, registry.Register(rssTestConnector{}))
-			svc := &DataSourceService{connectorRegistry: registry}
-			validateErr := svc.ValidateCredentials(context.Background(), types.ConnectorTypeRSS, nil)
-			_, listErr := svc.ListResourcesForConfig(context.Background(),
-				&types.DataSourceConfig{Type: types.ConnectorTypeRSS}, "")
-			for name, err := range map[string]error{"validate": validateErr, "list": listErr} {
-				if tc.wantAllowed {
-					require.NoError(t, err, name)
-					continue
-				}
-				var appErr *apperrors.AppError
-				require.ErrorAs(t, err, &appErr, name)
-				require.Equal(t, http.StatusBadRequest, appErr.HTTPCode, name)
-				require.ErrorContains(t, err, "connector type rss is disabled by this deployment", name)
-			}
-		})
+// A saved source of an excluded type stays repairable: credential checks and resource listing accept the
+// type, and only create rejects it.
+func TestProbePathsAcceptExcludedConnectorType(t *testing.T) {
+	t.Setenv(datasource.ConnectorTypesEnv, "notion")
+	f := newSQLiteDataSourceDeleteFixture(t)
+	registry := datasource.NewConnectorRegistry()
+	require.NoError(t, registry.Register(rssTestConnector{}))
+	kb := &types.KnowledgeBase{ID: f.ds.KnowledgeBaseID, TenantID: f.ds.TenantID}
+	svc := &DataSourceService{
+		dsRepo: f.dsRepo, scheduler: f.scheduler, connectorRegistry: registry,
+		kbService: &processSyncKBService{kb: kb},
 	}
+
+	require.NoError(t, svc.ValidateCredentials(context.Background(), types.ConnectorTypeRSS, nil))
+	_, err := svc.ListResourcesForConfig(context.Background(),
+		&types.DataSourceConfig{Type: types.ConnectorTypeRSS}, "")
+	require.NoError(t, err)
+
+	ds := *f.ds
+	ds.ID = "excluded"
+	ds.Type = types.ConnectorTypeRSS
+	ds.SyncSchedule = ""
+	ds.Config = []byte(`{"type":"rss"}`)
+	_, err = svc.CreateDataSource(context.Background(), &ds)
+	require.ErrorContains(t, err, "connector type rss is disabled by this deployment")
 }
