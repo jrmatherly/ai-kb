@@ -817,7 +817,7 @@ const isMaskedSecret = (value?: string) => value === secretPlaceholder
 // the sandbox account cannot write.
 const defaultDockerImage = 'ghcr.io/jrmatherly/ai-kb-sandbox:main'
 
-const clusterGuideUrl = docsUrl('sandboxDeployment')
+const clusterGuideUrl = computed(() => docsUrl('sandboxDeployment'))
 const e2bApiKeysUrl = 'https://e2b.dev/dashboard?tab=keys'
 
 const backendOptions = computed(() => {

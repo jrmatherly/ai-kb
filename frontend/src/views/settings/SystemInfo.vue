@@ -248,7 +248,7 @@ function formatUptime(totalSeconds: number): string {
   return parts.join(' ')
 }
 
-const troubleshootingDocsURL = docsUrl('troubleshootingMigrations')
+const troubleshootingDocsURL = computed(() => docsUrl('troubleshootingMigrations'))
 
 // Pre-fills a new issue with the current migration error so users don't have to
 // paste it manually. Body is intentionally minimal - the bug template will fill

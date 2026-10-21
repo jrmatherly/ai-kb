@@ -710,7 +710,7 @@ const PROTOCOL_OPTIONS = [
 ] as const
 
 /** Field reference for parameters.spec.compat, per protocol and model type. */
-const COMPAT_DOC_URL = docsUrl('modelsCompat')
+const COMPAT_DOC_URL = computed(() => docsUrl('modelsCompat'))
 
 /** Legacy thinking_control values still honoured by catalog.Resolve. */
 const LEGACY_THINKING_CONTROL_VALUES = ['none', 'enable_thinking', 'thinking_type', 'chat_template_kwargs'] as const

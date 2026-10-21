@@ -581,12 +581,11 @@ const loadSystemInfo = async (force = false) => {
   }
 }
 
-const graphGuideUrl =
-  import.meta.env.VITE_KG_GUIDE_URL || docsUrl('knowledgeGraph')
+const graphGuideUrl = computed(() => import.meta.env.VITE_KG_GUIDE_URL || docsUrl('knowledgeGraph'))
 
 // Open guide documentation to show how to enable graph database
 const handleOpenGraphGuide = () => {
-  window.open(graphGuideUrl, '_blank', 'noopener')
+  window.open(graphGuideUrl.value, '_blank', 'noopener')
 }
 
 // Initialize

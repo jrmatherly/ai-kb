@@ -252,7 +252,7 @@ const dockerBackendEnabled = computed(() =>
   deploymentCapabilities.isSupported('settings.sandbox.docker'),
 )
 
-const sandboxGuideUrl = docsUrl('sandboxDeployment')
+const sandboxGuideUrl = computed(() => docsUrl('sandboxDeployment'))
 
 const backendTypes = [...NAMED_SANDBOX_BACKEND_TYPES]
 

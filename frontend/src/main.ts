@@ -38,8 +38,7 @@ async function bootstrap() {
   const pinia = createPinia();
   app.use(pinia);
 
-  // Awaited before mount: some pages build doc links once, at setup.
-  const siteLinks = useSiteLinksStore().ensureLoaded();
+  void useSiteLinksStore().ensureLoaded();
 
   // Capabilities (can_create_tenant, auto_accept_invitation) are not cached
   // in localStorage - reconcile once before first paint when a session exists.
@@ -62,7 +61,7 @@ async function bootstrap() {
   app.use(i18n);
 
   // Mount after the first route (navigation guards and Lite auto-login included) resolves, so the default page does not flash before the redirect
-  await Promise.all([router.isReady(), siteLinks]);
+  await router.isReady();
   app.mount("#app");
   installAutofillGuard();
 }
