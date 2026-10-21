@@ -54,8 +54,38 @@ func TestNewTestClient_IsolatesTransportFromOtherServers(t *testing.T) {
 	ts := httptest.NewServer(versionHandler("opensearch", "3.3.2"))
 	defer ts.Close()
 	client := newTestClient(t, ts.URL)
-	if err := probeVersion(context.Background(), client); err != nil {
-		t.Fatal(err)
+
+	// net/http pools a connection only when its write goroutine reports
+	// back within a short window, which a loaded CI runner can miss. Probe
+	// until one is pooled before the sibling closes.
+	var (
+		mu      sync.Mutex
+		pooled  bool
+		lastErr = errors.New("PutIdleConn never fired")
+	)
+	warm := httptrace.WithClientTrace(context.Background(), &httptrace.ClientTrace{
+		PutIdleConn: func(err error) {
+			mu.Lock()
+			defer mu.Unlock()
+			pooled, lastErr = err == nil, err
+		},
+	})
+	for i := 0; i < 20; i++ {
+		if err := probeVersion(warm, client); err != nil {
+			t.Fatal(err)
+		}
+		mu.Lock()
+		ok := pooled
+		mu.Unlock()
+		if ok {
+			break
+		}
+	}
+	mu.Lock()
+	ok, why := pooled, lastErr
+	mu.Unlock()
+	if !ok {
+		t.Fatalf("no connection entered the idle pool in 20 probes: %v", why)
 	}
 
 	sibling := httptest.NewServer(http.NotFoundHandler())
