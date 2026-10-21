@@ -4,9 +4,10 @@ import { createRequire } from 'node:module'
 import { fileURLToPath } from 'node:url'
 import { runInNewContext } from 'node:vm'
 import test from 'node:test'
-import { compileScript, parse } from '@vue/compiler-sfc'
+import { compileScript, compileTemplate, parse } from '@vue/compiler-sfc'
 import ts from 'typescript'
 import { createRenderer, h, nextTick, reactive, ref } from 'vue'
+import { renderToString } from 'vue/server-renderer'
 
 const require = createRequire(import.meta.url)
 const filename = fileURLToPath(new URL('./DataSourceEditorDialog.vue', import.meta.url))
@@ -37,6 +38,7 @@ async function fixture({
   dataSource = null,
   typesReply = Promise.resolve(),
   typesFail = false,
+  types = undefined as any[] | undefined,
 }: {
   configured?: boolean
   create?: boolean
@@ -46,6 +48,7 @@ async function fixture({
   dataSource?: any
   typesReply?: Promise<void>
   typesFail?: boolean
+  types?: any[]
 } = {}) {
   const calls: Array<{ method: string; args: any[] }> = []
   let typesCalls = 0
@@ -97,7 +100,7 @@ async function fixture({
       typesCalls++
       await typesReply
       if (typesFail) throw new Error('network')
-      return [
+      return types ?? [
         { type: 'feishu', capabilities: ['incremental', 'deletion_sync', 'full_sync_reconcile'] },
         { type: 'confluence', capabilities: ['incremental', 'deletion_sync', 'full_sync_reconcile'] },
         { type: 'dingtalk', capabilities: ['incremental', 'deletion_sync', 'full_sync_reconcile'] },
@@ -288,6 +291,41 @@ test('a failed types request is retried on the next open', async () => {
     assert.equal(f.typesCalls(), 2)
     assert.deepEqual(f.warnings, ['datasource.typesLoadFailed', 'datasource.typesLoadFailed'])
   } finally { f.close() }
+})
+
+// Renders the dialog's real type-picker section against the component's state.
+function renderPicker(vm: any) {
+  const section = descriptor.template!.content.match(/<section v-if="step === 0"[\s\S]*?<\/section>/)![0]
+  const { code, errors } = compileTemplate({ source: section, filename, id: 'picker-test' })
+  assert.deepEqual(errors, [])
+  const render: any = {}
+  runInNewContext(ts.transpileModule(code, {
+    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
+  }).outputText, { exports: render, require: () => require('vue') })
+  return renderToString(h({
+    render: render.render,
+    setup: () => ({ step: 0, offeredTypes: vm.offeredTypes, pickerDefs: vm.pickerDefs, t: (key: string) => key, selectType() {} }),
+  }))
+}
+
+test('the type picker shows one card per enabled type, and a hint when none is', async () => {
+  const one = await fixture({ create: true, types: [
+    { type: 'notion', capabilities: [] }, { type: 'feishu', capabilities: [], enabled: false },
+  ] })
+  try {
+    await flush()
+    const html = await renderPicker(one.vm)
+    assert.equal(html.match(/class="ds-type-card/g)?.length, 1)
+    assert.ok(html.includes('datasource.connector.notion'))
+    assert.ok(!html.includes('datasource.noTypesEnabled'))
+  } finally { one.close() }
+  const none = await fixture({ create: true, types: [{ type: 'notion', capabilities: [], enabled: false }] })
+  try {
+    await flush()
+    const html = await renderPicker(none.vm)
+    assert.ok(!html.includes('ds-type-card'))
+    assert.ok(html.includes('datasource.noTypesEnabled'))
+  } finally { none.close() }
 })
 
 const seafileRepoA = '0f1e2d3c-4b5a-4968-8776-655443322110'

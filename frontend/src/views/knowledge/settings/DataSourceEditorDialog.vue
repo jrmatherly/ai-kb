@@ -1470,6 +1470,9 @@ const drawerConfirmText = computed(() => {
     <section v-if="step === 0" class="setting-drawer__section">
       <h4 class="setting-drawer__section-title">{{ t('datasource.step.selectType') }}</h4>
       <div v-if="offeredTypes === 'loading'" class="ds-loading-center"><t-loading /></div>
+      <div v-else-if="pickerDefs.length === 0" class="ds-resource-empty">
+        <p class="ds-empty-desc">{{ t('datasource.noTypesEnabled') }}</p>
+      </div>
       <div v-else class="ds-type-grid">
         <button
           v-for="def in pickerDefs"

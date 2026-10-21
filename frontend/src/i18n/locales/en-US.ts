@@ -6718,6 +6718,7 @@ export default {
     title: 'Data Sources',
     description: 'Configure external data sources to sync content into this knowledge base',
     typesLoadFailed: 'Could not load the connector types this deployment offers. Showing all of them.',
+    noTypesEnabled: 'No data source types are enabled on this deployment.',
     add: 'Add Data Source',
     empty: 'No data sources configured',
     edit: 'Edit',
