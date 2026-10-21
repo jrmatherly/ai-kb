@@ -1,12 +1,16 @@
 package handler
 
 import (
+	"context"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
+	"sync"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jrmatherly/ai-kb/internal/envlist"
+	"github.com/jrmatherly/ai-kb/internal/logger"
 )
 
 const (
@@ -27,11 +31,20 @@ type SystemLinks struct {
 	GitHubURL string `json:"github_url"`
 }
 
-// DocsURL returns DocsURLEnv, or DefaultDocsURL when unset, ending in exactly
-// one slash because the UI appends page paths to it.
+var invalidDocsURLWarning sync.Once
+
+// DocsURL returns DocsURLEnv, or DefaultDocsURL when it is unset or not an
+// absolute http(s) URL, ending in exactly one slash because the UI appends
+// page paths to it.
 func DocsURL() string {
 	raw := strings.TrimSpace(os.Getenv(DocsURLEnv))
 	if raw == "" {
+		raw = DefaultDocsURL
+	} else if u, err := url.Parse(raw); err != nil || (u.Scheme != "http" && u.Scheme != "https") || u.Host == "" {
+		invalidDocsURLWarning.Do(func() {
+			logger.Warnf(context.Background(), "[System] %s is not an absolute http(s) URL, using %s: %q",
+				DocsURLEnv, DefaultDocsURL, raw)
+		})
 		raw = DefaultDocsURL
 	}
 	return strings.TrimRight(raw, "/") + "/"
