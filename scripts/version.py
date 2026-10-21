@@ -91,6 +91,8 @@ TOUCHPOINTS = [
     Touchpoint("go", "go.mod", r"^toolchain go(?P<v>\S+)$"),
     Touchpoint("go", "cli/go.mod", r"^toolchain go(?P<v>\S+)$"),
     Touchpoint("go", "docker/Dockerfile.app", r"^FROM golang:(?P<v>[^-@\s]+)-bookworm@sha256:[0-9a-f]{64} AS builder$"),
+    Touchpoint("go", "website-docs/01-getting-started/02-installation.md", r"\(`toolchain go(?P<v>[^`]+)` at the time of writing"),
+    Touchpoint("go", "website-docs/06-development/01-dev-guide.md", r"built with the pinned `toolchain go(?P<v>[^`]+)`"),
 ]
 # The tag each publish workflow expects; None: nothing publishes it.
 TAG_PREFIX = {

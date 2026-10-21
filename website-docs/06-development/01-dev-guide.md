@@ -8,10 +8,10 @@ AI KB is made of three processes that are developed independently, plus a CLI:
 
 | Component | Directory | Language / runtime | Required version (source) |
 | --- | --- | --- | --- |
-| Main backend `app` | `cmd/server` + `internal/` | Go | **Go 1.26.0** (`go 1.26.0` in `go.mod`). Needs CGO (DuckDB and sqlite-vec bindings) |
+| Main backend `app` | `cmd/server` + `internal/` | Go | **Go 1.26.0** or later (`go 1.26.0` in `go.mod`), built with the pinned `toolchain go1.26.10`. Needs CGO (DuckDB and sqlite-vec bindings) |
 | Document parsing service `docreader` | `docreader/` | Python + gRPC | **Python >= 3.14** (`requires-python` in `docreader/pyproject.toml`). Dependencies are managed with **uv** (the repository has `uv.lock`; the Docker image runs `uv sync --locked`) |
 | Frontend `frontend` | `frontend/` | Node.js + Vue 3 | Node.js 24 (`engines.node` is `>=24` in `frontend/package.json`; the `frontend/Dockerfile` builder is `node:24-bookworm-slim`). Vite 7 + TypeScript ~6.0 + Vue 3.5 + TDesign; the package version follows the root `VERSION` |
-| CLI | `cli/` (separate Go module) | Go | Go 1.26 (`go 1.26.0` in `cli/go.mod`) |
+| CLI | `cli/` (separate Go module) | Go | Go 1.26 (`go 1.26.0` in `cli/go.mod`, the same `toolchain` pin as the root module) |
 
 Recommended extra development tools:
 
@@ -208,7 +208,7 @@ The product version is dated CalVer, `YYYY.M.D[.MICRO]` unpadded, tagged `vYYYY.
 | --- | --- |
 | `check-version` | `scripts/version.py check`: fails, naming file, line and value, when a product version string differs from `VERSION` or a library's strings disagree with each other |
 | `bump-version` | Sets the product version everywhere and makes one signed `chore(release): v<ver>` commit. The default is today's date, then `.1`, `.2` while that version is current or its tag exists locally or on `origin`; `VERSION=YYYY.M.D[.MICRO]` picks one, which must be greater than the current version and untagged. Pass `VERSION` after `make`: an exported `VERSION` makes the bump fail rather than pin it. The same commit raises the Helm chart's `version` by a patch, because Helm needs a new chart version for any chart change and the bump changes `appVersion` |
-| `bump-lib LIB=dsh-ai-kb\|extension\|mcp-server\|helm-chart PART=patch\|minor\|major` | The same for one library (`VERSION=x.y.z` instead of `PART`), committed as `chore(release): <lib> v<ver>` |
+| `bump-lib LIB=dsh-ai-kb\|extension\|mcp-server\|helm-chart\|go PART=patch\|minor\|major` | The same for one library (`VERSION=x.y.z` instead of `PART`), committed as `chore(release): <lib> v<ver>`. `LIB=go` moves the `toolchain` line of `go.mod` and `cli/go.mod`, the docs lines that quote it and the app builder image, whose index digest it looks up with `docker buildx imagetools inspect`; CI's `setup-go` steps read the version from `go.mod` |
 
 Bumps rewrite only the version token in each file (lockfile dependencies stay untouched) and refuse a dirty working tree. When a step after the edits fails (the lockfile check, the version check, or the commit, such as a failing hook or a missing signing key), every file gets its original bytes back. They never tag or push: they print the next commands. The `v<ver>` tag triggers `docker-image.yml`; `release-lite.yml` is started by hand with the tag: it builds the Lite tarballs, the desktop apps and the six `aikb` archives (each with a `.sha256` file and a build provenance attestation), creates the GitHub release as Latest, then its `update-tap` job rewrites the `ai-kb-lite` and `aikb` formulas and the Scoop manifest in the tap `jrmatherly/homebrew-ai-kb` with `scripts/update_tap.py`, committed through the contents API as the tap App. `dsh-ai-kb-v<ver>` publishes the dsh plugin and `mcp-server-v<ver>` the MCP server. `extension-v<ver>` builds the browser extension, attaches the zip to a GitHub release and, when the store variables are set, publishes to the Chrome Web Store and Edge Add-ons. The Helm chart has no tag: `helm.yml` pushes it to `oci://ghcr.io/jrmatherly/ai-kb/charts/ai-kb` when a commit that changes its `version` lands on `main`, so a pushed `bump-version` or `bump-lib LIB=helm-chart` commit publishes it.
 
