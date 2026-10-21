@@ -57,7 +57,7 @@ Merge commits are listed but not expanded: their parents are in the range. A con
 4. Verdict: `ADOPT` (cherry-pick, all files `=`, `<` with its predecessors, or `+`), `ADAPT` (hand-port, some `~`), `SKIP`, `MONITOR`.
 5. Write every verdict with file-level evidence to the dated decision log (template below).
 6. Adopt in a batch on a branch: cherry-pick oldest first, run `scripts/validate.sh --base <sha-before-batch>` (below), which ends with the English-only gate on the range.
-7. Then `--advance <tip-sha>` with the tip SHA from the listing you reviewed (a fresh fetch may have moved on) and commit `.upstream-review/` with the adopted commits. The user pushes; never push.
+7. Then `--advance <tip-sha>` with the tip SHA from the listing you reviewed (a fresh fetch may have moved on) and commit `.upstream-review/` with the adopted commits. Push only when the user asks.
 
 For a large window (more than about 20 commits), dispatch one reviewer subagent per area with the SHAs, the marker output, and steps 2 to 5. Synthesize into one log.
 
