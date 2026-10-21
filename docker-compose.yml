@@ -116,8 +116,8 @@ services:
       - AIKB_IM_PLATFORMS=${AIKB_IM_PLATFORMS:-}
       # Data source connector types offered (allow-list; empty means notion,confluence, all means every type, see .env.example)
       - AIKB_DATASOURCE_TYPES=${AIKB_DATASOURCE_TYPES:-}
-      # Documentation base URL the UI links to
-      - AIKB_DOCS_URL=${AIKB_DOCS_URL:-https://ai-kb.matherly.net/docs/}
+      # Documentation base URL the UI links to; empty uses https://ai-kb.matherly.net/docs/
+      - AIKB_DOCS_URL=${AIKB_DOCS_URL:-}
       # Show links to the GitHub repository in the UI
       - AIKB_GITHUB_LINK_ENABLED=${AIKB_GITHUB_LINK_ENABLED:-false}
       # Show the Ollama section in Settings
