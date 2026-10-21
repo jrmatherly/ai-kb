@@ -183,46 +183,48 @@
           <div class="form-content">
             <!-- Holds the space until the OIDC config answers, so the password form never paints and then collapses. -->
             <div v-if="!loginConfigLoaded" class="login-config-placeholder" aria-busy="true"></div>
-            <template v-else-if="oidcEnabled">
-              <t-button theme="primary" size="large" block :loading="oidcLoading" :disabled="loading"
-                class="oidc-button" @click="handleOIDCLogin">
-                {{ oidcLoading ? $t('auth.redirectingToOIDC') : oidcLoginText }}
-              </t-button>
-              <button v-if="!showPasswordLogin" type="button" class="password-login-toggle"
-                @click="showPasswordLogin = true">
-                {{ $t('auth.signInWithPassword') }}
-              </button>
-              <div v-else class="oidc-divider oidc-divider--above-form">
-                <span>{{ $t('auth.orContinueWith') }}</span>
+            <template v-else>
+              <template v-if="oidcEnabled">
+                <t-button theme="primary" size="large" block :loading="oidcLoading" :disabled="loading"
+                  class="oidc-button" @click="handleOIDCLogin">
+                  {{ oidcLoading ? $t('auth.redirectingToOIDC') : oidcLoginText }}
+                </t-button>
+                <button v-if="!showPasswordLogin" type="button" class="password-login-toggle"
+                  @click="showPasswordLogin = true">
+                  {{ $t('auth.signInWithPassword') }}
+                </button>
+                <div v-else class="oidc-divider oidc-divider--above-form">
+                  <span>{{ $t('auth.orContinueWith') }}</span>
+                </div>
+              </template>
+              <t-form v-if="!oidcEnabled || showPasswordLogin" ref="formRef" :data="formData" :rules="formRules"
+                @submit="handleLogin" layout="vertical" label-align="top">
+                <t-form-item :label="$t('auth.email')" name="email">
+                  <t-input v-model="formData.email" :placeholder="$t('auth.emailPlaceholder')" type="text"
+                    autocomplete="email" size="large" :disabled="loading" />
+                </t-form-item>
+
+                <t-form-item :label="$t('auth.password')" name="password">
+                  <t-input v-model="formData.password" :placeholder="$t('auth.passwordPlaceholder')" type="password"
+                    autocomplete="current-password" size="large" :disabled="loading" @enter="handleLogin" />
+                </t-form-item>
+
+                <t-button type="submit" theme="primary" size="large" block :loading="loading" class="submit-button">
+                  {{ loading ? $t('auth.loggingIn') : $t('auth.login') }}
+                </t-button>
+
+              </t-form>
+
+              <div class="register-cta" v-if="registrationEnabled">
+                <div class="register-cta__divider">
+                  <span>{{ $t('auth.firstTime') }}</span>
+                </div>
+                <t-button theme="default" variant="outline" size="large" block class="register-cta__button"
+                  :disabled="loading" @click="toggleMode">
+                  {{ $t('auth.createAccount') }}
+                </t-button>
               </div>
             </template>
-            <t-form v-if="loginConfigLoaded && (!oidcEnabled || showPasswordLogin)" ref="formRef" :data="formData" :rules="formRules"
-              @submit="handleLogin" layout="vertical" label-align="top">
-              <t-form-item :label="$t('auth.email')" name="email">
-                <t-input v-model="formData.email" :placeholder="$t('auth.emailPlaceholder')" type="text"
-                  autocomplete="email" size="large" :disabled="loading" />
-              </t-form-item>
-
-              <t-form-item :label="$t('auth.password')" name="password">
-                <t-input v-model="formData.password" :placeholder="$t('auth.passwordPlaceholder')" type="password"
-                  autocomplete="current-password" size="large" :disabled="loading" @enter="handleLogin" />
-              </t-form-item>
-
-              <t-button type="submit" theme="primary" size="large" block :loading="loading" class="submit-button">
-                {{ loading ? $t('auth.loggingIn') : $t('auth.login') }}
-              </t-button>
-
-            </t-form>
-
-            <div class="register-cta" v-if="loginConfigLoaded && registrationEnabled">
-              <div class="register-cta__divider">
-                <span>{{ $t('auth.firstTime') }}</span>
-              </div>
-              <t-button theme="default" variant="outline" size="large" block class="register-cta__button"
-                :disabled="loading" @click="toggleMode">
-                {{ $t('auth.createAccount') }}
-              </t-button>
-            </div>
 
             <!-- Features list -->
             <div class="login-features">

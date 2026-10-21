@@ -77,7 +77,7 @@ async function fixture({ oidc, registration = 'self_serve' }: { oidc: boolean; r
   await settle()
   const count = (predicate: (el: Host) => boolean) => all(root, predicate).length
   return {
-    settle, count,
+    count,
     answer: async () => { answerOIDC(); await settle() },
     click: async (predicate: (el: Host) => boolean) => { await all(root, predicate)[0].props.onClick(); await settle() },
     close: () => app.unmount(),
