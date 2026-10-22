@@ -41,6 +41,8 @@ type fakeRepo struct {
 	truncate bool
 	// missing lists commits whose tree request answers 404.
 	missing map[string]bool
+	// aliases lists further repository keys served with the same content as o/r.
+	aliases []string
 }
 
 func blobSHA(content string) string {
@@ -151,6 +153,11 @@ func fakeGitHub(t *testing.T, repo fakeRepo) *fakeServer {
 			return
 		}
 		p := strings.TrimPrefix(r.URL.Path, "/api/v3")
+		for _, alias := range repo.aliases {
+			if p == "/repos/"+alias || strings.HasPrefix(p, "/repos/"+alias+"/") {
+				p = "/repos/o/r" + strings.TrimPrefix(p, "/repos/"+alias)
+			}
+		}
 		switch {
 		case p == "/user":
 			_, _ = w.Write([]byte(`{"id":1}`))
@@ -791,6 +798,60 @@ func TestFetchStreamPathsShrinkAfterPendingCheckpointTombstonesPendingItems(t *t
 	require.Equal(t, want, summary(server.base(), resumed.items))
 	require.Equal(t, map[string]repositoryCursor{"o/r": {Head: "c1", Ref: "main", Paths: []string{"docs"}}},
 		repositories(t, next))
+}
+
+// o/gone is in the cursor but no longer selected: its indexed files are
+// tombstoned under the ref they were synced with, its cursor entry is dropped,
+// and o/r, whose head is unchanged, emits nothing.
+func TestFetchStreamRemovedRepositoryIsTombstoned(t *testing.T) {
+	server := fakeGitHub(t, fakeRepo{
+		commits: map[string]fakeCommit{"c1": {files: map[string]string{"docs/a.md": "a", "docs/b.md": "b"}}},
+		aliases: []string{"o/gone"},
+	})
+	docs := []string{"docs"}
+	old := oldCursor(map[string]repositoryCursor{
+		"o/r":    {Head: "c1", Ref: "main", Paths: docs},
+		"o/gone": {Head: "c1", Ref: "main", Paths: docs},
+	})
+
+	h := &gitHubStreamRecorder{}
+	next, err := stream(t, server, old, h, selection("o/r", "main", "docs"))
+	require.NoError(t, err)
+	require.Equal(t, []string{"-o/gone:main:docs/a.md", "-o/gone:main:docs/b.md"}, summary(server.base(), h.items))
+	require.Equal(t, map[string]repositoryCursor{"o/r": {Head: "c1", Ref: "main", Paths: docs}}, repositories(t, next))
+	require.Len(t, h.checkpoints, 2)
+	require.Equal(t, map[string]repositoryCursor{"o/r": {Head: "c1", Ref: "main", Paths: docs}},
+		repositories(t, h.checkpoints[1]))
+}
+
+// The removed repository also has a pending checkpoint under another ref whose
+// first four entries were the two main deletions and docs/a.md and docs/b.md
+// under release: both groups are tombstoned, the baseline under main and the
+// pending prefix under release.
+func TestFetchStreamRemovedRepositoryWithPendingIsTombstonedUnderBothRefs(t *testing.T) {
+	server := fakeGitHub(t, fakeRepo{
+		commits: map[string]fakeCommit{"c1": {files: map[string]string{
+			"docs/a.md": "a", "docs/b.md": "b", "guides/g.md": "g",
+		}}},
+		aliases: []string{"o/gone"},
+	})
+	docs := []string{"docs"}
+	old := oldCursor(map[string]repositoryCursor{
+		"o/r": {Head: "c1", Ref: "main", Paths: docs},
+		"o/gone": {
+			Head: "c1", Ref: "main", Paths: docs,
+			Pending: &pendingCursor{Head: "c1", Ref: "release", Paths: []string{"docs", "guides"}, Done: 4},
+		},
+	})
+
+	h := &gitHubStreamRecorder{}
+	next, err := stream(t, server, old, h, selection("o/r", "main", "docs"))
+	require.NoError(t, err)
+	require.Equal(t, []string{
+		"-o/gone:main:docs/a.md", "-o/gone:main:docs/b.md",
+		"-o/gone:release:docs/a.md", "-o/gone:release:docs/b.md",
+	}, summary(server.base(), h.items))
+	require.Equal(t, map[string]repositoryCursor{"o/r": {Head: "c1", Ref: "main", Paths: docs}}, repositories(t, next))
 }
 
 func TestOversizedBlobBecomesErrorItem(t *testing.T) {

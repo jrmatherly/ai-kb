@@ -259,7 +259,49 @@ func (c *Connector) FetchStream(
 			return nil, err
 		}
 	}
+	for _, key := range slices.Sorted(maps.Keys(next.Repositories)) {
+		if slices.ContainsFunc(cfg.Repositories, func(s repositorySelection) bool { return s.Repository == key }) {
+			continue
+		}
+		if err := c.removeRepository(ctx, key, next, h); err != nil {
+			return nil, err
+		}
+	}
 	return gitHubCursor(next, complete), nil
+}
+
+// removeRepository tombstones everything the index holds for a repository that
+// left the selection: the completed baseline under its ref, then what an
+// interrupted run added under the pending ref, and drops its cursor entry.
+func (c *Connector) removeRepository(
+	ctx context.Context, key string, next cursor, h datasource.StreamHandler,
+) error {
+	rc := next.Repositories[key]
+	prev, err := c.baseline(ctx, key, rc)
+	if err != nil {
+		return err
+	}
+	for _, path := range slices.Sorted(maps.Keys(prev)) {
+		if err := h.Emit(ctx, c.deleted(key, rc.Ref, path)); err != nil {
+			return err
+		}
+	}
+	if p := rc.Pending; p != nil {
+		pending, err := c.effectiveBaseline(ctx, key, rc, prev, p)
+		if err != nil {
+			return err
+		}
+		for _, path := range slices.Sorted(maps.Keys(pending)) {
+			if _, inBaseline := prev[path]; inBaseline && rc.Ref == p.Ref {
+				continue
+			}
+			if err := h.Emit(ctx, c.deleted(key, p.Ref, path)); err != nil {
+				return err
+			}
+		}
+	}
+	delete(next.Repositories, key)
+	return h.Checkpoint(ctx, gitHubCursor(next, false))
 }
 
 func (c *Connector) streamRepository(
