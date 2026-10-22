@@ -1084,3 +1084,38 @@ func TestFetchStreamDeletedImageIsTombstonedWhileImagesAreImportable(t *testing.
 	require.NoError(t, err)
 	require.Equal(t, []string{"-o/r:main:docs/shot.png"}, summary(server.base(), h.items))
 }
+
+func TestFetchStreamResumeAfterALostCapabilityRestartsTheDiff(t *testing.T) {
+	for _, tc := range []struct {
+		name string
+		caps utils.ImportCapabilities
+		want []string
+	}{
+		{
+			name: "lost", caps: utils.ImportCapabilities{},
+			want: []string{"+o/r:main:docs/b.md=b", "+o/r:main:docs/c.md=c", "+o/r:main:docs/d.md=d"},
+		},
+		{
+			name: "unchanged", caps: utils.ImportCapabilities{Images: true},
+			want: []string{"+o/r:main:docs/c.md=c", "+o/r:main:docs/d.md=d"},
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			server := fakeGitHub(t, fakeRepo{commits: map[string]fakeCommit{"c1": {files: map[string]string{
+				"docs/a.png": "png", "docs/b.md": "b", "docs/c.md": "c", "docs/d.md": "d",
+			}}}})
+			old := oldCursor(map[string]repositoryCursor{
+				"o/r": {Pending: &pendingCursor{Head: "c1", Ref: "main", Paths: []string{"docs"}, Done: 2}},
+			})
+			old.Imports = &utils.ImportCapabilities{Images: true}
+			h := &gitHubStreamRecorder{}
+			cfg := withImports(sourceConfig(server.base(), goodToken, selection("o/r", "main", "docs")), tc.caps)
+
+			next, err := NewConnector().FetchStream(context.Background(), cfg, old, h)
+			require.NoError(t, err)
+			require.Equal(t, tc.want, summary(server.base(), h.items))
+			require.Equal(t, map[string]repositoryCursor{"o/r": {Head: "c1", Ref: "main", Paths: []string{"docs"}}},
+				repositories(t, next))
+		})
+	}
+}

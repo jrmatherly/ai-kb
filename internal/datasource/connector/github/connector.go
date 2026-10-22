@@ -277,6 +277,14 @@ func (c *Connector) FetchStream(
 	}
 	complete := old == nil
 	next := readCursor(old)
+	// Pending.Done indexes a change list filtered by the capabilities the cursor
+	// was written under; under another filter it points at the wrong entries.
+	if old != nil && old.Imports != nil && *old.Imports != c.imports {
+		for key, rc := range next.Repositories {
+			rc.Pending = nil
+			next.Repositories[key] = rc
+		}
+	}
 	for _, selection := range cfg.Repositories {
 		if err := c.streamRepository(ctx, selection, next, h); err != nil {
 			return nil, err
