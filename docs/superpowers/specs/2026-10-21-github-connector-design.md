@@ -9,7 +9,7 @@ A `github` data source connector that syncs document files from the directories 
 ## What exists
 
 - `internal/types/datasource.go:31` declares `ConnectorTypeGitHub = "github"` and `internal/datasource/connector.go:295` has a metadata entry for it (`oauth2`, "repositories, wikis, and issues"). Nothing registers a connector, so creating a `github` source fails with `ErrConnectorNotFound`.
-- Upstream WeKnora (`weknora/main` at `e28c68cf`) has no GitHub connector, so there is nothing to adopt.
+- Upstream (`weknora/main` at `e28c68cf`) has no GitHub connector, so there is nothing to adopt.
 - The GitLab connector is the model. Its data shape is `settings.projects[]` of `{project_id, ref, paths}` plus `credentials.base_url` and `credentials.access_token`; it implements `datasource.StreamingConnector`.
 
 ## GitHub API facts the design rests on
