@@ -441,10 +441,7 @@ func (s *DataSourceService) ListResourcesForConfig(
 		return nil, err
 	}
 	config.StripNonSecretCredentials(config.Type)
-	config.Imports = secutils.ImportCapabilities{Images: true, Audio: true}
-	if kbID != "" {
-		config.Imports = s.importCapabilities(ctx, kbID)
-	}
+	config.Imports = s.importCapabilities(ctx, kbID)
 	return listResources(ctx, connector, config, parentID)
 }
 
@@ -1052,7 +1049,6 @@ func startCursorFor(stored *types.SyncCursor, imports secutils.ImportCapabilitie
 type streamSyncHandler struct {
 	svc     *DataSourceService
 	ds      *types.DataSource
-	imports secutils.ImportCapabilities
 	tagIDs  []string
 	result  *types.SyncResult
 	syncLog *types.SyncLog
@@ -1073,7 +1069,7 @@ func (h *streamSyncHandler) Emit(ctx context.Context, item types.FetchedItem) er
 	if h.deletions.take(&item) {
 		return nil
 	}
-	h.svc.applyFetchedItem(withKBActivitySuppressed(ctx), h.ds, h.imports, &item, h.tagIDs, h.result)
+	h.svc.applyFetchedItem(withKBActivitySuppressed(ctx), h.ds, h.deletions.imports, &item, h.tagIDs, h.result)
 	return nil
 }
 
@@ -1165,7 +1161,7 @@ func (s *DataSourceService) processSyncStreaming(
 	stored, _ := ds.ParseSyncCursor()
 	result := &types.SyncResult{}
 	handler := &streamSyncHandler{
-		svc: s, ds: ds, imports: config.Imports, tagIDs: autoTagIDs, result: result, syncLog: syncLog,
+		svc: s, ds: ds, tagIDs: autoTagIDs, result: result, syncLog: syncLog,
 		deletions: newRunDeletions(
 			ds, stored, forceFull && datasource.ReconcilesFullSync(sc, config), config.Imports),
 	}
@@ -1351,12 +1347,17 @@ func (s *DataSourceService) connectorConfig(
 	return config, nil
 }
 
+var allImports = secutils.ImportCapabilities{Images: true, Audio: true}
+
 func (s *DataSourceService) importCapabilities(ctx context.Context, kbID string) secutils.ImportCapabilities {
+	if kbID == "" {
+		return allImports
+	}
 	kb, err := s.kbService.GetKnowledgeBaseByID(ctx, kbID)
 	if err != nil {
 		logger.Warnf(ctx, "knowledge base %s not loaded, assuming every import capability: %v",
 			secutils.SanitizeForLog(kbID), err)
-		return secutils.ImportCapabilities{Images: true, Audio: true}
+		return allImports
 	}
 	return kb.ImportCapabilities()
 }

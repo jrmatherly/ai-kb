@@ -12,10 +12,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var (
-	fullImports = utils.ImportCapabilities{Images: true, Audio: true}
-	noImports   = utils.ImportCapabilities{}
-)
+var noImports = utils.ImportCapabilities{}
 
 func pngItem() *types.FetchedItem {
 	return &types.FetchedItem{
@@ -35,7 +32,7 @@ func TestIngestItemSkipsUnimportableBeforeDeleting(t *testing.T) {
 	assert.False(t, isUpdate)
 	assert.Empty(t, ks.events, "an unimportable item must leave the existing row alone")
 
-	isUpdate, err = svc.ingestItem(context.Background(), ds, fullImports, pngItem(), nil)
+	isUpdate, err = svc.ingestItem(context.Background(), ds, allImports, pngItem(), nil)
 	require.NoError(t, err)
 	assert.True(t, isUpdate)
 	assert.Equal(t, []string{"delete:old", "create:shot.png"}, ks.events)
@@ -67,7 +64,7 @@ func TestApplyFetchedItemCountsUnimportableAsSkipped(t *testing.T) {
 	assert.Empty(t, ks.events)
 
 	result = &types.SyncResult{}
-	svc.applyFetchedItem(context.Background(), ds, fullImports, pngItem(), nil, result)
+	svc.applyFetchedItem(context.Background(), ds, allImports, pngItem(), nil, result)
 	assert.Equal(t, &types.SyncResult{Created: 1}, result)
 }
 
@@ -129,13 +126,13 @@ func TestListResourcesForConfigLoadsTheKnowledgeBase(t *testing.T) {
 	_, err = svc.ListResourcesForConfig(context.Background(),
 		&types.DataSourceConfig{Type: "recording-list"}, "", "")
 	require.NoError(t, err)
-	assert.Equal(t, []utils.ImportCapabilities{noImports, fullImports}, connector.got)
+	assert.Equal(t, []utils.ImportCapabilities{noImports, allImports}, connector.got)
 
 	svc.kbService = &processSyncKBService{getErr: errors.New("gone")}
 	_, err = svc.ListResourcesForConfig(context.Background(),
 		&types.DataSourceConfig{Type: "recording-list"}, "kb-1", "")
 	require.NoError(t, err)
-	assert.Equal(t, fullImports, connector.got[2], "an unloadable knowledge base must not hide files")
+	assert.Equal(t, allImports, connector.got[2], "an unloadable knowledge base must not hide files")
 }
 
 // startCursorStreamConnector records the cursor processSyncStreaming starts it from.

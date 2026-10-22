@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"path"
 	"strings"
 	"time"
 
@@ -12,7 +11,6 @@ import (
 	"github.com/jrmatherly/ai-kb/internal/datasource/connector/repofile"
 	"github.com/jrmatherly/ai-kb/internal/logger"
 	"github.com/jrmatherly/ai-kb/internal/types"
-	"github.com/jrmatherly/ai-kb/internal/utils"
 )
 
 var _ datasource.StreamingConnector = (*Connector)(nil)
@@ -20,7 +18,7 @@ var _ datasource.StreamingConnector = (*Connector)(nil)
 type Connector struct {
 	client        *client
 	canonicalBase string
-	imports       utils.ImportCapabilities
+	importable    func(string) bool
 }
 
 // NewConnector creates a stateless connector. Each data source provides its
@@ -38,11 +36,7 @@ func (c *Connector) configured(ds *types.DataSourceConfig) (*Connector, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Connector{client: client, canonicalBase: client.baseURL, imports: ds.Imports}, nil
-}
-
-func (c *Connector) importable(file string) bool {
-	return utils.IsImportable(path.Ext(file), c.imports)
+	return &Connector{client: client, canonicalBase: client.baseURL, importable: ds.Importable}, nil
 }
 
 func (c *Connector) Validate(ctx context.Context, ds *types.DataSourceConfig) error {
@@ -62,6 +56,7 @@ func (c *Connector) Validate(ctx context.Context, ds *types.DataSourceConfig) er
 	}
 	return nil
 }
+
 func (c *Connector) ListResources(ctx context.Context, ds *types.DataSourceConfig, parent string) ([]types.Resource, error) {
 	var err error
 	if c, err = c.configured(ds); err != nil {
@@ -99,9 +94,11 @@ func (c *Connector) ListResources(ctx context.Context, ds *types.DataSourceConfi
 	}
 	return out, nil
 }
+
 func (c *Connector) ResolveResourceAncestors(context.Context, *types.DataSourceConfig, []string) ([]string, error) {
 	return []string{}, nil
 }
+
 func (c *Connector) FetchAll(ctx context.Context, ds *types.DataSourceConfig, _ []string) ([]types.FetchedItem, error) {
 	var err error
 	if c, err = c.configured(ds); err != nil {
@@ -434,6 +431,7 @@ func (c *Connector) item(ctx context.Context, p *project, ref, file string) (typ
 func (c *Connector) deleted(p *project, ref, file string) types.FetchedItem {
 	return types.FetchedItem{ExternalID: fmt.Sprintf("gitlab:%s:%d:%s:%s", c.canonicalBase, p.ID, ref, file), IsDeleted: true, Metadata: map[string]string{"channel": types.ConnectorTypeGitLab, "gitlab_path": file}}
 }
+
 func splitResourceID(value string) (string, string) {
 	parts := strings.SplitN(value, ":", 2)
 	if len(parts) == 1 {

@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"maps"
-	"path"
 	"slices"
 	"strconv"
 	"strings"
@@ -34,8 +33,9 @@ var SyncReasonTexts = map[string]string{
 
 // Connector syncs document files from selected GitHub repositories.
 type Connector struct {
-	client  *client
-	imports utils.ImportCapabilities
+	client     *client
+	imports    utils.ImportCapabilities
+	importable func(string) bool
 }
 
 // NewConnector creates a stateless connector. Each data source provides its
@@ -55,11 +55,7 @@ func (c *Connector) configured(ds *types.DataSourceConfig) (*Connector, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Connector{client: client, imports: ds.Imports}, nil
-}
-
-func (c *Connector) importable(file string) bool {
-	return utils.IsImportable(path.Ext(file), c.imports)
+	return &Connector{client: client, imports: ds.Imports, importable: ds.Importable}, nil
 }
 
 // Validate checks the credentials against the API and the selection syntax.

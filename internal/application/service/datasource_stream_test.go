@@ -64,8 +64,8 @@ func TestStreamStartCursor_IncrementalKeepsCursor(t *testing.T) {
 
 func newStreamHandler(svc *DataSourceService, ds *types.DataSource, result *types.SyncResult, syncLog *types.SyncLog) *streamSyncHandler {
 	return &streamSyncHandler{
-		svc: svc, ds: ds, imports: fullImports, result: result, syncLog: syncLog,
-		deletions: newRunDeletions(ds, nil, false, fullImports),
+		svc: svc, ds: ds, result: result, syncLog: syncLog,
+		deletions: newRunDeletions(ds, nil, false, allImports),
 	}
 }
 
