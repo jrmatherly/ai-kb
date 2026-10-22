@@ -84,7 +84,7 @@ class ParserEngineRegistry:
 
 | Engine | Parser | File |
 | --- | --- | --- |
-| `builtin` | `Docx2Parser` / `DocParser` / `PDFParser` / `MarkdownParser` / `ExcelParser` / `EPUBParser` / `HTMLParser` / `MHTMLParser` / `XMindParser` / `ImageParser` (jpg, jpeg, png, gif, bmp, tiff, webp); `pptx` and `ppt` map to `MarkitdownParser` | `docreader/parser/docx2_parser.py`, `doc_parser.py`, `pdf_parser.py`, `markdown_parser.py`, `excel_parser.py`, `epub_parser.py`, `html_parser.py`, `mhtml_parser.py`, `xmind_parser.py`, `image_parser.py` |
+| `builtin` | `Docx2Parser` / `DocParser` / `PDFParser` / `MarkdownParser` / `MdxParser` / `ExcelParser` / `EPUBParser` / `HTMLParser` / `MHTMLParser` / `XMindParser` / `ImageParser` (jpg, jpeg, png, gif, bmp, tiff, webp); `pptx` and `ppt` map to `MarkitdownParser` | `docreader/parser/docx2_parser.py`, `doc_parser.py`, `pdf_parser.py`, `markdown_parser.py`, `mdx_parser.py`, `excel_parser.py`, `epub_parser.py`, `html_parser.py`, `mhtml_parser.py`, `xmind_parser.py`, `image_parser.py` |
 | `markitdown` | `MarkitdownParser` (Microsoft MarkItDown, many formats including csv) | `docreader/parser/markitdown_parser.py` |
 | `opendataloader` | `OpenDataLoaderParser` (PDF layout analysis, needs Java 11+, probed by `check_available`) | `docreader/parser/opendataloader_parser.py` |
 

@@ -29,3 +29,7 @@ test('binary Excel workbooks are accepted before engine discovery', () => {
   assert.equal(shouldRejectKnowledgeFileType('ledger.xlsb'), false)
   assert.equal(shouldRejectKnowledgeFileType('LEDGER.XLSB'), false)
 })
+
+test('MDX files are accepted in the fallback whitelist', () => {
+  assert.equal(shouldRejectKnowledgeFileType('guide.mdx'), false)
+})

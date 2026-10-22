@@ -7,7 +7,7 @@ Supported formats:
 | Category | Formats |
 | --- | --- |
 | Documents | PDF, Word (doc/docx), PowerPoint (ppt/pptx), Excel (xls/xlsx/xlsb), EPUB, XMind |
-| Text | txt, Markdown, CSV, JSON |
+| Text | txt, Markdown, MDX, CSV, JSON |
 | Web | online URL capture, local HTML / MHTML archives |
 | Images | jpg, jpeg, png, gif (a vision model must be configured for the content to be understood; docreader itself also parses bmp, tiff and webp over gRPC, but the upload paths accept only the four listed) |
 | Audio | mp3, wav, m4a, flac, ogg (a speech-to-text model must be configured) |
@@ -119,7 +119,7 @@ sequenceDiagram
 
 | Engine | File types | Notes |
 | --- | --- | --- |
-| `builtin` | `docx` (Docx2Parser), `doc` (DocParser), `pdf` (PDFParser), `md`/`markdown` (MarkdownParser), `xlsx`/`xls`/`xlsb` (ExcelParser), `pptx`/`ppt` (MarkitdownParser), `epub` (EPUBParser), `html`/`htm` (HTMLParser), `mhtml` (MHTMLParser), `xmind` (XMindParser), `jpg`/`jpeg`/`png`/`gif`/`bmp`/`tiff`/`webp` (ImageParser) | Built-in engine; PPT/PPTX reuse the MarkItDown parser |
+| `builtin` | `docx` (Docx2Parser), `doc` (DocParser), `pdf` (PDFParser), `md`/`markdown` (MarkdownParser), `mdx` (MdxParser), `xlsx`/`xls`/`xlsb` (ExcelParser), `pptx`/`ppt` (MarkitdownParser), `epub` (EPUBParser), `html`/`htm` (HTMLParser), `mhtml` (MHTMLParser), `xmind` (XMindParser), `jpg`/`jpeg`/`png`/`gif`/`bmp`/`tiff`/`webp` (ImageParser) | Built-in engine; PPT/PPTX reuse the MarkItDown parser |
 | `markitdown` | `md`, `markdown`, `pdf`, `docx`, `doc`, `pptx`, `ppt`, `xlsx`, `xls`, `csv` (all MarkitdownParser) | Microsoft MarkItDown library |
 | `opendataloader` | `pdf` (OpenDataLoaderParser) | OpenDataLoader PDF layout analysis, needs Java 11+; `check_available` probes java, the Python package and the hybrid service health |
 
@@ -230,6 +230,13 @@ The simplest parser: **no OCR at all**. It inlines the whole image as base64 in 
 
 This parser is also the shared post-processing stage of the MarkitdownParser and WebParser pipelines.
 
+#### mdx_parser.py: MdxParser (.mdx)
+
+`PipelineParser.create(MdxPreprocessor, MarkdownTableFormatter, MarkdownImageBase64)`:
+
+- **`MdxPreprocessor`**: a line-based pass that drops ESM `import` and `export` statements and `{}` expression blocks. JSX components are unwrapped and keep their inner text; `title`, `label` and `value` attributes become bold lines, and `img` / `Image` become Markdown images. Docusaurus `:::note[Title]` admonitions become bold lines. The frontmatter `title` becomes an H1 when the body has none, and `description` becomes a line. Fenced code is left untouched, and malformed input fails open: the text stays as written.
+- The table and image stages are the same as in MarkdownParser.
+
 #### web_parser.py: WebParser (URL mode)
 
 `PipelineParser.create(StdWebParser, MarkdownParser)`. `StdWebParser` renders the page with **Playwright (WebKit)** and extracts the article with **trafilatura** into Markdown:
@@ -290,6 +297,7 @@ flowchart TD
     H -- "doc" --> Y["DocParser: LibreOffice to docx, antiword fallback"]
     H -- "xlsx / xls / xlsb" --> Z["ExcelParser (repair + merged-cell fill + per-row key-value)"]
     H -- "md / markdown" --> M["MarkdownParser (table normalization + base64 image extraction)"]
+    H -- "mdx" --> MX["MdxParser (JSX stripped, then MarkdownParser)"]
     H -- "epub" --> EP["EPUBParser (OPF manifest + spine, ZIP fallback)"]
     H -- "html / htm" --> HT["HTMLParser (BeautifulSoup + markdownify)"]
     H -- "mhtml" --> MH["MHTMLParser"]
@@ -519,7 +527,7 @@ Details of the V1 flow:
 ### Appendix: key facts at a glance
 
 - **External interface**: gRPC only, port `50051` (`DOCREADER_GRPC_PORT`/`PORT`); RPCs `Read` / `ReadStream` / `ListEngines` / `ConvertSpreadsheet` plus the standard Health service.
-- **File formats docreader handles directly**: `pdf`, `docx`, `doc`, `xlsx`, `xls`, `xlsb`, `pptx`, `ppt`, `xmind` (the markitdown engine adds `csv`), `md`/`markdown`, `epub`, `html`/`htm`, `mhtml`, images `jpg/jpeg/png/gif/bmp/tiff/webp`, and URL capture; `txt`/`csv`/`json`, images and audio are handled natively on the Go side by `SimpleFormatReader` in the main path and never reach this service.
+- **File formats docreader handles directly**: `pdf`, `docx`, `doc`, `xlsx`, `xls`, `xlsb`, `pptx`, `ppt`, `xmind` (the markitdown engine adds `csv`), `md`/`markdown`, `mdx`, `epub`, `html`/`htm`, `mhtml`, images `jpg/jpeg/png/gif/bmp/tiff/webp`, and URL capture; `txt`/`csv`/`json`, images and audio are handled natively on the Go side by `SimpleFormatReader` in the main path and never reach this service.
 - **OCR / VLM**: zero OCR and zero VLM inside docreader; scanned pages and figures return as images, and OCR (PaddleOCR-VL) and captions happen in the Go App.
 - **Image return**: inline bytes (`ImageRef.image_data`); persistence to local/minio/cos/tos is Go's job.
 - **Chunking**: the production path is the Go-side chunker; the Python `TextSplitter` (512/80) is kept for the sidecar and aligned with Go.

@@ -78,7 +78,7 @@ Management endpoints: `POST /knowledge/:id/reparse` (reparse), `POST /knowledge/
 `supportedImportFileExtensions` in `internal/utils/import_filetypes.go` is **the single source of truth for every import path**. Direct uploads, file URL downloads and the worker's re-check after a download all consult the same set:
 
 ```text
-pdf txt docx doc epub html htm mhtml md markdown xmind
+pdf txt docx doc epub html htm mhtml md markdown mdx xmind
 png jpg jpeg gif csv xlsx xls xlsb pptx ppt json
 mp3 wav m4a flac ogg
 ```
@@ -277,7 +277,7 @@ After a worker picks up `TypeDocumentProcess` it moves through five canonical st
 The engine catalog lives in `internal/infrastructure/docparser/engines.go`. Each engine declares its metadata (name, description, file types, availability probe) together with a `NewReader` factory. `docparser.NewReader` dispatches by name; a name that is not registered (such as `markitdown`, which exists only in docreader) falls through to the docreader client.
 5. File mode: the bytes are read back with `FileService.GetFile(payload.FilePath)` and placed in `ReadRequest.FileContent`.
 
-**On the docreader side** (`docreader/`, Python gRPC): the proto is `docreader/proto/docreader.proto` with the methods `Read` / `ReadStream` (streaming: a first frame with metadata, then one frame per image, so large scanned PDFs do not hit the gRPC message limit) / `ListEngines` / `ConvertSpreadsheet` (rewrites an `.xls` or `.xlsb` workbook as `.xlsx` for DuckDB). The built-in parsers cover docx/doc/pdf/md/xlsx/xls/xlsb/pptx/ppt/epub/html/htm/mhtml/xmind/images/web pages (`WebParser` handles URLs). Two more engines are registered: `markitdown` (Microsoft MarkItDown) and `opendataloader` (PDF layout analysis, needs Java 11+). The Go app keeps its own engine list (registered from `engines.go`), and `ListAllEngines()` in `engine_registry.go` merges in the result of the `ListEngines` RPC: for an engine both sides know, docreader's file types and description win, and engines only docreader reports are appended, so a new docreader engine shows up without a Go change. The result is always a `ReadResult{MarkdownContent, ImageRefs, Metadata, IsAudio, AudioData}`: **the parse product is Markdown text plus image bytes**, and the Go side persists the images.
+**On the docreader side** (`docreader/`, Python gRPC): the proto is `docreader/proto/docreader.proto` with the methods `Read` / `ReadStream` (streaming: a first frame with metadata, then one frame per image, so large scanned PDFs do not hit the gRPC message limit) / `ListEngines` / `ConvertSpreadsheet` (rewrites an `.xls` or `.xlsb` workbook as `.xlsx` for DuckDB). The built-in parsers cover docx/doc/pdf/md/mdx/xlsx/xls/xlsb/pptx/ppt/epub/html/htm/mhtml/xmind/images/web pages (`WebParser` handles URLs). Two more engines are registered: `markitdown` (Microsoft MarkItDown) and `opendataloader` (PDF layout analysis, needs Java 11+). The Go app keeps its own engine list (registered from `engines.go`), and `ListAllEngines()` in `engine_registry.go` merges in the result of the `ListEngines` RPC: for an engine both sides know, docreader's file types and description win, and engines only docreader reports are appended, so a new docreader engine shows up without a Go change. The result is always a `ReadResult{MarkdownContent, ImageRefs, Metadata, IsAudio, AudioData}`: **the parse product is Markdown text plus image bytes**, and the Go side persists the images.
 
 ### ASR transcription (audio files)
 

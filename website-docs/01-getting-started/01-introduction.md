@@ -107,7 +107,7 @@ flowchart TB
 
 ## Feature list
 
-- **Document ingestion**: file upload (PDF, Word, PPT, Excel, Markdown, HTML, EPUB, XMind, images, audio and more), URL capture, hand-written Markdown, whole-folder upload, and scheduled sync from Feishu / Lark / Notion / Confluence / Yuque / DingTalk / IMA / GitLab / GitHub / RSS / Seafile.
+- **Document ingestion**: file upload (PDF, Word, PPT, Excel, Markdown, MDX, HTML, EPUB, XMind, images, audio and more), URL capture, hand-written Markdown, whole-folder upload, and scheduled sync from Feishu / Lark / Notion / Confluence / Yuque / DingTalk / IMA / GitLab / GitHub / RSS / Seafile.
 - **Document understanding**: layout analysis, OCR for scans, table extraction, multimodal image description (VLM), audio transcription (ASR), and a parsing engine chosen per file type (`ParserEngineRules`, with MinerU / OpenDataLoader as options).
 - **Indexing pipeline**: configurable chunking (including parent-child chunks and adaptive strategies), vector index, keyword full-text index, FAQ index, Wiki generation, knowledge graph extraction, and pre-generated questions.
 - **Retrieval**: hybrid vector + BM25 retrieval, RRF fusion, reranking, query rewriting and expansion, intent recognition (greeting, chitchat, web_search and others; see `config/prompt_templates/intent_prompts.yaml`).

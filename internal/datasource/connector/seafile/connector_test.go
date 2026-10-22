@@ -37,7 +37,7 @@ func TestConnectorResources(t *testing.T) {
 	f.addDir(testRepoID, p+"/\u5b50\u76ee\u5f55")
 	f.addFile(testRepoID, p+"/\u8bf4\u660e.pdf", []byte("pdf"), 1)
 	f.addFile(testRepoID, p+"/archive.zip", []byte("zip"), 1)
-	f.addFile(testRepoID, p+"/page.mdx", []byte("mdx"), 1)
+	f.addFile(testRepoID, p+"/page.go", []byte("go"), 1)
 	parent := testRepoID + ":" + p
 	got, err = c.ListResources(t.Context(), cfg, parent)
 	if err != nil || len(got) != 2 {

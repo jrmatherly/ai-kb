@@ -12,7 +12,7 @@ The builtin engine (`parser/registry.py` is the source of truth) handles:
 | `pdf` | scanned pages are rendered to JPEG for the app's OCR step |
 | `xlsx`, `xls`, `xlsb` | spreadsheets |
 | `pptx`, `ppt` | via MarkItDown |
-| `md`, `markdown`, `html`, `htm`, `mhtml`, `epub`, `xmind` | |
+| `md`, `markdown`, `mdx`, `html`, `htm`, `mhtml`, `epub`, `xmind` | |
 | `jpg`, `jpeg`, `png`, `gif`, `bmp`, `tiff`, `webp` | images |
 
 Other engines: `markitdown` (also `csv`) and `opendataloader` (`pdf`, needs Java 11+).

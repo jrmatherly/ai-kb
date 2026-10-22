@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Changes
+
+- **NEW**: **MDX import**: `.mdx` files (Markdown with JSX, as written for Docusaurus, Nextra, Mintlify and Fumadocs) import through upload, URL import and every data-source sync. docreader strips imports, exports and expressions, unwraps components keeping their text and titles, and converts admonitions before the Markdown pipeline runs.
+
 ## [2026.10.22.1] - 2026-10-22
 
 ### Bug Fixes

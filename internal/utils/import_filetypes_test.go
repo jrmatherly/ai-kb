@@ -32,6 +32,7 @@ func TestIsSupportedImportExtension(t *testing.T) {
 		{" .XLSX ", true},
 		{"XMIND", true},
 		{"xlsb", true},
+		{"mdx", true},
 		{".XLSB", true},
 		{"exe", false},
 		{"mp4", false},
