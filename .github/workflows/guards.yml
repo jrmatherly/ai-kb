@@ -32,15 +32,16 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
         run: |
+          # The log is public: count only, the details are in the Security tab and in the
+          # local scripts/release-preflight.py output.
           for attempt in 1 2 3 4 5 6 7 8 9; do
-            alerts=$(gh api 'repos/{owner}/{repo}/dependabot/alerts?state=open&per_page=100' \
-              --jq '.[] | "\(.dependency.package.ecosystem) \(.dependency.package.name) in \(.dependency.manifest_path) (\(.security_advisory.severity), \(.security_advisory.ghsa_id)), fixed in \(.security_vulnerability.first_patched_version.identifier // "no fix published")"')
-            [ -z "$alerts" ] && break
-            echo "open alerts after check $attempt; waiting for Dependabot to rescan"
+            count=$(gh api 'repos/{owner}/{repo}/dependabot/alerts?state=open&per_page=100' --jq 'length')
+            [ "$count" = 0 ] && break
+            echo "$count open alert(s) after check $attempt; waiting for Dependabot to rescan"
             sleep 20
           done
-          if [ -n "$alerts" ]; then
-            echo "$alerts" | sed 's/^/::error::open Dependabot alert: /'
+          if [ "$count" != 0 ]; then
+            echo "::error::$count open Dependabot alert(s): see the repository's Security tab"
             exit 1
           fi
           echo "no open Dependabot alert"
