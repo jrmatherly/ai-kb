@@ -8,20 +8,22 @@ import (
 )
 
 // The connectors that set types.SyncCursor.CompleteListing, and only they,
-// declare CapabilityFullSyncReconcile; all but Seafile record the selected
-// resource an item was listed under.
+// declare CapabilityFullSyncReconcile; all but Seafile and GitHub record the
+// selected resource an item was listed under. GitHub keeps its selection in
+// settings.repositories, not in the resource IDs the deselection count reads.
 func TestReconcileCapabilitiesMatchConnectors(t *testing.T) {
 	reconciles := map[string]bool{
 		types.ConnectorTypeFeishu: true, types.ConnectorTypeLark: true,
 		types.ConnectorTypeFeishuDrive: true, types.ConnectorTypeLarkDrive: true,
 		types.ConnectorTypeConfluence: true, types.ConnectorTypeSeafile: true,
-		types.ConnectorTypeDingTalk: true,
+		types.ConnectorTypeDingTalk: true, types.ConnectorTypeGitHub: true,
 	}
 	for connectorType := range ConnectorMetadataRegistry {
 		if got := HasCapability(connectorType, CapabilityFullSyncReconcile); got != reconciles[connectorType] {
 			t.Errorf("full_sync_reconcile(%q) = %v, want %v", connectorType, got, reconciles[connectorType])
 		}
-		tracks := reconciles[connectorType] && connectorType != types.ConnectorTypeSeafile
+		tracks := reconciles[connectorType] &&
+			connectorType != types.ConnectorTypeSeafile && connectorType != types.ConnectorTypeGitHub
 		if got := HasCapability(connectorType, CapabilitySelectionTracksSource); got != tracks {
 			t.Errorf("selection_tracks_source(%q) = %v, want %v", connectorType, got, tracks)
 		}

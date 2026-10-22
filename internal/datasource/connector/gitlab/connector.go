@@ -4,11 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"path"
 	"strings"
 	"time"
 
 	"github.com/jrmatherly/ai-kb/internal/datasource"
+	"github.com/jrmatherly/ai-kb/internal/datasource/connector/repofile"
 	"github.com/jrmatherly/ai-kb/internal/logger"
 	"github.com/jrmatherly/ai-kb/internal/types"
 )
@@ -185,15 +185,15 @@ func (c *Connector) FetchIncremental(ctx context.Context, ds *types.DataSourceCo
 			}
 			for _, d := range diff.Diffs {
 				if d.DeletedFile {
-					if c.inScope(d.OldPath, s.Paths) && isSupportedFile(d.OldPath) {
+					if repofile.InScope(d.OldPath, s.Paths) && repofile.IsSupported(d.OldPath) {
 						out = append(out, c.deleted(p, ref, d.OldPath))
 					}
 					continue
 				}
-				if d.RenamedFile && c.inScope(d.OldPath, s.Paths) && isSupportedFile(d.OldPath) {
+				if d.RenamedFile && repofile.InScope(d.OldPath, s.Paths) && repofile.IsSupported(d.OldPath) {
 					out = append(out, c.deleted(p, ref, d.OldPath))
 				}
-				if c.inScope(d.NewPath, s.Paths) && isSupportedFile(d.NewPath) {
+				if repofile.InScope(d.NewPath, s.Paths) && repofile.IsSupported(d.NewPath) {
 					item, err := c.item(ctx, p, ref, d.NewPath)
 					if err != nil {
 						return nil, nil, err
@@ -288,19 +288,19 @@ func (c *Connector) streamChanges(
 	}
 	for _, change := range diff.Diffs {
 		if change.DeletedFile {
-			if c.inScope(change.OldPath, roots) && isSupportedFile(change.OldPath) {
+			if repofile.InScope(change.OldPath, roots) && repofile.IsSupported(change.OldPath) {
 				if err := h.Emit(ctx, c.deleted(project, ref, change.OldPath)); err != nil {
 					return err
 				}
 			}
 			continue
 		}
-		if change.RenamedFile && c.inScope(change.OldPath, roots) && isSupportedFile(change.OldPath) {
+		if change.RenamedFile && repofile.InScope(change.OldPath, roots) && repofile.IsSupported(change.OldPath) {
 			if err := h.Emit(ctx, c.deleted(project, ref, change.OldPath)); err != nil {
 				return err
 			}
 		}
-		if c.inScope(change.NewPath, roots) && isSupportedFile(change.NewPath) {
+		if repofile.InScope(change.NewPath, roots) && repofile.IsSupported(change.NewPath) {
 			item, err := c.item(ctx, project, ref, change.NewPath)
 			if err != nil {
 				return err
@@ -363,7 +363,7 @@ func (c *Connector) walkFiles(ctx context.Context, id, ref string, roots []strin
 				if err := walk(e.Path); err != nil {
 					return err
 				}
-			} else if e.Type == "blob" && isSupportedFile(e.Path) {
+			} else if e.Type == "blob" && repofile.IsSupported(e.Path) {
 				if err := visit(e.Path); err != nil {
 					return err
 				}
@@ -377,22 +377,6 @@ func (c *Connector) walkFiles(ctx context.Context, id, ref string, roots []strin
 		}
 	}
 	return nil
-}
-
-func isSupportedFile(file string) bool {
-	_, ok := gitLabSupportedFileExtensions[strings.ToLower(path.Ext(file))]
-	return ok
-}
-
-// gitLabSupportedFileExtensions limits repository sync to formats the current
-// knowledge import pipeline can process. This is intentionally connector-local:
-// GitLab exposes arbitrary repository blobs, unlike document-centric sources.
-var gitLabSupportedFileExtensions = map[string]struct{}{
-	".pdf": {}, ".txt": {}, ".docx": {}, ".doc": {}, ".epub": {},
-	".html": {}, ".htm": {}, ".mhtml": {}, ".md": {}, ".markdown": {}, ".mdx": {},
-	".png": {}, ".jpg": {}, ".jpeg": {}, ".gif": {},
-	".csv": {}, ".xlsx": {}, ".xls": {}, ".xlsb": {}, ".pptx": {}, ".ppt": {}, ".json": {},
-	".mp3": {}, ".wav": {}, ".m4a": {}, ".flac": {}, ".ogg": {},
 }
 
 func (c *Connector) item(ctx context.Context, p *project, ref, file string) (types.FetchedItem, error) {
@@ -425,7 +409,7 @@ func (c *Connector) item(ctx context.Context, p *project, ref, file string) (typ
 	return types.FetchedItem{
 		ExternalID:       id,
 		Title:            title,
-		FileName:         knowledgeRelativePath(p.Name, ref, file),
+		FileName:         repofile.KnowledgeRelativePath(p.Name, ref, file),
 		Content:          body,
 		ContentType:      "text/plain",
 		SourceResourceID: fmt.Sprint(p.ID),
@@ -440,25 +424,8 @@ func (c *Connector) item(ctx context.Context, p *project, ref, file string) (typ
 	}, nil
 }
 
-// knowledgeRelativePath maps a repository file to the KB folder convention:
-// <GitLab project name>-<branch>/<repository-relative file path>.
-func knowledgeRelativePath(projectName, ref, file string) string {
-	root := strings.TrimSpace(projectName) + "-" + strings.ReplaceAll(strings.TrimSpace(ref), "/", "-")
-	return path.Join(root, file)
-}
 func (c *Connector) deleted(p *project, ref, file string) types.FetchedItem {
 	return types.FetchedItem{ExternalID: fmt.Sprintf("gitlab:%s:%d:%s:%s", c.canonicalBase, p.ID, ref, file), IsDeleted: true, Metadata: map[string]string{"channel": types.ConnectorTypeGitLab, "gitlab_path": file}}
-}
-func (c *Connector) inScope(file string, roots []string) bool {
-	if len(roots) == 0 {
-		return true
-	}
-	for _, r := range roots {
-		if file == r || strings.HasPrefix(file, r+"/") {
-			return true
-		}
-	}
-	return false
 }
 func splitResourceID(value string) (string, string) {
 	parts := strings.SplitN(value, ":", 2)

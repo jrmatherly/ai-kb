@@ -63,6 +63,7 @@ import (
 	"github.com/jrmatherly/ai-kb/internal/datasource/connector/feishu/core"
 	"github.com/jrmatherly/ai-kb/internal/datasource/connector/feishu/drive"
 	"github.com/jrmatherly/ai-kb/internal/datasource/connector/feishu/wiki"
+	githubConnector "github.com/jrmatherly/ai-kb/internal/datasource/connector/github"
 	gitlabConnector "github.com/jrmatherly/ai-kb/internal/datasource/connector/gitlab"
 	imaConnector "github.com/jrmatherly/ai-kb/internal/datasource/connector/ima"
 	notionConnector "github.com/jrmatherly/ai-kb/internal/datasource/connector/notion"
@@ -1898,12 +1899,12 @@ func initConnectorRegistry() (*datasource.ConnectorRegistry, error) {
 	if err := registry.Register(gitlabConnector.NewConnector()); err != nil {
 		errs = errors.Join(errs, fmt.Errorf("register gitlab connector: %w", err))
 	}
+	if err := registry.Register(githubConnector.NewConnector()); err != nil {
+		errs = errors.Join(errs, fmt.Errorf("register github connector: %w", err))
+	}
 	if err := registry.Register(seafileConnector.NewConnector()); err != nil {
 		errs = errors.Join(errs, fmt.Errorf("register seafile connector: %w", err))
 	}
-
-	// Future connectors will be registered here:
-	// if err := registry.Register(githubConnector.NewConnector()); err != nil { ... }
 
 	if errs != nil {
 		return nil, errs

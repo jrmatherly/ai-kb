@@ -499,9 +499,10 @@ The registry is in the same file: `ConnectorRegistry` (`NewConnectorRegistry()` 
 | `ima` | `internal/datasource/connector/ima/` | Tencent IMA knowledge bases |
 | `rss` | `internal/datasource/connector/rss/` | RSS feeds |
 | `gitlab` | `internal/datasource/connector/gitlab/` | GitLab repositories |
+| `github` | `internal/datasource/connector/github/` | GitHub repositories |
 | `seafile` | `internal/datasource/connector/seafile/` | Library directories and files |
 
-`internal/types/datasource.go` also has type constants with no registered implementation yet, such as `github`, `google_drive`, `onedrive`, `web_crawler`, `slack` and `imap`.
+`internal/types/datasource.go` also has type constants with no registered implementation yet, such as `google_drive`, `onedrive`, `web_crawler`, `slack` and `imap`.
 
 ### Steps
 

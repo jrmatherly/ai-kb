@@ -32,16 +32,3 @@ func TestParseConfigRootMeansWholeProject(t *testing.T) {
 		t.Fatalf("root path must collapse to whole project: %#v", cfg.Projects[0].Paths)
 	}
 }
-
-func TestNormalizePathRejectsTraversal(t *testing.T) {
-	if _, err := normalizePath("docs/../secrets"); err == nil {
-		t.Fatal("expected traversal rejection")
-	}
-}
-
-func TestKnowledgeRelativePathPreservesRepositoryTreeBelowProjectAndBranch(t *testing.T) {
-	got := knowledgeRelativePath("knowledge", "feature/login", "docs/guide/install.md")
-	if got != "knowledge-feature-login/docs/guide/install.md" {
-		t.Fatalf("knowledge relative path = %q", got)
-	}
-}

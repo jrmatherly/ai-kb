@@ -88,6 +88,10 @@ func TestCheckKnowledgeExists_FileSourceIdentity(t *testing.T) {
 		{"missing external ID", "ds-2", "", "same-hash", "md", true},
 		{"filename fallback same item", "ds-1", "gitlab:1:main:README.md", "", "md", true},
 		{"filename fallback nested item", "ds-1", "gitlab:1:main:a/b/c/README.md", "", "md", false},
+		{
+			"github item of another source", "ds-3", "github:https://api.github.com:o/r:main:README.md",
+			"same-hash", "md", false,
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			exists, _, err := repo.CheckKnowledgeExists(context.Background(), 1, "kb-1", &types.KnowledgeCheckParams{

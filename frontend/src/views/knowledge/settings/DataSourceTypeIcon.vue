@@ -92,4 +92,9 @@ function fallbackText(type: string) {
   letter-spacing: 0.02em;
   color: inherit;
 }
+
+/* The GitHub mark is monochrome black and loads through <img>, so currentColor cannot reach it. */
+html[theme-mode="dark"] .ds-type-icon__img[alt="github"] {
+  filter: invert(1);
+}
 </style>

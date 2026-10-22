@@ -11,7 +11,7 @@ A connector is an adapter that translates between AI KB's data model and an exte
 - Full sync (fetch all items from selected resources)
 - Incremental sync (fetch only changed items since last sync)
 
-Nine connector packages live under `internal/datasource/connector/`: `confluence`, `dingtalk`, `feishu` (`core`, `wiki`, `drive`), `gitlab`, `ima`, `notion`, `rss`, `seafile` and `yuque`. `initConnectorRegistry()` in `internal/container/container.go` registers them as twelve types: `feishu`, `lark`, `feishu_drive`, `lark_drive`, `notion`, `confluence`, `yuque`, `dingtalk`, `ima`, `rss`, `gitlab` and `seafile`.
+Ten connector packages plus the shared `repofile` helper package live under `internal/datasource/connector/`: `confluence`, `dingtalk`, `feishu` (`core`, `wiki`, `drive`), `github`, `gitlab`, `ima`, `notion`, `rss`, `seafile` and `yuque`. `initConnectorRegistry()` in `internal/container/container.go` registers them as thirteen types: `feishu`, `lark`, `feishu_drive`, `lark_drive`, `notion`, `confluence`, `yuque`, `dingtalk`, `ima`, `rss`, `github`, `gitlab` and `seafile`.
 
 ## Step 1: Create Connector Package Structure
 

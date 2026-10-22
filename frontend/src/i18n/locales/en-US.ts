@@ -800,6 +800,7 @@ export default {
     channelConfluence: 'Confluence',
     channelYuque: 'Yuque',
     channelGitLab: 'GitLab',
+    channelGitHub: 'GitHub',
     channelSeafile: 'Seafile',
     channelIma: 'Tencent IMA',
     channelUpload: 'Upload',
@@ -6768,6 +6769,16 @@ export default {
       paths: 'Directories', pathsPlaceholder: 'One directory per line; leave empty to sync the whole project',
       addProject: 'Add project', projectRequired: 'Add at least one GitLab project',
     },
+    github: {
+      baseUrl: 'GitHub API URL',
+      baseUrlHint: 'Leave empty for github.com; for GitHub Enterprise Server or a ghe.com enterprise enter the host, for example https://ghe.example.com',
+      accessToken: 'Personal access token', projects: 'GitHub repositories',
+      projectsHint: 'Enter a repository as owner/repo, with optional branch and directories.',
+      project: 'Repository', projectId: 'Repository', projectIdPlaceholder: 'For example: owner/repo',
+      ref: 'Branch', refPlaceholder: 'Leave empty to use the default branch',
+      paths: 'Directories', pathsPlaceholder: 'One directory per line; leave empty to sync the whole repository',
+      addProject: 'Add repository', projectRequired: 'Add at least one GitHub repository',
+    },
     seafile: {
       baseUrl: 'Seafile URL', apiToken: 'API token',
       apiTokenHint: 'Generate it under "Settings → Web API token" in Seafile; the account only needs read access to the libraries you select, and the token is never sent with file downloads.',
@@ -6854,6 +6865,7 @@ export default {
       rss: 'RSS / Atom Feed',
       ima: 'Tencent IMA',
       gitlab: 'GitLab',
+      github: 'GitHub',
       seafile: 'Seafile'
     },
     connectorDesc: {
@@ -6868,6 +6880,7 @@ export default {
       rss: 'Sync articles from RSS / Atom feeds',
       ima: 'Sync documents, notes and files from Tencent IMA knowledge bases (AI sessions and video parses are not supported)',
       gitlab: 'Sync files from GitLab projects',
+      github: 'Sync files from GitHub repositories',
       seafile: 'Sync folders and files from Seafile libraries'
     },
     drive: {
@@ -7032,6 +7045,7 @@ export default {
       seafile_invalid_response: 'Seafile returned a response that could not be parsed; check the server version and reverse proxy.',
       seafile_ssrf_blocked: 'The Seafile download URL was blocked by the SSRF policy; add the fileserver host to SSRF_WHITELIST.',
       seafile_fetch_failed: 'Failed to fetch the file from Seafile; the next sync retries it.',
+      github_file_too_large: 'The GitHub file exceeds the 100 MB API limit; GitHub does not serve larger blobs.',
       deletion_guard_tripped: 'Deletions held back: {count} item(s), {percent}% of the {owned} this data source owns ({deselected} from resources removed from the selection). If this is expected, use "Sync and apply deletions".',
       reconcile_listing_empty: 'Deletions held back: the source listed nothing while this data source owns {owned} item(s), which usually means lost access. If the source really is empty, use "Sync and apply deletions".',
       reconcile_listing_incomplete: 'Deletions were not reconciled: the connector could not confirm a complete listing (a resumed or partial run). Deletions the connector reports itself still apply.'

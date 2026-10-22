@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Changes
+
+- **NEW**: **GitHub data source**: sync document files from the directories of GitHub, ghe.com or GitHub Enterprise Server repositories. Incremental sync diffs repository snapshots, so a force-push is handled; progress resumes after a rate limit; files over the 100 MB API limit are reported per item. Enable it by listing `github` in `AIKB_DATASOURCE_TYPES` (or setting it to `all`).
+
 ## [2026.10.21.3] - 2026-10-21
 
 ### Changes
