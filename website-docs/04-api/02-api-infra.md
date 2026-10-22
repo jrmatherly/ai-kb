@@ -310,7 +310,7 @@ Errors from the connected service (validating a connection or credentials, listi
 
 ### GET /api/v1/datasource/types
 
-Purpose: the whole connector catalog, sorted by `priority`. `enabled` is false for a type `AIKB_DATASOURCE_TYPES` excludes (unset enables Notion and Confluence only, `all` enables every type); excluded types stay listed so the capabilities of saved sources of that type remain known. `POST /datasource` answers 400 for an excluded type; existing sources of that type keep syncing, can be edited and can have their credentials replaced. Permission: Viewer+.
+Purpose: the whole connector catalog, sorted by `priority`. `enabled` is false for a type `AIKB_DATASOURCE_TYPES` excludes (unset enables Notion, Confluence and GitHub only, `all` enables every type); excluded types stay listed so the capabilities of saved sources of that type remain known. `POST /datasource` answers 400 for an excluded type; existing sources of that type keep syncing, can be edited and can have their credentials replaced. Permission: Viewer+.
 
 Response: 200 `[{type,name,description,icon,priority,auth_type,capabilities,enabled}]`
 

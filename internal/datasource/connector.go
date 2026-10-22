@@ -403,7 +403,9 @@ const ConnectorTypesEnv = "AIKB_DATASOURCE_TYPES"
 const AllConnectorTypes = "all"
 
 // DefaultConnectorTypes are the types offered when ConnectorTypesEnv is unset or blank.
-var DefaultConnectorTypes = []string{types.ConnectorTypeNotion, types.ConnectorTypeConfluence}
+var DefaultConnectorTypes = []string{
+	types.ConnectorTypeNotion, types.ConnectorTypeConfluence, types.ConnectorTypeGitHub,
+}
 
 var unknownConnectorTypeWarning sync.Once
 

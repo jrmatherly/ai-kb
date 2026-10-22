@@ -2,6 +2,7 @@
 package github
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -168,6 +169,13 @@ func (c *client) fetch(ctx context.Context, rawURL, accept string, limit int64) 
 	}
 	defer func() { _ = resp.Body.Close() }()
 	if err := statusError(endpoint, resp); err != nil {
+		if resp.StatusCode == http.StatusForbidden && !errors.Is(err, errRateLimited) {
+			// A secondary rate limit can arrive as a 403 with neither header; only its body says so.
+			peek, _ := io.ReadAll(io.LimitReader(resp.Body, 4<<10))
+			if bytes.Contains(bytes.ToLower(peek), []byte("secondary rate limit")) {
+				return nil, nil, fmt.Errorf("%w until unknown", errRateLimited)
+			}
+		}
 		return nil, nil, err
 	}
 	body, err := readCapped(resp.Body, limit)

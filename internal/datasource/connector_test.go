@@ -59,8 +59,8 @@ func TestListAvailableConnectorsMarksAllowList(t *testing.T) {
 		return got
 	}
 	t.Setenv(ConnectorTypesEnv, "")
-	if got := enabled(); !slices.Equal(got, []string{"notion", "confluence"}) {
-		t.Fatalf("blank allow-list enabled %v, want [notion confluence]", got)
+	if got := enabled(); !slices.Equal(got, []string{"notion", "confluence", "github"}) {
+		t.Fatalf("blank allow-list enabled %v, want [notion confluence github]", got)
 	}
 	t.Setenv(ConnectorTypesEnv, " ALL ")
 	if got := len(enabled()); got != len(ConnectorMetadataRegistry) {
@@ -81,8 +81,9 @@ func TestConnectorTypeEnabled(t *testing.T) {
 	for _, value := range []string{"", "  "} {
 		t.Setenv(ConnectorTypesEnv, value)
 		if !ConnectorTypeEnabled(types.ConnectorTypeNotion) || !ConnectorTypeEnabled(types.ConnectorTypeConfluence) ||
+			!ConnectorTypeEnabled(types.ConnectorTypeGitHub) ||
 			ConnectorTypeEnabled(types.ConnectorTypeFeishu) || ConnectorTypeEnabled("fake") {
-			t.Fatalf("allow-list %q must admit only notion and confluence", value)
+			t.Fatalf("allow-list %q must admit only notion, confluence and github", value)
 		}
 	}
 	for _, value := range []string{"all", " All "} {

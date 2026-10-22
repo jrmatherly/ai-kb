@@ -296,7 +296,7 @@ func (c *Connector) removeRepository(
 	rc := next.Repositories[key]
 	prev, err := c.baseline(ctx, key, rc)
 	if err != nil {
-		return err
+		return dropUnreadable(ctx, key, next, h, err)
 	}
 	if prev == nil && rc.Head != "" {
 		logger.Warnf(ctx, "[GitHub] %s left the selection but the tree of its head %s is gone; "+
@@ -310,7 +310,7 @@ func (c *Connector) removeRepository(
 	if p := rc.Pending; p != nil {
 		pending, err := c.effectiveBaseline(ctx, key, rc, prev, p)
 		if err != nil {
-			return err
+			return dropUnreadable(ctx, key, next, h, err)
 		}
 		for _, path := range slices.Sorted(maps.Keys(pending)) {
 			if _, inBaseline := prev[path]; inBaseline && rc.Ref == p.Ref {
@@ -321,6 +321,20 @@ func (c *Connector) removeRepository(
 			}
 		}
 	}
+	delete(next.Repositories, key)
+	return h.Checkpoint(ctx, gitHubCursor(next, false))
+}
+
+// dropUnreadable gives up on a removed repository the token can no longer read.
+// Keeping its entry would fail every later sync, and removing the repository is
+// the operator's natural fix for lost access. Any other error is returned, so a
+// transient failure does not orphan the repository's items.
+func dropUnreadable(ctx context.Context, key string, next cursor, h datasource.StreamHandler, err error) error {
+	if !errors.Is(err, datasource.ErrPermissionDenied) {
+		return err
+	}
+	logger.Warnf(ctx, "[GitHub] %s left the selection but the token can no longer read it (%v); "+
+		"its remaining items stay until a full-mode sync with deletion sync on reconciles them", key, err)
 	delete(next.Repositories, key)
 	return h.Checkpoint(ctx, gitHubCursor(next, false))
 }

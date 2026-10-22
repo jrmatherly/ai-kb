@@ -66,7 +66,9 @@ func (s snapshot) add(path string, e treeEntry, roots []string) {
 }
 
 // walkSubtrees descends from the root tree through the non-recursive tree
-// endpoint, entering only subtrees that lead to or lie inside a root.
+// endpoint, entering only subtrees that lead to or lie inside a root. A
+// directory listing truncated by the API's cap fails the walk: a snapshot
+// missing its files would tombstone them on an incremental sync.
 func (c *Connector) walkSubtrees(ctx context.Context, key, rootTreeSHA string, roots []string) (snapshot, error) {
 	snap := snapshot{}
 	var walk func(dir, sha string) error
@@ -74,6 +76,9 @@ func (c *Connector) walkSubtrees(ctx context.Context, key, rootTreeSHA string, r
 		t, err := c.client.tree(ctx, key, sha, false)
 		if err != nil {
 			return err
+		}
+		if t.Truncated {
+			return fmt.Errorf("github %s: the listing of directory %q is truncated", key, dir)
 		}
 		for _, e := range t.Entries {
 			p := e.Path
