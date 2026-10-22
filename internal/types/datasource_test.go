@@ -5,6 +5,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/jrmatherly/ai-kb/internal/utils"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -184,4 +185,30 @@ func TestSubtreeParentID(t *testing.T) {
 		assert.Equal(t, tc.ok, ok, tc.id)
 		assert.Equal(t, tc.parent, parent, tc.id)
 	}
+}
+
+func TestDataSourceConfigImportable(t *testing.T) {
+	cfg := &DataSourceConfig{Imports: utils.ImportCapabilities{Audio: true}}
+	assert.True(t, cfg.Importable("docs/a.md"))
+	assert.False(t, cfg.Importable("docs/Shot.PNG"))
+	assert.True(t, cfg.Importable("talk.mp3"))
+	assert.False(t, cfg.Importable("LICENSE"), "a dotless name has no importable extension")
+	assert.False(t, (*DataSourceConfig)(nil).Importable("a.md"))
+}
+
+func TestSyncCursorImportsRoundTripAndOmitWhenNil(t *testing.T) {
+	raw, _ := json.Marshal(SyncCursor{})
+	assert.NotContains(t, string(raw), "imports")
+	c := SyncCursor{Imports: &utils.ImportCapabilities{Images: true}}
+	raw, _ = json.Marshal(c)
+	assert.Contains(t, string(raw), `"imports":{"images":true,"audio":false}`)
+	var back SyncCursor
+	assert.NoError(t, json.Unmarshal(raw, &back))
+	assert.Equal(t, c.Imports, back.Imports)
+}
+
+func TestKnowledgeBaseImportCapabilities(t *testing.T) {
+	kb := &KnowledgeBase{VLMConfig: VLMConfig{Enabled: true, ModelID: "m"}}
+	assert.Equal(t, utils.ImportCapabilities{Images: true}, kb.ImportCapabilities())
+	assert.Equal(t, utils.ImportCapabilities{}, (*KnowledgeBase)(nil).ImportCapabilities())
 }

@@ -716,9 +716,9 @@ func (s *DataSourceService) ProcessSync(ctx context.Context, task *asynq.Task) e
 		_ = s.dsRepo.Update(ctx, ds)
 		return err
 	}
-	// Surface the KB's multimodal/VLM state to the connector so it only extracts
-	// embedded images for OCR when the KB can actually ingest them (never persisted).
-	config.MultimodalEnabled = kb.IsMultimodalEnabled()
+	// Surface the KB's import capabilities to the connector so it skips what the KB
+	// cannot ingest (never persisted).
+	config.Imports = kb.ImportCapabilities()
 
 	// Streaming path: connectors that support it interleave fetch→ingest→
 	// checkpoint so a large sync bounds memory and resumes after a timeout

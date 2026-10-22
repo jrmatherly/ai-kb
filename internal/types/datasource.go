@@ -3,6 +3,7 @@ package types
 import (
 	"encoding/json"
 	"log"
+	"path"
 	"strings"
 	"time"
 
@@ -229,13 +230,15 @@ type DataSourceConfig struct {
 	// Connector-specific configuration
 	Settings map[string]interface{} `json:"settings"`
 
-	// MultimodalEnabled mirrors the target knowledge base's VLM/multimodal
-	// setting for the current sync run. The service populates it before each fetch
-	// and it is never persisted (json:"-") - the KB owns the setting. Connectors
-	// use it to decide whether extracting embedded images for OCR is worthwhile:
-	// ingesting an image into a KB without VLM is rejected, so image extraction is
-	// skipped when this is false.
-	MultimodalEnabled bool `json:"-"`
+	// Imports is the target knowledge base's import capabilities for the current
+	// sync run. The service sets it before each fetch and never persists it: the KB
+	// owns the setting. Connectors skip files and embedded images the KB would reject.
+	Imports utils.ImportCapabilities `json:"-"`
+}
+
+// Importable reports whether a file with this name can be imported under c.Imports.
+func (c *DataSourceConfig) Importable(name string) bool {
+	return c != nil && utils.IsImportable(path.Ext(name), c.Imports)
 }
 
 // HasCredentials reports whether the credentials map carries any value at
@@ -446,6 +449,10 @@ type SyncCursor struct {
 	// back. They stay held, whatever later runs add, until an override applies
 	// them; otherwise a batch shrinking under the guard would apply unasked.
 	DeletionsHeld bool `json:"deletions_held,omitempty"`
+
+	// Imports records the import capabilities the last run synced under. Nil
+	// means the cursor was recorded before this field existed.
+	Imports *utils.ImportCapabilities `json:"imports,omitempty"`
 }
 
 // SyncResult summarizes the outcome of a sync operation

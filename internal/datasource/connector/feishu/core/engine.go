@@ -153,7 +153,7 @@ func runSync[N any](
 				continue
 			}
 
-			items, ferr := ops.Fetch(ctx, client, node, resourceID, config.MultimodalEnabled)
+			items, ferr := ops.Fetch(ctx, client, node, resourceID, config.Imports.Images)
 			if ferr != nil {
 				tally.fail()
 				// Do NOT advance the cursor: the content was never fetched.
