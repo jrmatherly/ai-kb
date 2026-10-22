@@ -29,10 +29,3 @@ func TestInScopeMatchesRootOrDescendant(t *testing.T) {
 	require.False(t, InScope("docs-old/a.md", []string{"docs"}))
 	require.True(t, InScope("any/file.md", nil))
 }
-
-func TestIsSupportedFollowsTheSharedImportSet(t *testing.T) {
-	require.True(t, IsSupported("README.MD"))
-	require.True(t, IsSupported("notes/plan.xmind"), "every upload-importable extension syncs")
-	require.True(t, IsSupported("docs/guide.mdx"))
-	require.False(t, IsSupported("main.go"))
-}

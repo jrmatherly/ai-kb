@@ -28073,6 +28073,10 @@ const docTemplate = `{
                     "type": "object",
                     "additionalProperties": true
                 },
+                "knowledge_base_id": {
+                    "description": "KnowledgeBaseID lets the listing hide image and audio files the knowledge base cannot import; empty\nleaves every capability on.",
+                    "type": "string"
+                },
                 "parent_id": {
                     "type": "string"
                 },

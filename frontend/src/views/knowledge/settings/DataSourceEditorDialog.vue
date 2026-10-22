@@ -544,6 +544,7 @@ function fetchResources(parentId?: string) {
     credentials: form.value.config.credentials,
     settings: form.value.config.settings,
     resource_ids: form.value.config.resource_ids,
+    knowledge_base_id: props.kbId,
   }, parentId)
 }
 

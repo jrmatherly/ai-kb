@@ -7,6 +7,7 @@ import (
 
 	"github.com/jrmatherly/ai-kb/internal/datasource"
 	"github.com/jrmatherly/ai-kb/internal/types"
+	"github.com/jrmatherly/ai-kb/internal/utils"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -64,7 +65,8 @@ func TestStreamStartCursor_IncrementalKeepsCursor(t *testing.T) {
 
 func newStreamHandler(svc *DataSourceService, ds *types.DataSource, result *types.SyncResult, syncLog *types.SyncLog) *streamSyncHandler {
 	return &streamSyncHandler{
-		svc: svc, ds: ds, result: result, syncLog: syncLog, deletions: newRunDeletions(ds, nil, false),
+		svc: svc, ds: ds, result: result, syncLog: syncLog,
+		deletions: newRunDeletions(ds, nil, false, utils.AllImportCapabilities),
 	}
 }
 

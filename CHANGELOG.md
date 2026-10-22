@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Changes
 
 - **NEW**: **MDX import**: `.mdx` files (Markdown with JSX, as written for Docusaurus, Nextra, Mintlify and Fumadocs) import through upload, URL import and every data-source sync. docreader strips imports, exports and expressions, unwraps components keeping their text and titles, and converts admonitions before the Markdown pipeline runs.
+- **CHANGED**: Data-source syncs fetch only what the knowledge base can ingest. GitHub, GitLab and Seafile skip images when the knowledge base has no vision model and audio when it has no speech model, instead of downloading them and failing; the picker hides them too. A file skipped on ingest is counted as skipped and never replaces an existing item. Configuring a model later makes the next sync of each streaming data source on that knowledge base restart from the beginning, so the skipped files are fetched.
 
 ## [2026.10.22.1] - 2026-10-22
 

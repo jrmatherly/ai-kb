@@ -15,6 +15,7 @@ import (
 	"github.com/jrmatherly/ai-kb/internal/datasource/connector/repofile"
 	"github.com/jrmatherly/ai-kb/internal/logger"
 	"github.com/jrmatherly/ai-kb/internal/types"
+	"github.com/jrmatherly/ai-kb/internal/utils"
 )
 
 var _ datasource.StreamingConnector = (*Connector)(nil)
@@ -32,7 +33,9 @@ var SyncReasonTexts = map[string]string{
 
 // Connector syncs document files from selected GitHub repositories.
 type Connector struct {
-	client *client
+	client     *client
+	imports    utils.ImportCapabilities
+	importable func(string) bool
 }
 
 // NewConnector creates a stateless connector. Each data source provides its
@@ -52,7 +55,7 @@ func (c *Connector) configured(ds *types.DataSourceConfig) (*Connector, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Connector{client: client}, nil
+	return &Connector{client: client, imports: ds.Imports, importable: ds.Importable}, nil
 }
 
 // Validate checks the credentials against the API and the selection syntax.
@@ -270,6 +273,20 @@ func (c *Connector) FetchStream(
 	}
 	complete := old == nil
 	next := readCursor(old)
+	// Pending.Done indexes a change list computed under the cursor's recorded capabilities; under another
+	// filter it points at the wrong entries. Dropping Pending also drops the overlay effectiveBaseline
+	// rebuilds from it, so a file the interrupted run added that is gone at the new head is not
+	// tombstoned, the same trade maxPendingChain makes.
+	if old != nil && old.RecordedImports() != c.imports {
+		for key, rc := range next.Repositories {
+			if rc.Pending != nil {
+				logger.Infof(ctx,
+					"[GitHub] %s: import capabilities changed since the interrupted run, restarting its diff", key)
+			}
+			rc.Pending = nil
+			next.Repositories[key] = rc
+		}
+	}
 	for _, selection := range cfg.Repositories {
 		if err := c.streamRepository(ctx, selection, next, h); err != nil {
 			return nil, err

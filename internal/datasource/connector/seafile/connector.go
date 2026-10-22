@@ -10,7 +10,6 @@ import (
 
 	"github.com/jrmatherly/ai-kb/internal/datasource"
 	"github.com/jrmatherly/ai-kb/internal/types"
-	"github.com/jrmatherly/ai-kb/internal/utils"
 )
 
 var (
@@ -89,7 +88,7 @@ func (*Connector) ListResources(
 	if parentID == "" {
 		out, err = listLibraries(ctx, client)
 	} else {
-		out, err = listDirectory(ctx, client, parentID)
+		out, err = listDirectory(ctx, client, parentID, ds.Importable)
 	}
 	if err != nil {
 		return nil, err
@@ -124,7 +123,9 @@ func listLibraries(ctx context.Context, client *client) ([]types.Resource, error
 	return out, nil
 }
 
-func listDirectory(ctx context.Context, client *client, parentID string) ([]types.Resource, error) {
+func listDirectory(
+	ctx context.Context, client *client, parentID string, importable func(string) bool,
+) ([]types.Resource, error) {
 	repoID, dir, err := parseResourceID(parentID)
 	if err != nil {
 		return nil, err
@@ -143,7 +144,7 @@ func listDirectory(ctx context.Context, client *client, parentID string) ([]type
 		case "dir":
 			kind = "directory"
 		case "file":
-			if !utils.IsSupportedImportExtension(path.Ext(e.Name)) {
+			if !importable(e.Name) {
 				continue
 			}
 			kind = "file"

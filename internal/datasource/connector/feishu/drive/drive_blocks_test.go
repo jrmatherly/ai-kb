@@ -17,7 +17,7 @@ import (
 func makeDriveConfig(cfg *core.Config, resourceIDs []string, multimodal bool) *types.DataSourceConfig {
 	c := makeConfig(cfg, resourceIDs)
 	c.Type = types.ConnectorTypeFeishuDrive
-	c.MultimodalEnabled = multimodal
+	c.Imports.Images = multimodal
 	return c
 }
 

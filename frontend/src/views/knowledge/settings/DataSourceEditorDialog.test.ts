@@ -385,7 +385,7 @@ test('Seafile picker lists libraries lazily and shows the library icon', async (
     assert.deepEqual(f.calls.map(call => call.method), ['listResourcesForConfig'])
     assert.deepEqual(f.calls[0].args, [{
       type: 'seafile', credentials: { base_url: 'https://seafile.example.com', api_token: 'rotated-token' },
-      settings: {}, resource_ids: [],
+      settings: {}, resource_ids: [], knowledge_base_id: 'kb-one',
     }, undefined])
     assert.deepEqual([...f.vm.resources].map((r: any) => r.external_id), [`${seafileRepoA}:/`, `${seafileRepoB}:/`])
     assert.equal(f.vm.resourceIconName(f.vm.resources[0]), 'root-list')

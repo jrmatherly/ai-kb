@@ -363,13 +363,19 @@ func (h *DataSourceHandler) ListResourcesForConfig(c *gin.Context) {
 		_ = c.Error(apperrors.NewBadRequestError("invalid request: type and credentials are required"))
 		return
 	}
+	if req.KnowledgeBaseID != "" {
+		if _, appErr := h.getOwnedKnowledgeBase(ctx, tenantID, req.KnowledgeBaseID); appErr != nil {
+			_ = c.Error(appErr)
+			return
+		}
+	}
 
 	resources, err := h.service.ListResourcesForConfig(ctx, &types.DataSourceConfig{
 		Type:        req.Type,
 		Credentials: req.Credentials,
 		ResourceIDs: req.ResourceIDs,
 		Settings:    req.Settings,
-	}, req.ParentID)
+	}, req.KnowledgeBaseID, req.ParentID)
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -390,6 +396,9 @@ type listResourcesForConfigRequest struct {
 	Settings    map[string]interface{} `json:"settings"`
 	ResourceIDs []string               `json:"resource_ids"`
 	ParentID    string                 `json:"parent_id"`
+	// KnowledgeBaseID lets the listing hide image and audio files the knowledge base cannot import; empty
+	// leaves every capability on.
+	KnowledgeBaseID string `json:"knowledge_base_id"`
 }
 
 // @Summary List available resources in data source

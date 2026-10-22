@@ -82,3 +82,9 @@ func TestImportExtensionSetIsSharedAcrossPaths(t *testing.T) {
 		}
 	}
 }
+
+func TestImageAndAudioTypePredicatesIgnoreCase(t *testing.T) {
+	if !IsImageType("PNG") || !IsAudioType(".Wav") || IsImageType("md") {
+		t.Fatal("predicates must normalise case and a leading dot")
+	}
+}

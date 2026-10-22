@@ -20,13 +20,15 @@ type stubDataSourceService struct {
 	getSyncLogs   func(ctx context.Context, dsID string, limit int, offset int) ([]*types.SyncLog, error)
 	getDataSource func(ctx context.Context, id string) (*types.DataSource, error)
 	manualSyncs   []bool
-	listForConfig func(ctx context.Context, config *types.DataSourceConfig, parentID string) ([]types.Resource, error)
+	listForConfig func(
+		ctx context.Context, config *types.DataSourceConfig, kbID, parentID string,
+	) ([]types.Resource, error)
 }
 
 func (s *stubDataSourceService) ListResourcesForConfig(
-	ctx context.Context, config *types.DataSourceConfig, parentID string,
+	ctx context.Context, config *types.DataSourceConfig, kbID, parentID string,
 ) ([]types.Resource, error) {
-	return s.listForConfig(ctx, config, parentID)
+	return s.listForConfig(ctx, config, kbID, parentID)
 }
 
 func (s *stubDataSourceService) ManualSync(
@@ -333,12 +335,12 @@ func TestDataSource_GetSyncLogs_NegativeLimitRejected(t *testing.T) {
 
 func TestDataSource_ListResourcesForConfig(t *testing.T) {
 	var gotConfig *types.DataSourceConfig
-	var gotParent string
+	var gotKB, gotParent string
 	dsSvc := &stubDataSourceService{
 		listForConfig: func(
-			_ context.Context, config *types.DataSourceConfig, parentID string,
+			_ context.Context, config *types.DataSourceConfig, kbID, parentID string,
 		) ([]types.Resource, error) {
-			gotConfig, gotParent = config, parentID
+			gotConfig, gotKB, gotParent = config, kbID, parentID
 			if parentID == "boom" {
 				return nil, errors.New("upstream refused")
 			}
@@ -348,7 +350,16 @@ func TestDataSource_ListResourcesForConfig(t *testing.T) {
 			return []types.Resource{{ExternalID: "feed-1", Name: "Feed"}}, nil
 		},
 	}
-	router := newDataSourceTestRouter(NewDataSourceHandler(dsSvc, &stubKBServiceForDS{}))
+	kbSvc := &stubKBServiceForDS{getByID: func(_ context.Context, id string) (*types.KnowledgeBase, error) {
+		switch id {
+		case "kb-9":
+			return &types.KnowledgeBase{ID: id, TenantID: 1}, nil
+		case "kb-theirs":
+			return &types.KnowledgeBase{ID: id, TenantID: 2}, nil
+		}
+		return nil, nil
+	}}
+	router := newDataSourceTestRouter(NewDataSourceHandler(dsSvc, kbSvc))
 	post := func(body string, tenantID uint64) *httptest.ResponseRecorder {
 		w := httptest.NewRecorder()
 		req := httptest.NewRequest(http.MethodPost, "/datasource/list-resources", strings.NewReader(body))
@@ -358,13 +369,24 @@ func TestDataSource_ListResourcesForConfig(t *testing.T) {
 	}
 
 	w := post(`{"type":"rss","credentials":{"auth_headers":"X: y"},`+
-		`"settings":{"feed_urls":"https://example.com/feed"},"resource_ids":["root"],"parent_id":"p1"}`, 1)
+		`"settings":{"feed_urls":"https://example.com/feed"},"resource_ids":["root"],"parent_id":"p1",`+
+		`"knowledge_base_id":"kb-9"}`, 1)
 	wantBody := `[{"external_id":"feed-1","name":"Feed","type":"","description":"","url":"",` +
 		`"modified_at":"0001-01-01T00:00:00Z"}]`
 	if w.Code != http.StatusOK || w.Body.String() != wantBody {
 		t.Fatalf("status %d body %s", w.Code, w.Body.String())
 	}
-	if gotParent != "p1" || gotConfig.Type != "rss" || gotConfig.Credentials["auth_headers"] != "X: y" ||
+	for kbID, want := range map[string]string{
+		"kb-theirs":  `{"success":false,"error":{"code":1002,"message":"access denied"}}`,
+		"kb-missing": `{"success":false,"error":{"code":1003,"message":"knowledge base not found"}}`,
+	} {
+		w := post(`{"type":"rss","credentials":{},"knowledge_base_id":"`+kbID+`"}`, 1)
+		if w.Body.String() != want {
+			t.Fatalf("%s: status %d body %s", kbID, w.Code, w.Body.String())
+		}
+	}
+	if gotParent != "p1" || gotKB != "kb-9" || gotConfig.Type != "rss" ||
+		gotConfig.Credentials["auth_headers"] != "X: y" ||
 		gotConfig.Settings["feed_urls"] != "https://example.com/feed" ||
 		!slices.Equal(gotConfig.ResourceIDs, []string{"root"}) {
 		t.Fatalf("service got config %+v parent %q", gotConfig, gotParent)

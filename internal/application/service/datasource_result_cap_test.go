@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/jrmatherly/ai-kb/internal/types"
+	"github.com/jrmatherly/ai-kb/internal/utils"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -21,7 +22,7 @@ func TestApplyFetchedItem_CapsErrorSampleButKeepsAccurateFailedCount(t *testing.
 
 	const failures = 5000
 	for i := 0; i < failures; i++ {
-		s.applyFetchedItem(ctx, ds, &types.FetchedItem{
+		s.applyFetchedItem(ctx, ds, utils.AllImportCapabilities, &types.FetchedItem{
 			ExternalID: "node",
 			Title:      "doc",
 			Metadata:   map[string]string{"error": "export failed: rate limited"},
@@ -44,7 +45,7 @@ func TestApplyFetchedItem_ProducesLocalisableStructuredError(t *testing.T) {
 	ds := &types.DataSource{}
 	result := &types.SyncResult{}
 
-	s.applyFetchedItem(context.Background(), ds, &types.FetchedItem{
+	s.applyFetchedItem(context.Background(), ds, utils.AllImportCapabilities, &types.FetchedItem{
 		ExternalID: "nt1",
 		Title:      "Budget",
 		Metadata: map[string]string{

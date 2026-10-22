@@ -145,8 +145,15 @@ export function listResources(id: string, parentId?: string) {
 
 // listResourcesForConfig is listResources for an unsaved config: the create
 // wizard browses the external system without persisting a draft data source.
+// knowledge_base_id lets the listing hide files that knowledge base cannot import.
 export function listResourcesForConfig(
-  config: { type: string; credentials: Record<string, any>; settings: Record<string, any>; resource_ids: string[] },
+  config: {
+    type: string
+    credentials: Record<string, any>
+    settings: Record<string, any>
+    resource_ids: string[]
+    knowledge_base_id: string
+  },
   parentId?: string,
 ) {
   return post('/api/v1/datasource/list-resources', { ...config, parent_id: parentId || '' }, { timeout: 120000 })

@@ -11,6 +11,7 @@ import (
 	"github.com/jrmatherly/ai-kb/internal/datasource"
 	"github.com/jrmatherly/ai-kb/internal/logger"
 	"github.com/jrmatherly/ai-kb/internal/types"
+	"github.com/jrmatherly/ai-kb/internal/utils"
 )
 
 // The mass-deletion guard holds back a run that would delete at least
@@ -53,11 +54,16 @@ type runDeletions struct {
 	reconcile bool
 	// held mirrors types.SyncCursor.DeletionsHeld.
 	held bool
+	// imports is stamped on every persisted cursor so the next run can tell
+	// whether the knowledge base gained a capability since.
+	imports utils.ImportCapabilities
 }
 
 // newRunDeletions starts from the deletions stored left pending.
-func newRunDeletions(ds *types.DataSource, stored *types.SyncCursor, reconcile bool) *runDeletions {
-	d := &runDeletions{}
+func newRunDeletions(
+	ds *types.DataSource, stored *types.SyncCursor, reconcile bool, imports utils.ImportCapabilities,
+) *runDeletions {
+	d := &runDeletions{imports: imports}
 	if !ds.SyncDeletions {
 		return d
 	}
@@ -98,6 +104,7 @@ func (d *runDeletions) withPending(c *types.SyncCursor) *types.SyncCursor {
 	}
 	out.PendingDeletions = slices.Sorted(maps.Keys(d.pending))
 	out.DeletionsHeld = d.held && len(d.pending) > 0
+	out.Imports = &d.imports
 	return &out
 }
 
@@ -252,7 +259,7 @@ func (s *DataSourceService) settleDeletions(
 			result.Total++
 		}
 		failedBefore := result.DeletionFailed
-		s.applyFetchedItem(withKBActivitySuppressed(ctx), ds,
+		s.applyFetchedItem(withKBActivitySuppressed(ctx), ds, d.imports,
 			&types.FetchedItem{ExternalID: item.ExternalID, Title: item.Title, IsDeleted: true}, nil, result)
 		if result.DeletionFailed == failedBefore {
 			delete(d.pending, item.ExternalID)

@@ -31,10 +31,11 @@ type syncRun struct {
 	// stable when the library is renamed.
 	repoName string
 	limit    int64
-	// seen records every supported file listed this run; anything known to
-	// the cursor but not seen is a deletion candidate.
-	seen    map[string]bool
-	unsaved int
+	// seen records every importable file listed this run, plus tracked files hidden by a lost model;
+	// anything known to the cursor but not seen is a deletion candidate.
+	seen       map[string]bool
+	unsaved    int
+	importable func(string) bool
 }
 
 func (c *Connector) runSync(
@@ -54,9 +55,12 @@ func (c *Connector) runSync(
 		return nil, err
 	}
 	// A file is skipped only when the cursor already holds its fingerprint, so a
-	// full run that starts with none emits every supported file it lists.
+	// full run that starts with none emits every importable file it lists.
 	emitsAll := forceFull && len(cur.Files) == 0
-	r := &syncRun{ctx: ctx, client: newClient(cfg), h: h, cur: cur, repoID: repoID, seen: make(map[string]bool)}
+	r := &syncRun{
+		ctx: ctx, client: newClient(cfg), h: h, cur: cur, repoID: repoID, seen: make(map[string]bool),
+		importable: ds.Importable,
+	}
 	if changed {
 		r.unsaved++
 	}
@@ -191,7 +195,8 @@ func (r *syncRun) scanRoot(root string) error {
 		if e.Name != path.Base(root) || e.Type != "file" {
 			continue
 		}
-		if !utils.IsSupportedImportExtension(path.Ext(e.Name)) {
+		if !r.importable(e.Name) {
+			r.keepHidden(root)
 			return nil
 		}
 		return r.syncFile(root, e)
@@ -243,10 +248,16 @@ func (r *syncRun) walkDir(root string, rootEntries []dirent) error {
 		}
 		sort.Slice(entries, func(i, j int) bool { return entries[i].Name < entries[j].Name })
 		for _, e := range entries {
-			if e.Type == "file" && utils.IsSupportedImportExtension(path.Ext(e.Name)) {
-				if err := r.syncFile(path.Join(dir, e.Name), e); err != nil {
-					return err
-				}
+			if e.Type != "file" {
+				continue
+			}
+			p := path.Join(dir, e.Name)
+			if !r.importable(e.Name) {
+				r.keepHidden(p)
+				continue
+			}
+			if err := r.syncFile(p, e); err != nil {
+				return err
 			}
 		}
 		for i := len(entries) - 1; i >= 0; i-- {
@@ -256,6 +267,14 @@ func (r *syncRun) walkDir(root string, rootEntries []dirent) error {
 		}
 	}
 	return nil
+}
+
+// keepHidden marks a tracked file that is still listed but no longer importable as seen, so this
+// connector's reconcile keeps it; the service's full-mode reconcile does not read this set and still removes it.
+func (r *syncRun) keepHidden(p string) {
+	if _, ok := r.cur.Files[p]; ok {
+		r.seen[p] = true
+	}
 }
 
 // syncFile downloads and emits one file unless its fingerprint is unchanged.

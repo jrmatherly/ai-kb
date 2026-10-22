@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/jrmatherly/ai-kb/internal/utils"
 	"gorm.io/gorm"
 )
 
@@ -905,6 +906,14 @@ func (kb *KnowledgeBase) IsMultimodalEnabled() bool {
 		return false
 	}
 	return kb.VLMConfig.IsEnabled()
+}
+
+// ImportCapabilities reports which model-gated file kinds this knowledge base can import.
+func (kb *KnowledgeBase) ImportCapabilities() utils.ImportCapabilities {
+	if kb == nil {
+		return utils.ImportCapabilities{}
+	}
+	return utils.ImportCapabilities{Images: kb.VLMConfig.IsEnabled(), Audio: kb.ASRConfig.IsASREnabled()}
 }
 
 // IsImageVectorEnabled reports whether the knowledge base opted in to

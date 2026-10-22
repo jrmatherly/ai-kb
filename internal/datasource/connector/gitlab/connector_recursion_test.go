@@ -12,6 +12,7 @@ import (
 	"testing"
 
 	"github.com/jrmatherly/ai-kb/internal/types"
+	"github.com/jrmatherly/ai-kb/internal/utils"
 	"github.com/stretchr/testify/require"
 )
 
@@ -71,6 +72,7 @@ func TestConnectorFetchesNestedDirectories(t *testing.T) {
 			defer server.Close()
 			cfg := &types.DataSourceConfig{
 				Credentials: map[string]interface{}{"base_url": server.URL, "access_token": "token"},
+				Imports:     utils.ImportCapabilities{Images: true, Audio: true},
 				Settings: map[string]interface{}{"projects": []interface{}{
 					map[string]interface{}{"project_id": "1", "paths": []interface{}{"docs", "docs/a"}},
 				}},
@@ -149,6 +151,7 @@ func TestConnectorCompareFailuresDoNotFallBackToFullSync(t *testing.T) {
 
 				cfg := &types.DataSourceConfig{
 					Credentials: map[string]interface{}{"base_url": server.URL, "access_token": "token"},
+					Imports:     utils.ImportCapabilities{Images: true, Audio: true},
 					Settings: map[string]interface{}{"projects": []interface{}{
 						map[string]interface{}{"project_id": "1", "paths": []interface{}{}},
 					}},
@@ -215,6 +218,7 @@ func TestConnectorSuccessfulCompareStillEmitsOnlyChangedFiles(t *testing.T) {
 
 			cfg := &types.DataSourceConfig{
 				Credentials: map[string]interface{}{"base_url": server.URL, "access_token": "token"},
+				Imports:     utils.ImportCapabilities{Images: true, Audio: true},
 				Settings: map[string]interface{}{"projects": []interface{}{
 					map[string]interface{}{"project_id": "1", "paths": []interface{}{}},
 				}},
@@ -250,6 +254,125 @@ func TestConnectorSuccessfulCompareStillEmitsOnlyChangedFiles(t *testing.T) {
 			require.False(t, items[3].IsDeleted)
 			require.Equal(t, "guide.md", items[3].Metadata["gitlab_path"])
 			require.Equal(t, "head", next.ConnectorCursor["projects"].(map[string]string)["1"])
+		})
+	}
+}
+
+func TestNestedDirectoriesSkipAudioWithoutASR(t *testing.T) {
+	for _, tc := range []struct {
+		name string
+		caps utils.ImportCapabilities
+		want []string
+	}{
+		{name: "without", caps: utils.ImportCapabilities{}, want: []string{"docs/README.md", "docs/sub/notes.md"}},
+		{
+			name: "with", caps: utils.ImportCapabilities{Audio: true},
+			want: []string{"docs/README.md", "docs/talk.mp3", "docs/sub/clip.wav", "docs/sub/notes.md"},
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			allowLocalGitLabServer(t)
+			trees := map[string][]treeEntry{
+				"docs": {
+					{Name: "README.md", Path: "docs/README.md", Type: "blob"},
+					{Name: "talk.mp3", Path: "docs/talk.mp3", Type: "blob"},
+					{Name: "sub", Path: "docs/sub", Type: "tree"},
+				},
+				"docs/sub": {
+					{Name: "clip.wav", Path: "docs/sub/clip.wav", Type: "blob"},
+					{Name: "notes.md", Path: "docs/sub/notes.md", Type: "blob"},
+				},
+			}
+			var fetched []string
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				w.Header().Set("Content-Type", "application/json")
+				switch r.URL.Path {
+				case "/api/v4/projects/1":
+					_, _ = w.Write([]byte(`{"id":1,"name":"docs","path_with_namespace":"group/docs",` +
+						`"default_branch":"main"}`))
+				case "/api/v4/projects/1/repository/commits/main":
+					_, _ = w.Write([]byte(`{"id":"head"}`))
+				case "/api/v4/projects/1/repository/tree":
+					_ = json.NewEncoder(w).Encode(trees[r.URL.Query().Get("path")])
+				default:
+					file, ok := strings.CutPrefix(r.URL.Path, "/api/v4/projects/1/repository/files/")
+					if file, raw := strings.CutSuffix(file, "/raw"); ok && raw {
+						fetched = append(fetched, file)
+						_, _ = fmt.Fprint(w, "body")
+						return
+					}
+					http.NotFound(w, r)
+				}
+			}))
+			defer server.Close()
+			cfg := &types.DataSourceConfig{
+				Credentials: map[string]interface{}{"base_url": server.URL, "access_token": "token"},
+				Settings: map[string]interface{}{"projects": []interface{}{
+					map[string]interface{}{"project_id": "1", "paths": []interface{}{"docs"}},
+				}},
+				Imports: tc.caps,
+			}
+
+			handler := &gitLabStreamRecorder{}
+			_, err := NewConnector().FetchStream(context.Background(), cfg, nil, handler)
+			require.NoError(t, err)
+			got := make([]string, 0, len(handler.items))
+			for _, item := range handler.items {
+				got = append(got, item.Metadata["gitlab_path"])
+			}
+			require.Equal(t, tc.want, got)
+			require.Equal(t, tc.want, fetched, "only importable files are downloaded")
+		})
+	}
+}
+
+func TestCompareSkipsTombstonesForUnimportableFiles(t *testing.T) {
+	for _, tc := range []struct {
+		name string
+		caps utils.ImportCapabilities
+		want []string
+	}{
+		{name: "without", caps: utils.ImportCapabilities{}, want: []string{"removed.md"}},
+		{name: "with", caps: utils.AllImportCapabilities, want: []string{"removed.md", "talk.mp3"}},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			allowLocalGitLabServer(t)
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				w.Header().Set("Content-Type", "application/json")
+				switch r.URL.Path {
+				case "/api/v4/projects/1":
+					_, _ = w.Write([]byte(`{"id":1,"name":"docs","path_with_namespace":"group/docs",` +
+						`"default_branch":"main"}`))
+				case "/api/v4/projects/1/repository/commits/main":
+					_, _ = w.Write([]byte(`{"id":"head"}`))
+				case "/api/v4/projects/1/repository/compare":
+					_, _ = w.Write([]byte(`{"diffs":[
+						{"old_path":"removed.md","new_path":"removed.md","deleted_file":true},
+						{"old_path":"talk.mp3","new_path":"talk.mp3","deleted_file":true}
+					]}`))
+				default:
+					http.NotFound(w, r)
+				}
+			}))
+			defer server.Close()
+			cfg := &types.DataSourceConfig{
+				Credentials: map[string]interface{}{"base_url": server.URL, "access_token": "token"},
+				Imports:     tc.caps,
+				Settings: map[string]interface{}{"projects": []interface{}{
+					map[string]interface{}{"project_id": "1", "paths": []interface{}{}},
+				}},
+			}
+
+			handler := &gitLabStreamRecorder{}
+			old := gitLabCursor(cursor{Projects: map[string]string{"1": "previous"}})
+			_, err := NewConnector().FetchStream(context.Background(), cfg, old, handler)
+			require.NoError(t, err)
+			got := make([]string, 0, len(handler.items))
+			for _, item := range handler.items {
+				require.True(t, item.IsDeleted)
+				got = append(got, item.Metadata["gitlab_path"])
+			}
+			require.Equal(t, tc.want, got)
 		})
 	}
 }
