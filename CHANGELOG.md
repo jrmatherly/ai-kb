@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changes
 
-- **NEW**: **GitHub data source**: sync document files from the directories of GitHub, ghe.com or GitHub Enterprise Server repositories. Incremental sync diffs repository snapshots, so a force-push is handled; progress resumes after a rate limit; files over the 100 MB API limit are reported per item. Enable it by listing `github` in `AIKB_DATASOURCE_TYPES` (or setting it to `all`).
+- **NEW**: **GitHub data source**: sync document files from the directories of GitHub, ghe.com or GitHub Enterprise Server repositories. Incremental sync diffs repository snapshots, so a force-push is handled; progress resumes after a rate limit; files over the 100 MB API limit are reported per item. Offered by default: `github` joins `notion` and `confluence` in the `AIKB_DATASOURCE_TYPES` default, so a deployment that sets the variable must list it to keep it.
 
 ## [2026.10.21.3] - 2026-10-21
 
