@@ -7,7 +7,7 @@ set -euo pipefail
 #
 # Usage:
 #   ./scripts/test-tap-aikb.sh            # build, pack, install, run --version
-#   KEEP=1 ./scripts/test-tap-aikb.sh     # leave aikb-test installed
+#   KEEP=1 ./scripts/test-tap-aikb.sh     # leave aikb-test and the tap installed
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TAG="v0.0.0-local"
@@ -18,7 +18,15 @@ WORK="$(mktemp -d)"
 TAP_NAME="aikb/test"
 TAP_DIR="$(brew --repository)/Library/Taps/aikb/homebrew-test"
 FORMULA_NAME="aikb-test"
-trap 'rm -rf "${WORK}"' EXIT
+# Untap as well as uninstall: a remote-less tap left behind makes every later
+# brew command warn that it is untrusted and cannot update.
+cleanup() {
+    rm -rf "${WORK}"
+    [ "${KEEP:-}" = "1" ] && return 0
+    brew uninstall -q "${TAP_NAME}/${FORMULA_NAME}" 2>/dev/null || true
+    brew untap -q "${TAP_NAME}" 2>/dev/null || true
+}
+trap cleanup EXIT
 
 echo "=== Step 1: Build and pack ${STAGE} ==="
 CGO_ENABLED=0 make -s -C "${ROOT_DIR}/cli" build VERSION="${TAG}" BUILD_DIR="${WORK}/${STAGE}" BINARY=aikb
@@ -59,8 +67,7 @@ brew reinstall -q "${TAP_NAME}/${FORMULA_NAME}" 2>/dev/null || brew install -q "
 brew test "${TAP_NAME}/${FORMULA_NAME}"
 
 if [ "${KEEP:-}" != "1" ]; then
-    brew uninstall -q "${TAP_NAME}/${FORMULA_NAME}"
-    echo "=== Done: ${FORMULA_NAME} installed, ran and was removed ==="
+    echo "=== Done: ${FORMULA_NAME} installed and ran; removing it and ${TAP_NAME} ==="
 else
     echo "=== Done: ${FORMULA_NAME} left installed ==="
 fi
