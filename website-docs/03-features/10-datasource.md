@@ -146,6 +146,12 @@ Downloadable files go through document parsing, web pages are fetched by URL, an
 
 Feishu/Lark sync records take their update time from the content edit time, so body changes are not missed when only the wiki node time was considered. GitLab, GitHub and IMA support deletion detection; entries that roll off an RSS feed are not treated as deletions.
 
+A sync imports only what the knowledge base can ingest now. An image needs a vision model and an audio file a speech model. GitHub, GitLab and Seafile leave such files out before downloading them, and the Seafile picker, in the create wizard too, does not list them. When another connector delivers such a file's content, it is not imported: the sync log counts it as skipped, the server log names its extension and the missing model, and an existing knowledge item for it stays as it was.
+
+Every sync records which of the two models the knowledge base had. When a model has been configured since the last recorded sync, the next sync of each streaming data source on that knowledge base (Feishu/Lark wiki and Drive, Confluence, GitHub, GitLab and Seafile) starts without a cursor, so it re-imports every document of that source once and fetches the files skipped before. The server log then says `import capabilities gained since the last run, starting a full sync`. A data source last synced before this check existed is compared from its next sync on. Batch connectors (Notion, Yuque, DingTalk, IMA and RSS) are not compared.
+
+Removing a model deletes nothing on an incremental sync. On GitHub, GitLab and Seafile the items imported under it stay, even when their source file is deleted meanwhile, and the restart after a gained model is an incremental sync too. Only a full-mode sync with deletion sync on removes them, on the connectors that reconcile (GitHub and Seafile; GitLab never reconciles, so its items stay). In full mode that happens on the first sync after the model is removed: a knowledge base that gains a vision model and loses its speech model in one step loses its audio items on that sync, while the images are imported.
+
 #### Notion (`connector/notion/`)
 
 - **Authentication**: Internal Integration Token (credential field `api_key`), API version `NotionAPIVersion = "2026-03-11"`, default host `https://api.notion.com` (`Settings.base_url` can override it).
