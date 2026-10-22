@@ -82,11 +82,12 @@ class VersionTest(unittest.TestCase):
         return f"{t.year}.{t.month}.{t.day}.{micro}"
 
     def make(self, *args, env_version=None):
-        env = {k: v for k, v in os.environ.items() if k != "VERSION"}
+        env = {k: v for k, v in os.environ.items() if k not in {"VERSION", "SKIP_PREFLIGHT"}}
         if env_version:
             env["VERSION"] = env_version
         return subprocess.run(
-            ["make", *args], cwd=self.repo, capture_output=True, text=True, env=env, check=False
+            # The clone has no origin and the gate needs gh; scripts/test_release_preflight.py covers it.
+            ["make", *args, "SKIP_PREFLIGHT=1"], cwd=self.repo, capture_output=True, text=True, env=env, check=False
         )
 
     def next_chart_version(self):

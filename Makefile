@@ -59,7 +59,7 @@ help:
 	@echo "                        Optional: make model-catalog-diff VENDOR=deepseek"
 	@echo ""
 	@echo "Versions and releases:"
-	@echo "  bump-version      Bump the product CalVer and commit (default today, then .1 ...; VERSION=YYYY.M.D[.MICRO])"
+	@echo "  bump-version      Bump the product CalVer and commit (default today, then .1 ...; VERSION=YYYY.M.D[.MICRO]) after scripts/release-preflight.py (SKIP_PREFLIGHT=1 skips it)"
 	@echo "  bump-lib          Bump a library semver and commit (LIB=dsh-ai-kb|extension|mcp-server|helm-chart|go PART=patch|minor|major or VERSION=x.y.z)"
 	@echo "  check-version     Fail when a version string disagrees with VERSION or its library"
 	@echo ""
@@ -154,6 +154,10 @@ endef
 
 bump-version:
 	$(require_cli_version)
+	@case "$(origin SKIP_PREFLIGHT)" in environment*) \
+		echo "SKIP_PREFLIGHT comes from the environment; pass it after make (make $@ SKIP_PREFLIGHT=1) or unset it" >&2; \
+		exit 1 ;; esac
+	@[ -n "$(SKIP_PREFLIGHT)" ] || python3 scripts/release-preflight.py
 	python3 scripts/version.py bump $(VERSION)
 
 bump-lib:

@@ -360,6 +360,9 @@ area_version() {
   if has scripts/version.py scripts/test_version.py Makefile && need uv ssh-keygen make; then
     python3 scripts/test_version.py
   fi
+  if has scripts/release-preflight.py scripts/test_release_preflight.py; then
+    python3 scripts/test_release_preflight.py
+  fi
 }
 
 for area in "${areas[@]}"; do

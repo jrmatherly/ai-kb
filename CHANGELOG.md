@@ -8,6 +8,10 @@ All notable changes to this project will be documented in this file.
 
 - **FIXED**: docreader takes pypdf 6.21.1, which closes five advisories (four infinite loops or unbounded memory on crafted PDFs, GHSA-qfv9-64jg-mh7p, GHSA-9mx8-4j7g-633p, GHSA-39mj-jf6j-2qj3, GHSA-7mh2-4gg2-979f, and unvalidated JPEG data, GHSA-5hx5-vpf9-5wcv). Every other dependency of the four uv projects (docreader, the MCP server, the MCP demo, the dataset) moves to its newest minor or patch release past the cooldown; the majors (pyee 14, soupsieve 3, python-calamine 0.9, ast-serialize 0.13) stay. Playwright is held below 1.63: WebKit 1.63 and 1.64 follow a redirect by dialing the origin directly instead of through the SSRF proxy, which `tests/test_ssrf_proxy.py` caught.
 
+### Changes
+
+- **ADDED**: `make bump-version` runs `scripts/release-preflight.py` first and refuses the bump while `HEAD` is not on `origin`, a CI run on it has failed or not finished, or a Dependabot alert is open; it also lists the upgrades uv would take in each uv project. `SKIP_PREFLIGHT=1` skips it. A release cycle was spent on 2026.10.22 before the pypdf alerts were noticed.
+
 ## [2026.10.22] - 2026-10-22
 
 ### Changes
