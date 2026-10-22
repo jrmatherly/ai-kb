@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [2026.10.22.1] - 2026-10-22
+
 ### Bug Fixes
 
 - **FIXED**: Dependabot can open security pull requests for the four uv projects again: their `[tool.uv] required-version` floor drops from `>=0.13.0` to `>=0.12.19`, the uv Dependabot runs, which reads and rewrites the lockfiles in a form uv 0.13 accepts unchanged. The docreader image and CI still install the newest uv the spec allows. The floor had made the five pypdf alerts arrive as nothing at all.
