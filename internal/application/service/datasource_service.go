@@ -737,7 +737,8 @@ func (s *DataSourceService) ProcessSync(ctx context.Context, task *asynq.Task) e
 
 	forceFull := payload.ForceFull || ds.SyncMode == types.SyncModeFull
 	cursor, _ := ds.ParseSyncCursor()
-	// Not compared against the stored capabilities: every connector that filters by extension streams.
+	// The batch path does not compare capabilities: no batch-only connector filters by extension yet; add
+	// startCursorFor here when one does.
 	deletions := newRunDeletions(
 		ds, cursor, forceFull && datasource.ReconcilesFullSync(connector, config), config.Imports)
 	if forceFull {
@@ -1334,9 +1335,8 @@ func (s *DataSourceService) validateDataSourceConfig(ctx context.Context, ds *ty
 	return nil
 }
 
-// connectorConfig parses ds.Config and sets its Imports from the knowledge base.
-// A knowledge base that cannot be loaded leaves every capability on, so a
-// picker never hides files for want of a lookup.
+// connectorConfig parses ds.Config and sets its Imports from the knowledge base. No knowledge base id,
+// or one that cannot be loaded, leaves every capability on, so a lookup failure never hides files.
 func (s *DataSourceService) connectorConfig(
 	ctx context.Context, ds *types.DataSource,
 ) (*types.DataSourceConfig, error) {
@@ -1439,7 +1439,7 @@ func (s *DataSourceService) ingestItem(
 	item *types.FetchedItem, tagIDs []string,
 ) (bool, error) {
 	// Only content items are checked here: a URL item's type is known only after download, where an
-	// unimportable file fails the item instead of skipping it.
+	// unimportable file fails parsing instead of being skipped.
 	if len(item.Content) > 0 {
 		if m := secutils.MissingModel(path.Ext(item.FileName), imports); m != "" {
 			logger.Warnf(ctx, "skipping %q: a %s model is not configured for %s files",

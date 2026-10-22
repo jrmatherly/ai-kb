@@ -436,10 +436,10 @@ func (s *knowledgeService) resolveFileServiceForPath(ctx context.Context, kb *ty
 	return svc
 }
 
-// IsImageType checks if a file type is an image format
+// IsImageType reports whether a stored file_type is an image (utils.IsImageExtension).
 func IsImageType(fileType string) bool { return secutils.IsImageExtension(fileType) }
 
-// IsAudioType checks if a file type is an audio format
+// IsAudioType reports whether a stored file_type is audio (utils.IsAudioExtension).
 func IsAudioType(fileType string) bool { return secutils.IsAudioExtension(fileType) }
 
 // IsVideoType checks if a file type is a video format

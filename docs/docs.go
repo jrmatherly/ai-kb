@@ -28074,7 +28074,7 @@ const docTemplate = `{
                     "additionalProperties": true
                 },
                 "knowledge_base_id": {
-                    "description": "KnowledgeBaseID lets the listing hide files the knowledge base cannot\nimport; empty hides nothing.",
+                    "description": "KnowledgeBaseID lets the listing hide image and audio files the knowledge base cannot import; empty\nleaves every capability on.",
                     "type": "string"
                 },
                 "parent_id": {

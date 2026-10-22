@@ -396,8 +396,8 @@ type listResourcesForConfigRequest struct {
 	Settings    map[string]interface{} `json:"settings"`
 	ResourceIDs []string               `json:"resource_ids"`
 	ParentID    string                 `json:"parent_id"`
-	// KnowledgeBaseID lets the listing hide files the knowledge base cannot
-	// import; empty hides nothing.
+	// KnowledgeBaseID lets the listing hide image and audio files the knowledge base cannot import; empty
+	// leaves every capability on.
 	KnowledgeBaseID string `json:"knowledge_base_id"`
 }
 

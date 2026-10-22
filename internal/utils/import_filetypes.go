@@ -46,6 +46,8 @@ func SupportedImportExtensions() []string {
 	return out
 }
 
+// The image table is wider than the import set on purpose: these classify a stored file_type;
+// IsImportable adds the support check.
 var (
 	imageExtensions = map[string]struct{}{
 		"jpg": {}, "jpeg": {}, "png": {}, "gif": {}, "webp": {}, "bmp": {}, "svg": {}, "tiff": {},
