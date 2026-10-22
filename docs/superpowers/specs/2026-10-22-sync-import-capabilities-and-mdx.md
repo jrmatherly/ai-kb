@@ -1,0 +1,71 @@
+# Capability-aware sync filtering and MDX import: design
+
+Date: 2026-10-22. Status: approved 2026-10-22; implementation plan follows. Follows the `repofile` filter refactor (commit `04ad93f64`) and precedes the Bitbucket connector, which inherits both.
+
+## Goal
+
+1. A data-source sync fetches only files the target knowledge base can ingest right now. Today the connectors filter by the static import extension set, but the create gate also rejects images when the knowledge base has no vision model (VLM) and audio when it has no speech model (ASR), so a synced screenshot or recording is downloaded, then fails as `ingest_failed` with the reason only in the server log. The filter must follow the knowledge base's models, and follow them when they change.
+2. `.mdx` files (Markdown with JSX, the format of Docusaurus, Nextra, Mintlify and Fumadocs sites) import as readable Markdown instead of being rejected.
+
+## What exists
+
+- The create gate is `resolveFileImportProcessConfig` (`knowledge_process_config.go:151`): static extension check, then `validateDefaultFileImportRequirements` (`:128`) rejects an image type without `kb.VLMConfig.IsEnabled()` and an audio type without `kb.ASRConfig.IsASREnabled()`. Sync runs pass no overrides (`datasource_service.go:1453`), so the effective capability is exactly the knowledge base's two model configs.
+- `types.DataSourceConfig` (`datasource.go:216-239`) has a non-persisted `MultimodalEnabled bool` that `ProcessSync` sets from `kb.IsMultimodalEnabled()` (`datasource_service.go:721`) and that only the Feishu connector reads (`feishu/core/engine.go:156`, `shared.go:452`) to skip embedded images. The other four `ParseConfig` sites (`ValidateConnection :383`, `ListAvailableResources :418`, ancestors `:477`, `validateDataSourceConfig :1303`) never set it.
+- Extension filters live in GitHub (`snapshot.go:63`), GitLab (seven sites in `connector.go`), Seafile (`connector.go:146`, `sync.go:194`, `:246`), all through the shared set since `04ad93f64`. Feishu keeps its own attachment list; Notion skips image attachments unconditionally.
+- A failed create in the sync handler (`datasource_service.go:975-1013`) counts as `Failed` with code `ingest_failed`; an update deletes the existing knowledge before re-creating (`:1417-1433`), so a type that newly fails loses its previous copy.
+- No MDX parser exists anywhere in the pipeline: not in `docreader/parser/registry.py`, not in MarkItDown 0.1.8 (its plain-text converter accepts `.md` and `.markdown` only), and no maintained Python MDX parser was found (the one PyPI candidate, `omni-mdx`, has only pre-release versions). LlamaIndex, Unstructured, Docling and MarkItDown either reject `.mdx` or read it as raw text with the JSX left in. The docreader `MarkdownParser` uses no Markdown library: it decodes bytes, normalises GFM tables and extracts base64 images, and leaves everything else untouched.
+
+## Part 1: capability-aware filtering
+
+### Decisions
+
+1. **One value models what the knowledge base can import.** `utils.ImportCapabilities{Images, Audio bool}` lives beside the extension set in `internal/utils/import_filetypes.go`, with `utils.IsImportable(ext string, caps ImportCapabilities) bool`: the extension is in the shared set, and it is not an image type without `caps.Images`, and not an audio type without `caps.Audio`. The image and audio extension sets move into the same file (`ImageExtensions`, `AudioExtensions`); the service's `IsImageType` and `IsAudioType` delegate to them, so the connector filter and the create gate can never disagree. `(*types.KnowledgeBase).ImportCapabilities()` derives the value from the two model configs (`types` already imports `utils`).
+2. **The capability rides on the config every connector already receives.** `DataSourceConfig.MultimodalEnabled` is replaced by `Imports utils.ImportCapabilities` (`json:"-"`), and `(*DataSourceConfig).Importable(name string) bool` wraps `IsImportable` on the file's extension. Feishu reads `config.Imports.Images` where it read `MultimodalEnabled`; the old field is deleted in the same change. No interface, context value or settings key is added.
+3. **The service populates it in one place.** A `connectorConfig(ctx, ds)` helper in `datasource_service.go` parses the config, loads the knowledge base and sets `Imports`; the five `ParseConfig` sites call it. A picker therefore hides files the knowledge base cannot ingest, as Seafile's already hides unsupported extensions, and `Validate` sees the same view as the sync.
+4. **Connectors filter through `Importable`, and `repofile.IsSupported` is deleted.** GitHub, GitLab and Seafile call `ds.Importable(path)` at every site that called the static check; GitHub's snapshot builder takes the capability from the connector configured for the run. The Bitbucket design's "supported extension" is this call. Feishu's own attachment list and Notion's image skip are unchanged in this cut (they are not extension filters over a repository tree) and are listed as follow-ups.
+5. **The ingest path checks before it deletes.** `ingestItem` tests `Importable(item.FileName)` before the existing-knowledge delete at `:1417`; a file that fails counts as `Skipped` and is logged with the extension and the missing model. That closes the data-loss path where an update deletes the old knowledge and the re-create is rejected, and it covers connectors that do not filter upstream.
+6. **A capability change forces one full sync.** `types.SyncCursor` gains `Imports utils.ImportCapabilities` (persisted). `ProcessSync` compares the stored value with the knowledge base's current one: when a capability was gained (a model configured since the last run), the run starts from a nil cursor, exactly as a user-forced full sync does, so files the earlier runs skipped are fetched; the cursor written at the end carries the new value. When a capability was lost, nothing is forced: the now-unimportable items stay until a full-mode sync with deletion sync on reconciles them away, which the docs state. Without this, GitHub's snapshot diff would rebuild its baseline with the widened filter and see the previously skipped images as unchanged, so they would never be fetched until they changed.
+
+### Data shapes
+
+`ImportCapabilities{Images bool, Audio bool}`. `DataSourceConfig.Imports` is the run's value; `SyncCursor.Imports` is the value the last completed run used. `IsImportable("png", {Images: false})` is false; `IsImportable("md", {})` is true; `IsImportable("mdx", {})` is true once Part 2 lands.
+
+### Touchpoints
+
+Go: `internal/utils/import_filetypes.go` (capabilities, predicate, moved sets, tests), `internal/types/knowledgebase.go` (`ImportCapabilities()`), `internal/types/datasource.go` (field swap, `Importable`, cursor field), `internal/application/service/knowledge_util.go` (delegating predicates), `datasource_service.go` (`connectorConfig`, the five call sites, the ingest precheck, the cursor comparison), `connector/repofile/repofile.go` (delete `IsSupported` and its tests), `connector/github/{snapshot,connector}.go`, `connector/gitlab/connector.go`, `connector/seafile/{connector,sync}.go`, `connector/feishu/core/{engine,shared}.go` and the two Feishu connectors, and the tests beside each. Docs: `website-docs/03-features/10-datasource.md` (what a sync skips and the forced full sync on a model change), `internal/datasource/CONNECTOR_IMPLEMENTATION_GUIDE.md` (filter through `Importable`), `CHANGELOG.md`.
+
+### Verification
+
+- Unit: `IsImportable` over the four capability combinations; `Importable` on names with upper-case and dotless extensions; GitHub and GitLab fake-server tests where a `.png` is in the tree and is fetched only when `Imports.Images` is set; Seafile's picker hides it; the ingest precheck counts `Skipped` and leaves the existing knowledge in place; the cursor comparison forces a nil-cursor run on a gained capability and not on a lost one.
+- Live, on the dev stack: a GitHub data source over a directory with a `.png`, synced once without a vision model (skipped, no failed item, no request for the blob in the fake server log or the API log), then with one configured (the next run is a full sync and imports it), then with the model removed (items stay; a forced full sync with deletion sync removes them).
+
+## Part 2: MDX import
+
+### Decisions
+
+1. **A preprocessor in docreader, then the existing Markdown pipeline.** `docreader/parser/mdx_parser.py` adds `MdxPreprocessor`, a line-based pass that turns MDX into Markdown, and `MdxParser(PipelineParser)` with `_parser_cls = (MdxPreprocessor, MarkdownTableFormatter, MarkdownImageBase64)`. The registry maps `mdx` to it in the builtin engine. No new dependency, no Node in the image (the docreader image has none and the Node-based `@mdx-js/mdx` compiles to JavaScript, not text). The pass, outside fenced code and the frontmatter:
+   - Frontmatter `---` block: keep `title` as `# <title>` when the body has no H1, keep `description` as a line, drop the rest.
+   - Top-level `import` lines (with continuation to the `from '...'` or `;`) and `export` statements (brace, bracket and parenthesis depth counted, so multi-line `export const meta = {...}` goes) are dropped.
+   - A line starting with `{` is an expression block and is dropped by brace depth; inline, only `{/* ... */}` comments are removed.
+   - JSX tags (`<Name`, `</Name>`, `<>`, `</>`, lowercase element tags) are tokenised to their closing `>` across lines, tracking quotes and braces. Opening and closing tags are deleted and their inner text kept, which unwraps Tabs, Callout, Steps, Note, Accordion and the like. A self-closing tag is deleted, except that `title`, `label`, `alt`, `description` and `value` string attributes are emitted as a bold line plus a plain line so Card, Tab and Step headings survive; `<img>` and `<Image>` become `![alt](src)`.
+   - A `<` not followed by a letter, `/` or `>` is prose and stays; MDX itself requires other `<` to be escaped.
+   - Docusaurus admonitions `:::note[Title]` become `**Note: Title**` and the closing `:::` is dropped.
+   - Runs of blank lines are collapsed. A malformed tag fails open: the text stays as it was rather than being dropped to end of file.
+2. **The Go side learns the extension in three places**: `supportedImportFileExtensions` (which the git connectors and the upload paths share), `builtinEngine.FileTypes` in `docparser/engines.go`, and the frontend `DEFAULT_VALID_TYPES`. It is not added to `simpleFormats` in `builtin_converter.go` (that would pass the raw JSX through) nor to the pass-through locator in `knowledge_source_locators.go` (the parser output differs from the bytes). An unlisted type reaches the remote docreader by default (`engine_registry.go:68-79`), which is the wanted route.
+
+### Touchpoints
+
+`docreader/parser/mdx_parser.py` (new), `docreader/parser/registry.py`, `docreader/tests/test_mdx_parser.py` (new) and a routing assertion in `test_parser_routing.py`; `internal/utils/import_filetypes.go`, `internal/infrastructure/docparser/engines.go`, `frontend/src/utils/fileTypeVerification.ts`; `website-docs/03-features/03-document-parsing.md` (Supported formats and the parser table), `CHANGELOG.md`.
+
+### Verification
+
+- Fixtures, one per framework and checked against each framework's documented components before they are written: Docusaurus (frontmatter, `import Tabs`, `:::note[Heads up]`, `<Tabs><TabItem label="A">`), Nextra (`<Callout type="info">`, `<Tabs items={[...]}>`, multi-line `export const meta`), Mintlify (`<Card title=... href=...>`, `<Steps><Step title=...>`, `<Note>`), Fumadocs (`<Callout title=...>`, `<Accordions><Accordion title=...>`, a self-closing component with an expression prop). Negative fixtures: JSX and `import` inside a fenced block (including a four-backtick fence around a three-backtick sample), `{x}` in inline code, `x < 5` in prose, an unclosed tag, `{/* comment */}`, CRLF and a BOM.
+- The upload path and a GitHub sync of a `.mdx` file on the dev stack, with the chunk text inspected for leftover JSX.
+
+## Sequencing
+
+Three independent changes, each its own commit series and PR, in this order: Part 2 (MDX) is self-contained and smallest; Part 1 (capabilities) touches the service and five connectors; the Bitbucket connector then builds on both. Part 1 and Part 2 touch `import_filetypes.go` in different lines and can proceed in parallel if wanted.
+
+## Out of scope
+
+Feishu's attachment list and Notion's image skip joining the shared capability; a per-file skip list in the sync log (skips are a counter and a log line); rendering MDX expressions or evaluating components; webp, bmp, svg and tiff images (not in the shared set today); video.
