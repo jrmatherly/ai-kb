@@ -45,6 +45,9 @@ type fakeRepo struct {
 	aliases []string
 	// status makes every request for a repository key answer that status.
 	status map[string]int
+	// truncateDirs makes the non-recursive listing of these directories answer
+	// truncated with its entries.
+	truncateDirs map[string]bool
 }
 
 func blobSHA(content string) string {
@@ -235,7 +238,7 @@ func (r fakeRepo) serveTree(w http.ResponseWriter, req *http.Request, id string)
 		entries, ids := c.index()
 		for dir, sha := range ids {
 			if sha == id {
-				writeJSON(w, tree{SHA: sha, Entries: entries[dir]})
+				writeJSON(w, tree{SHA: sha, Truncated: r.truncateDirs[dir], Entries: entries[dir]})
 				return
 			}
 		}

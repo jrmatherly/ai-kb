@@ -41,3 +41,26 @@ func TestSnapshotFallsBackToSubtreeWalkWhenTruncated(t *testing.T) {
 	require.Contains(t, requests, trees+repo.treeSHA("c1", "docs/sub"))
 	require.NotContains(t, requests, trees+repo.treeSHA("c1", "src"), "src is outside every root")
 }
+
+func TestSnapshotFailsWhenASubtreeListingIsTruncated(t *testing.T) {
+	repo := fakeRepo{
+		commits: map[string]fakeCommit{"c1": {files: map[string]string{
+			"docs/a.md": "aaaa", "docs/sub/b.md": "bb",
+		}}},
+		truncate:     true,
+		truncateDirs: map[string]bool{"docs/sub": true},
+	}
+	server := fakeGitHub(t, repo)
+	cfg := sourceConfig(server.base(), goodToken, selection("o/r", "main", "docs"))
+	connector, err := NewConnector().configured(cfg)
+	require.NoError(t, err)
+
+	_, err = connector.snapshot(context.Background(), "o/r", "c1", []string{"docs"})
+	require.EqualError(t, err, `github o/r: the listing of directory "docs/sub" is truncated`)
+	require.NotErrorIs(t, err, errMissingCommit)
+
+	h := &gitHubStreamRecorder{}
+	_, err = stream(t, server, nil, h, selection("o/r", "main", "docs"))
+	require.EqualError(t, err, `github o/r: the listing of directory "docs/sub" is truncated`)
+	require.Empty(t, h.items)
+}
