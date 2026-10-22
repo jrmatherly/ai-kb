@@ -4,9 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [2026.10.22] - 2026-10-22
+
 ### Changes
 
 - **NEW**: **GitHub data source**: sync document files from the directories of GitHub, ghe.com or GitHub Enterprise Server repositories. Incremental sync diffs repository snapshots, so a force-push is handled; progress resumes after a rate limit; files over the 100 MB API limit are reported per item. Offered by default: `github` joins `notion` and `confluence` in the `AIKB_DATASOURCE_TYPES` default, so a deployment that sets the variable must list it to keep it.
+- **CHANGED**: The dated certifi `exclude-newer-package` override in docreader, the MCP server and the MCP demo is gone: certifi 2026.10.19 is past the two-day release cooldown and resolves on its own.
 
 ## [2026.10.21.3] - 2026-10-21
 
