@@ -436,24 +436,11 @@ func (s *knowledgeService) resolveFileServiceForPath(ctx context.Context, kb *ty
 	return svc
 }
 
-func IsImageType(fileType string) bool {
-	switch fileType {
-	case "jpg", "jpeg", "png", "gif", "webp", "bmp", "svg", "tiff":
-		return true
-	default:
-		return false
-	}
-}
+// IsImageType checks if a file type is an image format
+func IsImageType(fileType string) bool { return secutils.IsImageExtension(fileType) }
 
 // IsAudioType checks if a file type is an audio format
-func IsAudioType(fileType string) bool {
-	switch strings.ToLower(fileType) {
-	case "mp3", "wav", "m4a", "flac", "ogg":
-		return true
-	default:
-		return false
-	}
-}
+func IsAudioType(fileType string) bool { return secutils.IsAudioExtension(fileType) }
 
 // IsVideoType checks if a file type is a video format
 func IsVideoType(fileType string) bool {
