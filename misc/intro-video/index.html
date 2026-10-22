@@ -567,7 +567,7 @@ $('brVp').innerHTML=`
  <div class="infobar" id="infobar">“BrowserSkill” started debugging this browser <span>Cancel</span></div>
  <div class="cpage" id="pgRepo"><div class="repo"><div class="rh">jrmatherly / <b>ai-kb</b></div>
    <div class="rt"><span>Code</span><span>Issues</span><span>Pull requests</span><span class="on">Releases</span><span>Discussions</span></div>
-   <div class="rel"><div class="v">v2026.10.21.3 <em>Latest</em></div><p>Released by the AI KB maintainers</p>
+   <div class="rel"><div class="v">v2026.10.22 <em>Latest</em></div><p>Released by the AI KB maintainers</p>
    <ul><li>Unified rerank across search APIs, with diagnostics</li><li>MinerU 4.0 V1 API for self-hosted MinerU</li><li>Local browser pairing for AI KB Lite</li><li>RSS: reject oversized responses</li></ul></div></div></div>
  <div class="cpage" id="pgForm"><div class="hb">
    <label>Customer name: <span class="f" id="f0"></span></label>
@@ -594,7 +594,7 @@ $('brVp').innerHTML=`
 const BR_STEPS=[
  {i:'web',t:'Local browser · Open page',s:'github.com/jrmatherly/ai-kb/releases',at:1.0},
  {i:'fileq',t:'Local browser · Read page',at:2.0},
- {i:'bulb',t:'Latest release is v2026.10.21.3. Opening the order form next.',at:3.0},
+ {i:'bulb',t:'Latest release is v2026.10.22. Opening the order form next.',at:3.0},
  {i:'web',t:'Local browser · Open page',s:'httpbin.org/forms/post',at:4.1},
  {i:'edit',t:'Local browser · Fill in 8 fields',at:5.0},
  {i:'check',t:'Form filled. Waiting for you to review before submitting.',at:11.2}];
@@ -790,7 +790,7 @@ function render(t){
     setHTML($('ctabT'),onForm?'httpbin.org/forms/post':'Releases · jrmatherly/ai-kb');
     setHTML($('prevHost'),onForm?'httpbin.org':'github.com');
     // form fill schedule
-    const F=[['f0','AI KB Demo',5.0],['f1','13800000000',5.8],['f2','demo@ai-kb.local',6.5],['r1',null,7.4],['c0',null,7.9],['c1',null,8.3],['f3','18:30',8.8],['f4','Include AI KB v2026.10.21.3',9.4]];
+    const F=[['f0','AI KB Demo',5.0],['f1','13800000000',5.8],['f2','demo@ai-kb.local',6.5],['r1',null,7.4],['c0',null,7.9],['c1',null,8.3],['f3','18:30',8.8],['f4','Include AI KB v2026.10.22',9.4]];
     // positions of targets in chrome coords
     const POS={f0:[300,176],f1:[270,220],f2:[320,264],r1:[190,334],c0:[92,400],c1:[190,400],f3:[330,448],f4:[160,500]};
     F.forEach(([id,val,a],k)=>{const el=$(id);if(val!==null){const nxt=k+1<F.length?F[k+1][2]:99;el.textContent=typed(val,L,a+.2,26);el.classList.toggle('act',L>=a&&L<nxt)}else el.classList.toggle('on',L>=a+.15)});
