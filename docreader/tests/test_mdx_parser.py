@@ -1,7 +1,8 @@
 import os
 import unittest
+from unittest import mock
 
-from docreader.parser.mdx_parser import MdxParser, mdx_to_markdown
+from docreader.parser.mdx_parser import MdxParser, MdxPreprocessor, mdx_to_markdown
 
 FIXTURES = os.path.join(os.path.dirname(__file__), "fixtures", "mdx")
 
@@ -83,14 +84,14 @@ class MdxToMarkdownTest(unittest.TestCase):
         src = '<div className="x">\n<p>Inner</p>\n</div>\n'
         self.assertEqual(mdx_to_markdown(src), "Inner\n")
 
-    def test_docusaurus_fixture_has_no_jsx_left_outside_code(self):
+    def test_docusaurus_fixture_output(self):
         out = mdx_to_markdown(fixture("docusaurus.mdx"))
-        body, _, code = out.partition("```jsx")
-        for leftover in ("import ", "<Tab", ":::"):
-            self.assertNotIn(leftover, body)
-        for kept in ("# Quick start", "**Note: Heads up**", "**npm**", "Run npm"):
-            self.assertIn(kept, body)
-        self.assertIn("<Tabs>", code)
+        expected = (
+            "# Quick start\n\n**Note: Heads up**\n\nInstall Node first.\n\n**npm**\n\nRun npm\n\n"
+            '```jsx\n<Tabs>\n  <TabItem value="a">x</TabItem>\n</Tabs>\n```\n\nYou are ready to go.\n'
+        )
+        self.assertEqual(out, expected)
+        self.assertIn("<Tabs>", out.partition("```jsx")[2])
 
     def test_framework_fixtures_keep_text_and_titles(self):
         cases = {
@@ -128,9 +129,9 @@ class MdxToMarkdownTest(unittest.TestCase):
             mdx_to_markdown(src), "Para one.\n\nPara two isn't lost?\n\nPara three.\n"
         )
 
-    def test_indented_fence_inside_component_is_untouched(self):
+    def test_indented_fence_inside_component_keeps_its_lines(self):
         src = "<Tabs>\n    ```jsx\n    <Tabs>\n    ```\n</Tabs>\n"
-        self.assertEqual(mdx_to_markdown(src), "    ```jsx\n    <Tabs>\n    ```\n")
+        self.assertEqual(mdx_to_markdown(src), "```jsx\n<Tabs>\n```\n")
 
     def test_line_starting_with_expression_keeps_prose(self):
         src = "{props.version} is the current release.\n"
@@ -176,6 +177,33 @@ class MdxToMarkdownTest(unittest.TestCase):
     def test_line_break_tag_separates_words(self):
         self.assertEqual(mdx_to_markdown("one<br/>two\n"), "one two\n")
 
+    def test_component_children_are_dedented(self):
+        src = '<Tabs>\n  <TabItem value="a" label="npm">\n    Run npm\n  </TabItem>\n</Tabs>\n'
+        self.assertEqual(mdx_to_markdown(src), "**npm**\n\nRun npm\n")
+
+    def test_nested_lists_in_components_keep_relative_indent(self):
+        src = '<Steps>\n  <Step title="A">\n    - first\n      - nested\n  </Step>\n</Steps>\n'
+        self.assertEqual(mdx_to_markdown(src), "**A**\n\n- first\n  - nested\n")
+
+    def test_fence_in_component_is_dedented_by_child_indent(self):
+        src = "<Tabs>\n  <TabItem>\n    ```js\n    if (a) {\n      b()\n    }\n    ```\n  </TabItem>\n</Tabs>\nOut\n"
+        self.assertEqual(mdx_to_markdown(src), "```js\nif (a) {\n  b()\n}\n```\nOut\n")
+
+    def test_title_tag_after_prose_stays_inline(self):
+        self.assertEqual(
+            mdx_to_markdown('## <Badge title="New" /> Feature\n'),
+            "## **New** Feature\n",
+        )
+        self.assertEqual(
+            mdx_to_markdown('Use <Icon name="x" /> here.\n'), "Use **x** here.\n"
+        )
+
+    def test_admonitions_with_more_colons_and_directive_title(self):
+        self.assertEqual(mdx_to_markdown("::::tip\nA\n::::\n"), "**Tip**\n\nA\n")
+        self.assertEqual(
+            mdx_to_markdown(':::info{title="X"}\nA\n:::\n'), "**Info: X**\n\nA\n"
+        )
+
 
 class MdxParserTest(unittest.TestCase):
     def test_pipeline_runs_preprocessor_then_tables(self):
@@ -183,3 +211,12 @@ class MdxParserTest(unittest.TestCase):
         doc = MdxParser(file_name="t.mdx").parse_into_text(src)
         self.assertNotIn("import", doc.content)
         self.assertIn("| a | b |", doc.content)
+
+    def test_preprocessor_failure_returns_decoded_text(self):
+        target = "docreader.parser.mdx_parser.mdx_to_markdown"
+        with (
+            mock.patch(target, side_effect=ValueError("boom")),
+            self.assertLogs("docreader.parser.mdx_parser", level="WARNING"),
+        ):
+            doc = MdxPreprocessor(file_name="t.mdx").parse_into_text(b"<X>\nkept\n")
+        self.assertEqual(doc.content, "<X>\nkept\n")

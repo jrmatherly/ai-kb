@@ -6,7 +6,9 @@ reader sees, so the result can go through the Markdown pipeline.
 """
 
 import bisect
+import logging
 import re
+from collections import Counter
 
 from docreader.models.document import Document
 from docreader.parser.base_parser import BaseParser
@@ -17,16 +19,21 @@ from docreader.parser.markdown_parser import (
 )
 from docreader.utils import endecode
 
+logger = logging.getLogger(__name__)
+
 _FENCE_OPEN = re.compile(r"^\s*(`{3,}|~{3,})")
 _FENCE_CLOSE = re.compile(r"^\s*(`{3,}|~{3,})\s*$")
 _ESM_START = re.compile(r"import\b|export ")
-_ADMONITION_OPEN = re.compile(r"^\s*:::(\w+)(?:\[(.*)\]|\s+(.+))?\s*$")
-_ADMONITION_CLOSE = re.compile(r"^\s*:::\s*$")
+_ADMONITION_OPEN = re.compile(
+    r"""^\s*:{3,}(\w+)(?:\[(.*)\]|\{[^}]*title="([^"]*)"[^}]*\}|\s+(.+))?\s*$"""
+)
+_ADMONITION_CLOSE = re.compile(r"^\s*:{3,}\s*$")
 _FRONTMATTER_FIELD = re.compile(r"^(\w+):(.*)$")
 _YAML_LINE = re.compile(r"""(\s|#|-\s|-$|[\w.-]+\s*:|"[^"]*"\s*:|'[^']*'\s*:)""")
 _BACKTICKS = re.compile(r"`+")
 _SPECIAL = re.compile(r"[`{<]")
 _TAG_START = re.compile(r"<[A-Za-z/>]")
+_VOID_TAGS = ("br", "hr", "img")
 _TAG_HEAD = re.compile(r"<\s*(/)?\s*([A-Za-z][\w.:-]*)?")
 _STRING_ATTR = re.compile(
     r"""(?<![\w:-])([A-Za-z_][\w:-]*)\s*=\s*(?:"([^"]*)"|'([^']*)')"""
@@ -123,12 +130,18 @@ def _scan_line(text: str, pos: int) -> tuple[list[tuple[str, bool]], int, bool] 
     """
     pieces: list[tuple[str, bool]] = []
     buf: list[str] = []
-    changed = False
+    changed = has_text = skip_space = False
     eol = _line_end(text, pos)
     while pos < len(text) and text[pos] != "\n":
         c = text[pos]
+        if skip_space:
+            if c == " ":
+                pos += 1
+                continue
+            skip_space = False
         if c == "\\" and text[pos + 1 : pos + 2] not in ("", "\n"):
             buf.append(text[pos : pos + 2])
+            has_text = True
             pos += 2
             continue
         if c == "`" and (backticks := _BACKTICKS.match(text, pos)):
@@ -136,6 +149,7 @@ def _scan_line(text: str, pos: int) -> tuple[list[tuple[str, bool]], int, bool] 
             close = text.find(run, pos + len(run), eol)
             if close >= 0:
                 buf.append(text[pos : close + len(run)])
+                has_text = True
                 pos = close + len(run)
                 continue
         elif text.startswith("{/*", pos):
@@ -156,15 +170,36 @@ def _scan_line(text: str, pos: int) -> tuple[list[tuple[str, bool]], int, bool] 
             if head and (head.group(2) or "").lower() == "br":
                 buf.append(" ")
             generated = _render_tag(tag)
-            if generated:
+            if generated and has_text:
+                while buf and buf[-1] == " ":
+                    buf.pop()
+                buf.extend([" ", " ".join(generated), " "])
+                skip_space = True
+            elif generated:
                 pieces.append(("".join(buf), False))
                 buf = []
                 pieces.extend((line, True) for line in generated)
             continue
         buf.append(c)
+        has_text = has_text or not c.isspace()
         pos += 1
+    if skip_space and buf and buf[-1] == " ":
+        buf.pop()
     pieces.append(("".join(buf), False))
     return pieces, pos, changed
+
+
+def _lone_tag(text: str, line_start: int) -> str | None:
+    """The tag's text when its line holds one tag and nothing else."""
+    pos = line_start
+    while text[pos : pos + 1] in (" ", "\t"):
+        pos += 1
+    if not _TAG_START.match(text, pos):
+        return None
+    found = _find_end(text, pos, "tag")
+    if found is None or text[found[0] : _line_end(text, found[0])].strip():
+        return None
+    return found[1]
 
 
 def _frontmatter(lines: list[str]) -> tuple[int, str | None, str | None]:
@@ -228,12 +263,31 @@ def mdx_to_markdown(text: str) -> str:
     def emit_generated(line: str) -> None:
         out.extend([("", False), (line, False), ("", False)])
 
+    # Open components and their children's indent: MDX has no indented code
+    # blocks, but Markdown reads 4+ leading spaces as code.
+    names: list[str] = []
+    open_names: Counter[str] = Counter()
+    indents: list[int | None] = []
+
+    def dedent(line: str) -> str:
+        if not indents or not indents[-1]:
+            return line
+        return line[min(indents[-1], len(line) - len(line.lstrip(" "))) :]
+
     fence: str | None = None
     i = body_start
     while i < len(lines):
         line = lines[i]
+        stripped = line.lstrip(" ")
+        if (
+            indents
+            and indents[-1] is None
+            and stripped
+            and not stripped.startswith("</")
+        ):
+            indents[-1] = len(line) - len(stripped)
         if fence:
-            out.append((line, True))
+            out.append((dedent(line), True))
             m = _FENCE_CLOSE.match(line)
             if m and m.group(1)[0] == fence[0] and len(m.group(1)) >= len(fence):
                 fence = None
@@ -242,7 +296,7 @@ def mdx_to_markdown(text: str) -> str:
         m = _FENCE_OPEN.match(line)
         if m:
             fence = m.group(1)
-            out.append((line, True))
+            out.append((dedent(line), True))
             i += 1
             continue
 
@@ -264,7 +318,7 @@ def mdx_to_markdown(text: str) -> str:
             continue
         elif m := _ADMONITION_OPEN.match(line):
             label = m.group(1).capitalize()
-            heading = m.group(2) or (m.group(3) or "").strip()
+            heading = m.group(2) or m.group(3) or (m.group(4) or "").strip()
             emit_generated(f"**{label}: {heading}**" if heading else f"**{label}**")
             i += 1
             continue
@@ -272,6 +326,7 @@ def mdx_to_markdown(text: str) -> str:
             i += 1
             continue
         elif not unterminated and not _SPECIAL.search(line):
+            line = dedent(line)
             has_h1 = has_h1 or line.startswith("# ")
             out.append((line, False))
             i += 1
@@ -282,8 +337,23 @@ def mdx_to_markdown(text: str) -> str:
                 if generated:
                     emit_generated(piece)
                 elif not changed or piece.strip():
+                    piece = dedent(piece)
                     has_h1 = has_h1 or piece.startswith("# ")
                     out.append((piece, False))
+            lone = _lone_tag(text, starts[i]) if "<" in line else None
+            head = _TAG_HEAD.match(lone) if lone else None
+            if lone and head:
+                name = head.group(2) or ""
+                if head.group(1):
+                    while open_names[name] and names:
+                        indents.pop()
+                        open_names[names[-1]] -= 1
+                        if names.pop() == name:
+                            break
+                elif not lone[:-1].rstrip().endswith("/") and name not in _VOID_TAGS:
+                    names.append(name)
+                    open_names[name] += 1
+                    indents.append(None)
             i = line_of(end) + 1 if end < len(text) else len(lines)
             continue
         out.extend((rest, False) for rest in lines[i:])
@@ -301,7 +371,14 @@ class MdxPreprocessor(BaseParser):
     """Converts MDX bytes into a Markdown Document."""
 
     def parse_into_text(self, content: bytes) -> Document:
-        return Document(content=mdx_to_markdown(endecode.decode_bytes(content)))
+        text = endecode.decode_bytes(content)
+        try:
+            return Document(content=mdx_to_markdown(text))
+        except Exception:
+            logger.warning(
+                "MDX preprocessing failed, keeping the source text", exc_info=True
+            )
+            return Document(content=text)
 
 
 class MdxParser(PipelineParser):

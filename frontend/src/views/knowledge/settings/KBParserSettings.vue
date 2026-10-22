@@ -144,7 +144,7 @@ const fileTypeGroups = computed(() => {
   const ebookExts = ['epub'].filter(e => ft.has(e))
   const webArchiveExts = ['mhtml'].filter(e => ft.has(e))
   const csvExts = ['csv'].filter(e => ft.has(e))
-  const mdExts = ['md', 'markdown'].filter(e => ft.has(e))
+  const mdExts = ['md', 'markdown', 'mdx'].filter(e => ft.has(e))
   const txtExts = ['txt'].filter(e => ft.has(e))
   const jsonExts = ['json'].filter(e => ft.has(e))
   const imageExts = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'tiff', 'webp'].filter(e => ft.has(e))

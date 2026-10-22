@@ -234,7 +234,7 @@ This parser is also the shared post-processing stage of the MarkitdownParser and
 
 `PipelineParser.create(MdxPreprocessor, MarkdownTableFormatter, MarkdownImageBase64)`:
 
-- **`MdxPreprocessor`**: a line-based pass that drops ESM `import` and `export` statements and `{}` expression blocks. JSX components are unwrapped and keep their inner text; `title`, `label` and `value` attributes become bold lines, and `img` / `Image` become Markdown images. Docusaurus `:::note[Title]` admonitions become bold lines. The frontmatter `title` becomes an H1 when the body has none, and `description` becomes a line. Fenced code is left untouched, and malformed input fails open: the text stays as written.
+- **`MdxPreprocessor`**: a line-based pass that drops ESM `import` and `export` statements and `{}` expression blocks. JSX components are unwrapped and keep their inner text with the children's indentation removed (fenced code included), because Markdown would read four indented spaces as code. A `title`, `label`, `name`, `path` or `value` attribute (first match) becomes a bold line, followed by `description` or `alt` when present; after prose on the same line it stays inline. `img` and `Image` become Markdown images, and `<br/>` becomes a space. Docusaurus admonitions with three or more colons (`:::note[Title]`, `:::note Title`, `:::note{title="Title"}`) become bold lines. The frontmatter `title` becomes an H1 when the body has none, and `description` becomes a line. Fenced code content and escaped `\<` are kept, and malformed input or a preprocessing error fails open: the text stays as written.
 - The table and image stages are the same as in MarkdownParser.
 
 #### web_parser.py: WebParser (URL mode)
