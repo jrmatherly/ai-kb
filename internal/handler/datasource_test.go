@@ -20,13 +20,15 @@ type stubDataSourceService struct {
 	getSyncLogs   func(ctx context.Context, dsID string, limit int, offset int) ([]*types.SyncLog, error)
 	getDataSource func(ctx context.Context, id string) (*types.DataSource, error)
 	manualSyncs   []bool
-	listForConfig func(ctx context.Context, config *types.DataSourceConfig, parentID string) ([]types.Resource, error)
+	listForConfig func(
+		ctx context.Context, config *types.DataSourceConfig, kbID, parentID string,
+	) ([]types.Resource, error)
 }
 
 func (s *stubDataSourceService) ListResourcesForConfig(
-	ctx context.Context, config *types.DataSourceConfig, parentID string,
+	ctx context.Context, config *types.DataSourceConfig, kbID, parentID string,
 ) ([]types.Resource, error) {
-	return s.listForConfig(ctx, config, parentID)
+	return s.listForConfig(ctx, config, kbID, parentID)
 }
 
 func (s *stubDataSourceService) ManualSync(
@@ -333,12 +335,12 @@ func TestDataSource_GetSyncLogs_NegativeLimitRejected(t *testing.T) {
 
 func TestDataSource_ListResourcesForConfig(t *testing.T) {
 	var gotConfig *types.DataSourceConfig
-	var gotParent string
+	var gotKB, gotParent string
 	dsSvc := &stubDataSourceService{
 		listForConfig: func(
-			_ context.Context, config *types.DataSourceConfig, parentID string,
+			_ context.Context, config *types.DataSourceConfig, kbID, parentID string,
 		) ([]types.Resource, error) {
-			gotConfig, gotParent = config, parentID
+			gotConfig, gotKB, gotParent = config, kbID, parentID
 			if parentID == "boom" {
 				return nil, errors.New("upstream refused")
 			}
@@ -358,13 +360,15 @@ func TestDataSource_ListResourcesForConfig(t *testing.T) {
 	}
 
 	w := post(`{"type":"rss","credentials":{"auth_headers":"X: y"},`+
-		`"settings":{"feed_urls":"https://example.com/feed"},"resource_ids":["root"],"parent_id":"p1"}`, 1)
+		`"settings":{"feed_urls":"https://example.com/feed"},"resource_ids":["root"],"parent_id":"p1",`+
+		`"knowledge_base_id":"kb-9"}`, 1)
 	wantBody := `[{"external_id":"feed-1","name":"Feed","type":"","description":"","url":"",` +
 		`"modified_at":"0001-01-01T00:00:00Z"}]`
 	if w.Code != http.StatusOK || w.Body.String() != wantBody {
 		t.Fatalf("status %d body %s", w.Code, w.Body.String())
 	}
-	if gotParent != "p1" || gotConfig.Type != "rss" || gotConfig.Credentials["auth_headers"] != "X: y" ||
+	if gotParent != "p1" || gotKB != "kb-9" || gotConfig.Type != "rss" ||
+		gotConfig.Credentials["auth_headers"] != "X: y" ||
 		gotConfig.Settings["feed_urls"] != "https://example.com/feed" ||
 		!slices.Equal(gotConfig.ResourceIDs, []string{"root"}) {
 		t.Fatalf("service got config %+v parent %q", gotConfig, gotParent)

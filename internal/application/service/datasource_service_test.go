@@ -549,7 +549,7 @@ func TestIngestItem_URLCreationAttachesDataSourceMetadata(t *testing.T) {
 	ks := &sweepFakeKS{repo: repo, createURLKnowledge: &types.Knowledge{ID: "url-knowledge-1"}}
 	svc := &DataSourceService{knowledgeService: ks}
 
-	isUpdate, err := svc.ingestItem(context.Background(), ds, &types.FetchedItem{
+	isUpdate, err := svc.ingestItem(context.Background(), ds, fullImports, &types.FetchedItem{
 		ExternalID: "url:1",
 		URL:        "https://example.com/doc",
 	}, nil)
@@ -571,7 +571,7 @@ func TestIngestItem_PersistsSourceUpdatedAt(t *testing.T) {
 	ks := &sweepFakeKS{repo: repo, createURLKnowledge: &types.Knowledge{ID: "url-knowledge-1"}}
 	svc := &DataSourceService{knowledgeService: ks}
 	created := time.Date(2021, 1, 2, 3, 4, 5, 0, time.UTC)
-	_, err := svc.ingestItem(context.Background(), ds, &types.FetchedItem{
+	_, err := svc.ingestItem(context.Background(), ds, fullImports, &types.FetchedItem{
 		ExternalID: "url:1",
 		URL:        "https://example.com/doc",
 		UpdatedAt:  edited,
@@ -585,7 +585,7 @@ func TestIngestItem_PersistsSourceUpdatedAt(t *testing.T) {
 	repo = &deletionLookupKnowledgeRepo{}
 	ks = &sweepFakeKS{repo: repo, createURLKnowledge: &types.Knowledge{ID: "url-knowledge-2"}}
 	svc = &DataSourceService{knowledgeService: ks}
-	_, err = svc.ingestItem(context.Background(), ds, &types.FetchedItem{
+	_, err = svc.ingestItem(context.Background(), ds, fullImports, &types.FetchedItem{
 		ExternalID: "url:2",
 		URL:        "https://example.com/doc2",
 	}, nil)
@@ -700,7 +700,7 @@ func TestApplyFetchedItem_SyncDeletionScopedPerDataSource(t *testing.T) {
 	dsA := &types.DataSource{
 		ID: "ds-a", TenantID: 1, KnowledgeBaseID: "kb-1", SyncDeletions: true,
 	}
-	svc.applyFetchedItem(context.Background(), dsA, &types.FetchedItem{
+	svc.applyFetchedItem(context.Background(), dsA, fullImports, &types.FetchedItem{
 		ExternalID: "file:shared",
 		IsDeleted:  true,
 	}, nil, result)
@@ -797,7 +797,7 @@ func TestIngestItem_URLCreationMetadataAttachFailure(t *testing.T) {
 	ks := &sweepFakeKS{repo: repo, createURLKnowledge: &types.Knowledge{ID: "url-knowledge-1"}}
 	svc := &DataSourceService{knowledgeService: ks}
 
-	_, err := svc.ingestItem(context.Background(), ds, &types.FetchedItem{
+	_, err := svc.ingestItem(context.Background(), ds, fullImports, &types.FetchedItem{
 		ExternalID: "url:1",
 		URL:        "https://example.com/doc",
 	}, nil)
@@ -860,7 +860,7 @@ func TestProbePathsAcceptExcludedConnectorType(t *testing.T) {
 
 	require.NoError(t, svc.ValidateCredentials(context.Background(), types.ConnectorTypeRSS, nil))
 	_, err := svc.ListResourcesForConfig(context.Background(),
-		&types.DataSourceConfig{Type: types.ConnectorTypeRSS}, "")
+		&types.DataSourceConfig{Type: types.ConnectorTypeRSS}, "", "")
 	require.NoError(t, err)
 
 	ds := *f.ds

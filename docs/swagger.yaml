@@ -7057,6 +7057,11 @@ definitions:
       credentials:
         additionalProperties: true
         type: object
+      knowledge_base_id:
+        description: |-
+          KnowledgeBaseID lets the listing hide files the knowledge base cannot
+          import; empty hides nothing.
+        type: string
       parent_id:
         type: string
       resource_ids:

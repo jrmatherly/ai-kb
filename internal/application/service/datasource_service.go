@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"mime/multipart"
 	"net/textproto"
+	"path"
 	"reflect"
 	"slices"
 	"strings"
@@ -23,6 +24,8 @@ import (
 	"github.com/jrmatherly/ai-kb/internal/types/interfaces"
 	secutils "github.com/jrmatherly/ai-kb/internal/utils"
 )
+
+var errUnimportable = errors.New("file type needs a model the knowledge base lacks")
 
 // DataSourceService implements the DataSourceService interface
 type DataSourceService struct {
@@ -379,8 +382,7 @@ func (s *DataSourceService) ValidateConnection(ctx context.Context, dsID string)
 		return err
 	}
 
-	// Parse configuration
-	config, err := ds.ParseConfig()
+	config, err := s.connectorConfig(ctx, ds)
 	if err != nil {
 		return datasource.ErrInvalidConfig
 	}
@@ -415,7 +417,7 @@ func (s *DataSourceService) ListAvailableResources(
 	if err != nil {
 		return nil, err
 	}
-	config, err := ds.ParseConfig()
+	config, err := s.connectorConfig(ctx, ds)
 	if err != nil {
 		return nil, datasource.ErrInvalidConfig
 	}
@@ -431,7 +433,7 @@ func (s *DataSourceService) ListAvailableResources(
 // Credentials are normalized the way CreateDataSource stores them, so the
 // listing matches what the saved source will see.
 func (s *DataSourceService) ListResourcesForConfig(
-	ctx context.Context, config *types.DataSourceConfig, parentID string,
+	ctx context.Context, config *types.DataSourceConfig, kbID string, parentID string,
 ) (_ []types.Resource, err error) {
 	defer func() { err = clientError(err) }()
 	connector, err := s.connectorRegistry.Get(config.Type)
@@ -439,6 +441,10 @@ func (s *DataSourceService) ListResourcesForConfig(
 		return nil, err
 	}
 	config.StripNonSecretCredentials(config.Type)
+	config.Imports = secutils.ImportCapabilities{Images: true, Audio: true}
+	if kbID != "" {
+		config.Imports = s.importCapabilities(ctx, kbID)
+	}
 	return listResources(ctx, connector, config, parentID)
 }
 
@@ -474,7 +480,7 @@ func (s *DataSourceService) ResolveResourceAncestors(
 		return nil, err
 	}
 
-	config, err := ds.ParseConfig()
+	config, err := s.connectorConfig(ctx, ds)
 	if err != nil {
 		return nil, datasource.ErrInvalidConfig
 	}
@@ -734,7 +740,8 @@ func (s *DataSourceService) ProcessSync(ctx context.Context, task *asynq.Task) e
 
 	forceFull := payload.ForceFull || ds.SyncMode == types.SyncModeFull
 	cursor, _ := ds.ParseSyncCursor()
-	deletions := newRunDeletions(ds, cursor, forceFull && datasource.ReconcilesFullSync(connector, config))
+	deletions := newRunDeletions(
+		ds, cursor, forceFull && datasource.ReconcilesFullSync(connector, config), config.Imports)
 	if forceFull {
 		if full, ok := connector.(datasource.FullSyncWithCursor); ok {
 			items, nextCursor, fetchErr = full.FetchAllFromCursor(ctx, config, config.ResourceIDs, cursor)
@@ -811,7 +818,7 @@ func (s *DataSourceService) ProcessSync(ctx context.Context, task *asynq.Task) e
 		if deletions.take(&item) {
 			continue
 		}
-		s.applyFetchedItem(withKBActivitySuppressed(ctx), ds, &item, autoTagIDs, result)
+		s.applyFetchedItem(withKBActivitySuppressed(ctx), ds, config.Imports, &item, autoTagIDs, result)
 	}
 
 	resultJSON, _ := result.ToJSON()
@@ -900,7 +907,7 @@ func fetchFailureSyncError(item *types.FetchedItem, rawMsg string) types.SyncIte
 // streaming handler so item classification (deleted / empty / ingest outcome)
 // stays identical across both fetch paths.
 func (s *DataSourceService) applyFetchedItem(
-	ctx context.Context, ds *types.DataSource, item *types.FetchedItem,
+	ctx context.Context, ds *types.DataSource, imports secutils.ImportCapabilities, item *types.FetchedItem,
 	tagIDs []string, result *types.SyncResult,
 ) {
 	if item.IsDeleted {
@@ -980,13 +987,15 @@ func (s *DataSourceService) applyFetchedItem(
 		return
 	}
 
-	isUpdate, err := s.ingestItem(ctx, ds, item, tagIDs)
+	isUpdate, err := s.ingestItem(ctx, ds, imports, item, tagIDs)
 	if err != nil {
 		var dupErr *types.DuplicateKnowledgeError
 		switch {
 		case errors.As(err, &dupErr):
 			// Duplicate file/URL is not a failure - count as skipped.
 			logger.Infof(ctx, "item %q (external_id=%s) already exists, skipping", item.Title, item.ExternalID)
+			result.Skipped++
+		case errors.Is(err, errUnimportable):
 			result.Skipped++
 		case item.Metadata["embedded_image"] == "true":
 			// An image extracted from a document for OCR is a best-effort
@@ -1026,12 +1035,23 @@ func streamStartCursor(ds *types.DataSource, forceFull bool, attempt int) (*type
 	return ds.ParseSyncCursor()
 }
 
+// startCursorFor drops a stored cursor whose run lacked a capability the
+// knowledge base has since gained, so files skipped as unimportable are
+// re-fetched. A cursor recorded before capabilities were stamped is kept.
+func startCursorFor(stored *types.SyncCursor, imports secutils.ImportCapabilities) *types.SyncCursor {
+	if stored != nil && stored.Imports != nil && imports.Gained(*stored.Imports) {
+		return nil
+	}
+	return stored
+}
+
 // streamSyncHandler adapts a streaming fetch to the knowledge-base ingest path.
 // Emit ingests each item as it arrives (bounding memory) and Checkpoint persists
 // the connector cursor plus live progress counts at page boundaries.
 type streamSyncHandler struct {
 	svc     *DataSourceService
 	ds      *types.DataSource
+	imports secutils.ImportCapabilities
 	tagIDs  []string
 	result  *types.SyncResult
 	syncLog *types.SyncLog
@@ -1052,7 +1072,7 @@ func (h *streamSyncHandler) Emit(ctx context.Context, item types.FetchedItem) er
 	if h.deletions.take(&item) {
 		return nil
 	}
-	h.svc.applyFetchedItem(withKBActivitySuppressed(ctx), h.ds, &item, h.tagIDs, h.result)
+	h.svc.applyFetchedItem(withKBActivitySuppressed(ctx), h.ds, h.imports, &item, h.tagIDs, h.result)
 	return nil
 }
 
@@ -1136,12 +1156,17 @@ func (s *DataSourceService) processSyncStreaming(
 			types.SyncLogStatusFailed, fmt.Sprintf("Invalid cursor: %v", err), wasPaused)
 		return err
 	}
+	if next := startCursorFor(startCursor, config.Imports); next != startCursor {
+		logger.Infof(ctx, "import capabilities gained since the last run, starting a full sync")
+		startCursor = next
+	}
 
 	stored, _ := ds.ParseSyncCursor()
 	result := &types.SyncResult{}
 	handler := &streamSyncHandler{
-		svc: s, ds: ds, tagIDs: autoTagIDs, result: result, syncLog: syncLog,
-		deletions: newRunDeletions(ds, stored, forceFull && datasource.ReconcilesFullSync(sc, config)),
+		svc: s, ds: ds, imports: config.Imports, tagIDs: autoTagIDs, result: result, syncLog: syncLog,
+		deletions: newRunDeletions(
+			ds, stored, forceFull && datasource.ReconcilesFullSync(sc, config), config.Imports),
 	}
 
 	fullBaseline := startCursor
@@ -1300,7 +1325,7 @@ func (s *DataSourceService) validateDataSourceConfig(ctx context.Context, ds *ty
 		return err
 	}
 
-	config, err := ds.ParseConfig()
+	config, err := s.connectorConfig(ctx, ds)
 	if err != nil {
 		return datasource.ErrInvalidConfig
 	}
@@ -1309,6 +1334,29 @@ func (s *DataSourceService) validateDataSourceConfig(ctx context.Context, ds *ty
 		return connectorError("connection validation failed", err)
 	}
 	return nil
+}
+
+// connectorConfig parses ds.Config and sets its Imports from the knowledge base.
+// A knowledge base that cannot be loaded leaves every capability on, so a
+// picker never hides files for want of a lookup.
+func (s *DataSourceService) connectorConfig(
+	ctx context.Context, ds *types.DataSource,
+) (*types.DataSourceConfig, error) {
+	config, err := ds.ParseConfig()
+	if err != nil {
+		return nil, err
+	}
+	config.Imports = s.importCapabilities(ctx, ds.KnowledgeBaseID)
+	return config, nil
+}
+
+func (s *DataSourceService) importCapabilities(ctx context.Context, kbID string) secutils.ImportCapabilities {
+	kb, err := s.kbService.GetKnowledgeBaseByID(ctx, kbID)
+	if err != nil {
+		logger.Warnf(ctx, "knowledge base %s not loaded, assuming every import capability: %v", kbID, err)
+		return secutils.ImportCapabilities{Images: true, Audio: true}
+	}
+	return kb.ImportCapabilities()
 }
 
 // connectorError reports a failure in the external system the user connected.
@@ -1384,7 +1432,18 @@ func classifyConnectorError(err error) string {
 //   - Has URL only      → CreateKnowledgeFromURL  (AI KB downloads and parses it)
 //
 // Returns (isUpdate, error) - isUpdate is true when an existing item was replaced.
-func (s *DataSourceService) ingestItem(ctx context.Context, ds *types.DataSource, item *types.FetchedItem, tagIDs []string) (bool, error) {
+func (s *DataSourceService) ingestItem(
+	ctx context.Context, ds *types.DataSource, imports secutils.ImportCapabilities,
+	item *types.FetchedItem, tagIDs []string,
+) (bool, error) {
+	// Only content items are checked: the URL route auto-detects its type later.
+	if len(item.Content) > 0 {
+		if m := secutils.MissingModel(path.Ext(item.FileName), imports); m != "" {
+			logger.Infof(ctx, "skipping %q: a %s model is not configured for %s files",
+				item.FileName, m, path.Ext(item.FileName))
+			return false, errUnimportable
+		}
+	}
 	// Channel decides the knowledge "source" label shown in the UI. Prefer the
 	// connector-supplied metadata["channel"] (e.g. Feishu Drive sets it to
 	// "feishu" so Drive docs share the wiki's "Feishu" label instead of showing

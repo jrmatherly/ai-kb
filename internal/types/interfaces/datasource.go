@@ -50,7 +50,7 @@ type DataSourceService interface {
 	// ListResourcesForConfig is ListAvailableResources for an unsaved config
 	// (the create wizard); nothing is persisted.
 	ListResourcesForConfig(
-		ctx context.Context, config *types.DataSourceConfig, parentID string,
+		ctx context.Context, config *types.DataSourceConfig, kbID string, parentID string,
 	) ([]types.Resource, error)
 
 	// ResolveResourceAncestors returns the deduplicated ExternalIDs of every

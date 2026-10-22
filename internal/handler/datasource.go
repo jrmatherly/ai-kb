@@ -369,7 +369,7 @@ func (h *DataSourceHandler) ListResourcesForConfig(c *gin.Context) {
 		Credentials: req.Credentials,
 		ResourceIDs: req.ResourceIDs,
 		Settings:    req.Settings,
-	}, req.ParentID)
+	}, req.KnowledgeBaseID, req.ParentID)
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -390,6 +390,9 @@ type listResourcesForConfigRequest struct {
 	Settings    map[string]interface{} `json:"settings"`
 	ResourceIDs []string               `json:"resource_ids"`
 	ParentID    string                 `json:"parent_id"`
+	// KnowledgeBaseID lets the listing hide files the knowledge base cannot
+	// import; empty hides nothing.
+	KnowledgeBaseID string `json:"knowledge_base_id"`
 }
 
 // @Summary List available resources in data source
