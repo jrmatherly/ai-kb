@@ -137,3 +137,6 @@ class MdxParserTest(unittest.TestCase):
         doc = MdxParser(file_name="t.mdx").parse_into_text(src)
         self.assertNotIn("import", doc.content)
         self.assertIn("| a | b |", doc.content)
+
+    def test_multiline_expression_keeps_text_after_its_closer(self):
+        self.assertEqual(mdx_to_markdown("{\n  a\n} tail\nBody\n"), "tail\n\nBody\n")

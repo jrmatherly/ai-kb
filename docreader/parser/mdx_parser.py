@@ -245,8 +245,12 @@ def mdx_to_markdown(text: str) -> str:
         )
         found = _find_end(text, starts[i], kind) if kind else None
         unterminated = kind is not None and found is None
-        if found and not text[found[0] : _line_end(text, found[0])].strip():
-            i = line_of(found[0] - 1) + 1
+        end_line = line_of(found[0] - 1) if found else i
+        tail = text[found[0] : _line_end(text, found[0])].strip() if found else ""
+        if found and (end_line > i or not tail):
+            if tail:
+                emit_generated(tail)
+            i = end_line + 1
             continue
         elif m := _ADMONITION_OPEN.match(line):
             label = m.group(1).capitalize()
