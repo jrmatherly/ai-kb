@@ -256,6 +256,8 @@ type gitHubStreamRecorder struct {
 	checkpoints []*types.SyncCursor
 	// failAt makes the n-th Emit fail (1-based); zero never fails.
 	failAt int
+	// imports stamps each checkpoint, as the service does for every cursor it persists.
+	imports utils.ImportCapabilities
 }
 
 func (h *gitHubStreamRecorder) Emit(_ context.Context, item types.FetchedItem) error {
@@ -267,7 +269,9 @@ func (h *gitHubStreamRecorder) Emit(_ context.Context, item types.FetchedItem) e
 }
 
 func (h *gitHubStreamRecorder) Checkpoint(_ context.Context, cursor *types.SyncCursor) error {
-	h.checkpoints = append(h.checkpoints, cursor)
+	stamped := *cursor
+	stamped.Imports = &h.imports
+	h.checkpoints = append(h.checkpoints, &stamped)
 	return nil
 }
 
@@ -296,7 +300,10 @@ func withImports(cfg *types.DataSourceConfig, caps utils.ImportCapabilities) *ty
 }
 
 func oldCursor(repositories map[string]repositoryCursor) *types.SyncCursor {
-	return &types.SyncCursor{ConnectorCursor: map[string]interface{}{"repositories": repositories}}
+	return &types.SyncCursor{
+		ConnectorCursor: map[string]interface{}{"repositories": repositories},
+		Imports:         &utils.ImportCapabilities{},
+	}
 }
 
 func repositories(t *testing.T, cursor *types.SyncCursor) map[string]repositoryCursor {
@@ -1086,17 +1093,18 @@ func TestFetchStreamDeletedImageIsTombstonedWhileImagesAreImportable(t *testing.
 }
 
 func TestFetchStreamResumeAfterALostCapabilityRestartsTheDiff(t *testing.T) {
+	restarted := []string{"+o/r:main:docs/b.md=b", "+o/r:main:docs/c.md=c", "+o/r:main:docs/d.md=d"}
 	for _, tc := range []struct {
-		name string
-		caps utils.ImportCapabilities
-		want []string
+		name  string
+		stamp *utils.ImportCapabilities
+		caps  utils.ImportCapabilities
+		want  []string
 	}{
+		{name: "lost", stamp: &utils.ImportCapabilities{Images: true}, want: restarted},
+		{name: "unstamped", want: restarted},
 		{
-			name: "lost", caps: utils.ImportCapabilities{},
-			want: []string{"+o/r:main:docs/b.md=b", "+o/r:main:docs/c.md=c", "+o/r:main:docs/d.md=d"},
-		},
-		{
-			name: "unchanged", caps: utils.ImportCapabilities{Images: true},
+			name: "unchanged", stamp: &utils.ImportCapabilities{Images: true},
+			caps: utils.ImportCapabilities{Images: true},
 			want: []string{"+o/r:main:docs/c.md=c", "+o/r:main:docs/d.md=d"},
 		},
 	} {
@@ -1107,7 +1115,7 @@ func TestFetchStreamResumeAfterALostCapabilityRestartsTheDiff(t *testing.T) {
 			old := oldCursor(map[string]repositoryCursor{
 				"o/r": {Pending: &pendingCursor{Head: "c1", Ref: "main", Paths: []string{"docs"}, Done: 2}},
 			})
-			old.Imports = &utils.ImportCapabilities{Images: true}
+			old.Imports = tc.stamp
 			h := &gitHubStreamRecorder{}
 			cfg := withImports(sourceConfig(server.base(), goodToken, selection("o/r", "main", "docs")), tc.caps)
 

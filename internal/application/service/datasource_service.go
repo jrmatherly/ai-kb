@@ -1158,7 +1158,7 @@ func (s *DataSourceService) processSyncStreaming(
 		return err
 	}
 	if next := startCursorFor(startCursor, config.Imports); next != startCursor {
-		logger.Infof(ctx, "import capabilities gained since the last run, starting a full sync")
+		logger.Infof(ctx, "import capabilities gained since the last run, restarting without a cursor")
 		startCursor = next
 	}
 

@@ -278,8 +278,9 @@ func (c *Connector) FetchStream(
 	complete := old == nil
 	next := readCursor(old)
 	// Pending.Done indexes a change list filtered by the capabilities the cursor
-	// was written under; under another filter it points at the wrong entries.
-	if old != nil && old.Imports != nil && *old.Imports != c.imports {
+	// was written under; under another filter it points at the wrong entries. A
+	// nil stamp predates the field, when the filter always admitted images and audio.
+	if old != nil && (old.Imports == nil || *old.Imports != c.imports) {
 		for key, rc := range next.Repositories {
 			rc.Pending = nil
 			next.Repositories[key] = rc
