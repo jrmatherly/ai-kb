@@ -72,9 +72,6 @@ include-package-data = true
 # Supply-chain cooldown: resolution skips releases younger than 2 days (stored as a span, so uv.lock stays stable).
 [tool.uv]
 exclude-newer = "2 days"
-# Advisory override: a release that fixes a published advisory skips the cooldown (GHSA-6q48-6c7w-9gw2,
-# certifi 2026.10.19). Remove after 2026-10-22, when it is two days old, or the entry caps certifi at this date.
-exclude-newer-package = { certifi = "2026-10-21T00:00:00Z" }
 
 [tool.black]
 line-length = 88
