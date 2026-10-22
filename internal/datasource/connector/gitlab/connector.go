@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"path"
 	"strings"
 	"time"
 
@@ -11,6 +12,7 @@ import (
 	"github.com/jrmatherly/ai-kb/internal/datasource/connector/repofile"
 	"github.com/jrmatherly/ai-kb/internal/logger"
 	"github.com/jrmatherly/ai-kb/internal/types"
+	"github.com/jrmatherly/ai-kb/internal/utils"
 )
 
 var _ datasource.StreamingConnector = (*Connector)(nil)
@@ -18,6 +20,7 @@ var _ datasource.StreamingConnector = (*Connector)(nil)
 type Connector struct {
 	client        *client
 	canonicalBase string
+	imports       utils.ImportCapabilities
 }
 
 // NewConnector creates a stateless connector. Each data source provides its
@@ -35,7 +38,11 @@ func (c *Connector) configured(ds *types.DataSourceConfig) (*Connector, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Connector{client: client, canonicalBase: client.baseURL}, nil
+	return &Connector{client: client, canonicalBase: client.baseURL, imports: ds.Imports}, nil
+}
+
+func (c *Connector) importable(file string) bool {
+	return utils.IsImportable(path.Ext(file), c.imports)
 }
 
 func (c *Connector) Validate(ctx context.Context, ds *types.DataSourceConfig) error {
@@ -185,15 +192,15 @@ func (c *Connector) FetchIncremental(ctx context.Context, ds *types.DataSourceCo
 			}
 			for _, d := range diff.Diffs {
 				if d.DeletedFile {
-					if repofile.InScope(d.OldPath, s.Paths) && repofile.IsSupported(d.OldPath) {
+					if repofile.InScope(d.OldPath, s.Paths) && c.importable(d.OldPath) {
 						out = append(out, c.deleted(p, ref, d.OldPath))
 					}
 					continue
 				}
-				if d.RenamedFile && repofile.InScope(d.OldPath, s.Paths) && repofile.IsSupported(d.OldPath) {
+				if d.RenamedFile && repofile.InScope(d.OldPath, s.Paths) && c.importable(d.OldPath) {
 					out = append(out, c.deleted(p, ref, d.OldPath))
 				}
-				if repofile.InScope(d.NewPath, s.Paths) && repofile.IsSupported(d.NewPath) {
+				if repofile.InScope(d.NewPath, s.Paths) && c.importable(d.NewPath) {
 					item, err := c.item(ctx, p, ref, d.NewPath)
 					if err != nil {
 						return nil, nil, err
@@ -288,19 +295,19 @@ func (c *Connector) streamChanges(
 	}
 	for _, change := range diff.Diffs {
 		if change.DeletedFile {
-			if repofile.InScope(change.OldPath, roots) && repofile.IsSupported(change.OldPath) {
+			if repofile.InScope(change.OldPath, roots) && c.importable(change.OldPath) {
 				if err := h.Emit(ctx, c.deleted(project, ref, change.OldPath)); err != nil {
 					return err
 				}
 			}
 			continue
 		}
-		if change.RenamedFile && repofile.InScope(change.OldPath, roots) && repofile.IsSupported(change.OldPath) {
+		if change.RenamedFile && repofile.InScope(change.OldPath, roots) && c.importable(change.OldPath) {
 			if err := h.Emit(ctx, c.deleted(project, ref, change.OldPath)); err != nil {
 				return err
 			}
 		}
-		if repofile.InScope(change.NewPath, roots) && repofile.IsSupported(change.NewPath) {
+		if repofile.InScope(change.NewPath, roots) && c.importable(change.NewPath) {
 			item, err := c.item(ctx, project, ref, change.NewPath)
 			if err != nil {
 				return err
@@ -345,7 +352,7 @@ func (c *Connector) files(ctx context.Context, id, ref string, roots []string) (
 	return out, err
 }
 
-// walkFiles visits supported blobs while traversing the selected directories.
+// walkFiles visits importable blobs while traversing the selected directories.
 // It deliberately does not collect paths, keeping streaming sync memory bounded
 // by the traversal depth plus the current file body.
 func (c *Connector) walkFiles(ctx context.Context, id, ref string, roots []string, visit func(string) error) error {
@@ -363,7 +370,7 @@ func (c *Connector) walkFiles(ctx context.Context, id, ref string, roots []strin
 				if err := walk(e.Path); err != nil {
 					return err
 				}
-			} else if e.Type == "blob" && repofile.IsSupported(e.Path) {
+			} else if e.Type == "blob" && c.importable(e.Path) {
 				if err := visit(e.Path); err != nil {
 					return err
 				}

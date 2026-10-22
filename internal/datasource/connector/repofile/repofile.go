@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/jrmatherly/ai-kb/internal/datasource"
-	"github.com/jrmatherly/ai-kb/internal/utils"
 )
 
 // NormalizePath trims a configured repository path and rejects traversal and
@@ -61,13 +60,6 @@ func InScope(file string, roots []string) bool {
 		}
 	}
 	return false
-}
-
-// IsSupported reports whether file has an extension every knowledge import
-// path accepts (internal/utils/import_filetypes.go), so a repository sync never
-// fetches a blob the create gate would reject.
-func IsSupported(file string) bool {
-	return utils.IsSupportedImportExtension(path.Ext(file))
 }
 
 // KnowledgeRelativePath maps a repository file to the KB folder convention:

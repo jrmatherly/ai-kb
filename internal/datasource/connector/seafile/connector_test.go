@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/jrmatherly/ai-kb/internal/datasource"
+	"github.com/jrmatherly/ai-kb/internal/utils"
 )
 
 func TestConnectorResources(t *testing.T) {
@@ -170,5 +171,39 @@ func TestConnectorForbiddenDirectoryIsPermissionDenied(t *testing.T) {
 	_, err := NewConnector().ListResources(t.Context(), syncConfig(f), testRepoID+":/private")
 	if !errors.Is(err, datasource.ErrPermissionDenied) || !errors.Is(err, datasource.ErrFetchFailed) {
 		t.Fatalf("forbidden directory = %v, want ErrPermissionDenied wrapped with ErrFetchFailed", err)
+	}
+}
+
+func TestListResourcesHidesImagesWithoutVLM(t *testing.T) {
+	for _, tc := range []struct {
+		name string
+		caps utils.ImportCapabilities
+		want []string
+	}{
+		{name: "without", caps: utils.ImportCapabilities{}, want: []string{"a.pdf", "sub"}},
+		{name: "with", caps: utils.ImportCapabilities{Images: true}, want: []string{"a.pdf", "shot.png", "sub"}},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			noWait(t)
+			f := newFakeSeafile(t)
+			f.addRepo(testRepoID, "Library", "repo", false)
+			f.addDir(testRepoID, "/docs/sub")
+			f.addFile(testRepoID, "/docs/a.pdf", []byte("a"), 1)
+			f.addFile(testRepoID, "/docs/shot.png", []byte("png"), 1)
+			cfg := syncConfig(f)
+			cfg.Imports = tc.caps
+			got, err := NewConnector().ListResources(t.Context(), cfg, testRepoID+":/docs")
+			if err != nil {
+				t.Fatal(err)
+			}
+			names := make([]string, 0, len(got))
+			for _, r := range got {
+				names = append(names, r.Name)
+			}
+			slices.Sort(names)
+			if !slices.Equal(names, tc.want) {
+				t.Fatalf("children = %v, want %v", names, tc.want)
+			}
+		})
 	}
 }

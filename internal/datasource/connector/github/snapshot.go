@@ -17,8 +17,8 @@ import (
 // snapshot at the recorded head and at the new head and diffs them locally.
 // A force-push or revert then emits exactly the files whose content differs
 // between the two heads, and a rename is a deletion plus an addition. Only
-// regular blobs (mode 100644 or 100755) in scope with a supported extension are
-// kept; symlinks and submodules are skipped.
+// regular blobs (mode 100644 or 100755) in scope that the knowledge base can
+// import are kept; symlinks and submodules are skipped.
 type snapshot map[string]blob
 
 type blob struct {
@@ -53,14 +53,14 @@ func (c *Connector) snapshot(ctx context.Context, key, commit string, roots []st
 	}
 	snap := snapshot{}
 	for _, e := range t.Entries {
-		snap.add(e.Path, e, roots)
+		snap.add(e.Path, e, roots, c.importable)
 	}
 	return snap, nil
 }
 
-func (s snapshot) add(path string, e treeEntry, roots []string) {
+func (s snapshot) add(path string, e treeEntry, roots []string, importable func(string) bool) {
 	if e.Type == "blob" && (e.Mode == "100644" || e.Mode == "100755") &&
-		repofile.InScope(path, roots) && repofile.IsSupported(path) {
+		repofile.InScope(path, roots) && importable(path) {
 		s[path] = blob{SHA: e.SHA, Size: e.Size}
 	}
 }
@@ -93,7 +93,7 @@ func (c *Connector) walkSubtrees(ctx context.Context, key, rootTreeSHA string, r
 				}
 				continue
 			}
-			snap.add(p, e, roots)
+			snap.add(p, e, roots, c.importable)
 		}
 		return nil
 	}

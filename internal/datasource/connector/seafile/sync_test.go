@@ -13,6 +13,7 @@ import (
 
 	"github.com/jrmatherly/ai-kb/internal/datasource"
 	"github.com/jrmatherly/ai-kb/internal/types"
+	"github.com/jrmatherly/ai-kb/internal/utils"
 )
 
 var errRecordedEmit = errors.New("recorder emit failed")
@@ -986,4 +987,66 @@ func compactRecorder() *recorder {
 		h.checkpoints = []map[string]any{cp}
 	}
 	return h
+}
+
+func TestWalkDirSkipsImagesWithoutVLM(t *testing.T) {
+	for _, tc := range []struct {
+		name    string
+		caps    utils.ImportCapabilities
+		want    []string
+		fetched int
+	}{
+		{name: "without", caps: utils.ImportCapabilities{}, want: []string{"/docs/a.pdf"}},
+		{
+			name: "with", caps: utils.ImportCapabilities{Images: true},
+			want: []string{"/docs/a.pdf", "/docs/shot.png"}, fetched: 1,
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			f, c, cfg := syncFixture(t, "/docs")
+			cfg.Imports = tc.caps
+			f.addFile(testRepoID, "/docs/a.pdf", []byte("a"), 1)
+			f.addFile(testRepoID, "/docs/shot.png", []byte("png"), 1)
+			cur, h := mustRun(t, c, cfg, nil, false)
+			assertPaths(t, h.items, tc.want...)
+			if got := f.count("file:/docs/shot.png"); got != tc.fetched {
+				t.Fatalf("shot.png download links = %d, want %d", got, tc.fetched)
+			}
+			if got := len(filesOf(cur)); got != len(tc.want) {
+				t.Fatalf("cursor files = %v, want %v", filesOf(cur), tc.want)
+			}
+		})
+	}
+}
+
+func TestWalkDirKeepsCursorFilesHiddenByALostCapability(t *testing.T) {
+	for _, root := range []string{"/docs", "/docs/shot.png"} {
+		t.Run(root, func(t *testing.T) {
+			f, c, cfg := syncFixture(t, root)
+			cfg.Imports = utils.ImportCapabilities{Images: true}
+			f.addFile(testRepoID, "/docs/shot.png", []byte("png"), 1)
+			old, _ := mustRun(t, c, cfg, nil, false)
+			fp := filesOf(old)["/docs/shot.png"]
+			if fp == "" {
+				t.Fatalf("first run did not record shot.png: %v", filesOf(old))
+			}
+
+			cfg.Imports = utils.ImportCapabilities{}
+			f.resetCounts()
+			cur, h := mustRun(t, c, cfg, old, false)
+			if len(h.items) != 0 || f.count("file:/docs/shot.png") != 0 {
+				t.Fatalf("hidden file: items=%+v, counts=%v", h.items, f.counts())
+			}
+			if got := filesOf(cur)["/docs/shot.png"]; got != fp {
+				t.Fatalf("cursor fingerprint = %q, want %q", got, fp)
+			}
+
+			// Removal from the source still tombstones a hidden file under a selected directory.
+			if root == "/docs" {
+				f.removePath(testRepoID, "/docs/shot.png")
+				_, h = mustRun(t, c, cfg, cur, false)
+				assertPaths(t, h.deletedItems(), "/docs/shot.png")
+			}
+		})
+	}
 }

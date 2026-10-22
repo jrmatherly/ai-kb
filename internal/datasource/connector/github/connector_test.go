@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"path"
+	"slices"
 	"sort"
 	"strings"
 	"sync"
@@ -17,6 +18,7 @@ import (
 
 	"github.com/jrmatherly/ai-kb/internal/datasource"
 	"github.com/jrmatherly/ai-kb/internal/types"
+	"github.com/jrmatherly/ai-kb/internal/utils"
 	"github.com/stretchr/testify/require"
 )
 
@@ -286,6 +288,11 @@ func sourceConfig(base, token string, repositories ...map[string]interface{}) *t
 		Credentials: map[string]interface{}{"base_url": base, "access_token": token},
 		Settings:    map[string]interface{}{"repositories": list},
 	}
+}
+
+func withImports(cfg *types.DataSourceConfig, caps utils.ImportCapabilities) *types.DataSourceConfig {
+	cfg.Imports = caps
+	return cfg
 }
 
 func oldCursor(repositories map[string]repositoryCursor) *types.SyncCursor {
@@ -1008,4 +1015,72 @@ func TestEmptyBlobSyncsItsPath(t *testing.T) {
 	require.NoError(t, err)
 	require.Len(t, h.items, 1)
 	require.Equal(t, "# o/R/docs/empty.md\n", string(h.items[0].Content))
+}
+
+func TestFetchStreamFetchesImagesOnlyWithVLM(t *testing.T) {
+	for _, tc := range []struct {
+		name    string
+		caps    utils.ImportCapabilities
+		want    []string
+		fetched bool
+	}{
+		{name: "without", caps: utils.ImportCapabilities{}, want: []string{"+o/r:main:docs/a.md=a"}},
+		{
+			name: "with", caps: utils.ImportCapabilities{Images: true},
+			want: []string{"+o/r:main:docs/a.md=a", "+o/r:main:docs/shot.png=png"}, fetched: true,
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			server := fakeGitHub(t, fakeRepo{commits: map[string]fakeCommit{
+				"c1": {files: map[string]string{"docs/a.md": "a", "docs/shot.png": "png"}},
+			}})
+			h := &gitHubStreamRecorder{}
+			cfg := withImports(sourceConfig(server.base(), goodToken, selection("o/r", "main", "docs")), tc.caps)
+
+			_, err := NewConnector().FetchStream(context.Background(), cfg, nil, h)
+			require.NoError(t, err)
+			require.Equal(t, tc.want, summary(server.base(), h.items))
+			pngBlob := "/api/v3/repos/o/r/git/blobs/" + blobSHA("png")
+			require.Equal(t, tc.fetched, slices.Contains(server.requests(), pngBlob))
+		})
+	}
+}
+
+func TestFetchStreamLostCapabilityEmitsNoTombstones(t *testing.T) {
+	server := fakeGitHub(t, fakeRepo{
+		commits: map[string]fakeCommit{
+			"c1": {files: map[string]string{"docs/a.md": "v1", "docs/shot.png": "png"}},
+			"c2": {files: map[string]string{"docs/a.md": "v2", "docs/shot.png": "png"}},
+		},
+		refs: map[string]string{"main": "c2"},
+	})
+	h := &gitHubStreamRecorder{}
+	old := oldCursor(map[string]repositoryCursor{"o/r": {Head: "c1", Ref: "main", Paths: []string{"docs"}}})
+	cfg := withImports(sourceConfig(server.base(), goodToken, selection("o/r", "main", "docs")),
+		utils.ImportCapabilities{})
+
+	next, err := NewConnector().FetchStream(context.Background(), cfg, old, h)
+	require.NoError(t, err)
+	require.Equal(t, []string{"+o/r:main:docs/a.md=v2"}, summary(server.base(), h.items))
+	require.Equal(t, map[string]repositoryCursor{"o/r": {Head: "c2", Ref: "main", Paths: []string{"docs"}}},
+		repositories(t, next))
+}
+
+// The positive control for the test above: with the capability held, a removed image is tombstoned.
+func TestFetchStreamDeletedImageIsTombstonedWhileImagesAreImportable(t *testing.T) {
+	server := fakeGitHub(t, fakeRepo{
+		commits: map[string]fakeCommit{
+			"c1": {files: map[string]string{"docs/a.md": "v1", "docs/shot.png": "png"}},
+			"c2": {files: map[string]string{"docs/a.md": "v1"}},
+		},
+		refs: map[string]string{"main": "c2"},
+	})
+	h := &gitHubStreamRecorder{}
+	old := oldCursor(map[string]repositoryCursor{"o/r": {Head: "c1", Ref: "main", Paths: []string{"docs"}}})
+	cfg := withImports(sourceConfig(server.base(), goodToken, selection("o/r", "main", "docs")),
+		utils.ImportCapabilities{Images: true})
+
+	_, err := NewConnector().FetchStream(context.Background(), cfg, old, h)
+	require.NoError(t, err)
+	require.Equal(t, []string{"-o/r:main:docs/shot.png"}, summary(server.base(), h.items))
 }

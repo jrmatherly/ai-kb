@@ -11,7 +11,6 @@ import (
 	"testing"
 
 	"github.com/jrmatherly/ai-kb/internal/datasource"
-	"github.com/jrmatherly/ai-kb/internal/datasource/connector/repofile"
 
 	"github.com/jrmatherly/ai-kb/internal/types"
 	secutils "github.com/jrmatherly/ai-kb/internal/utils"
@@ -299,25 +298,6 @@ func TestFetchStreamFiltersUnsupportedFilesAndCheckpointsProjects(t *testing.T) 
 	projects, _ := next.ConnectorCursor["projects"].(map[string]string)
 	if projects["1"] != "commit-1" {
 		t.Fatalf("cursor projects = %#v", next.ConnectorCursor["projects"])
-	}
-}
-
-func TestIsSupportedFile(t *testing.T) {
-	for _, tc := range []struct {
-		file string
-		want bool
-	}{
-		{file: "docs/guide.MD", want: true},
-		{file: "docs/guide.mdx", want: true},
-		{file: "notes/plan.xmind", want: true},
-		{file: "report.pdf", want: true},
-		{file: "src/main.go", want: false},
-		{file: "archive.tar.gz", want: false},
-		{file: "LICENSE", want: false},
-	} {
-		if got := repofile.IsSupported(tc.file); got != tc.want {
-			t.Errorf("repofile.IsSupported(%q) = %v, want %v", tc.file, got, tc.want)
-		}
 	}
 }
 
