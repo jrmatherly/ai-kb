@@ -623,6 +623,51 @@ func TestFetchStreamResumeAfterOverlayRunContinuesTheOverlayDiff(t *testing.T) {
 	}
 }
 
+// A pending chain already eight links deep (c0 baseline, every link a cut-off
+// run at c1) is interrupted again at c2. The ninth link would exceed the cap,
+// so the checkpoint keeps the completed baseline with no pending and the retry
+// restarts from c0: the whole c0-to-c2 diff, with offset 0.
+func TestFetchStreamPendingChainPastTheCapRestartsFromTheBaseline(t *testing.T) {
+	c0, c1, c2 := numberedDocs(120), numberedDocs(120), numberedDocs(121)
+	for i := 1; i <= 120; i++ {
+		c1[fmt.Sprintf("docs/f%03d.md", i)] = fmt.Sprintf("%d.1", i)
+		c2[fmt.Sprintf("docs/f%03d.md", i)] = c1[fmt.Sprintf("docs/f%03d.md", i)]
+		if i <= 50 {
+			c2[fmt.Sprintf("docs/f%03d.md", i)] = fmt.Sprintf("%d.2", i)
+		}
+	}
+	server := fakeGitHub(t, fakeRepo{
+		commits: map[string]fakeCommit{"c0": {files: c0}, "c1": {files: c1}, "c2": {files: c2}},
+		refs:    map[string]string{"main": "c2"},
+	})
+	docs := []string{"docs"}
+	var chain *pendingCursor
+	for range maxPendingChain {
+		chain = &pendingCursor{Head: "c1", Ref: "main", Paths: docs, Done: 100, Base: chain}
+	}
+	require.Equal(t, 8, chain.depth())
+	old := oldCursor(map[string]repositoryCursor{"o/r": {Head: "c0", Ref: "main", Paths: docs, Pending: chain}})
+
+	h, pending := interruptedStream(t, server, old, 51, selection("o/r", "main", "docs"))
+	var want []string
+	for i := 1; i <= 50; i++ {
+		want = append(want, fmt.Sprintf("+o/r:main:docs/f%03d.md=%d.2", i, i))
+	}
+	require.Equal(t, want, summary(server.base(), h.items))
+	require.Equal(t, map[string]repositoryCursor{"o/r": {Head: "c0", Ref: "main", Paths: docs}},
+		repositories(t, pending))
+
+	resumed := &gitHubStreamRecorder{}
+	next, err := stream(t, server, pending, resumed, selection("o/r", "main", "docs"))
+	require.NoError(t, err)
+	for i := 51; i <= 120; i++ {
+		want = append(want, fmt.Sprintf("+o/r:main:docs/f%03d.md=%d.1", i, i))
+	}
+	want = append(want, "+o/r:main:docs/f121.md=121")
+	require.Equal(t, want, summary(server.base(), resumed.items))
+	require.Equal(t, map[string]repositoryCursor{"o/r": {Head: "c2", Ref: "main", Paths: docs}}, repositories(t, next))
+}
+
 // A first sync of 120 files cut off at 100, then the head moves (f001..f050
 // changed, f121 added) and the run against it is cut off at 50. Its diff was
 // against the c1 prefix (f001..f050 then f101..f121), so the retry emits the

@@ -21,6 +21,8 @@ var _ datasource.StreamingConnector = (*Connector)(nil)
 
 const checkpointEvery = 50
 
+const maxPendingChain = 8
+
 const reasonFileTooLarge = "github_file_too_large"
 
 // SyncReasonTexts maps every reason code to its English fallback.
@@ -195,13 +197,25 @@ type repositoryCursor struct {
 // that earlier pending so the same list can be rebuilt; it is nil when the run
 // diffed against the completed baseline. Rebuilding costs one tree fetch per
 // link. The chain grows by one link each time a run is interrupted and the
-// head then moves before the retry, and collapses when a run completes.
+// head then moves before the retry, and collapses when a run completes. Past
+// maxPendingChain links the checkpoint drops the pending instead, so the retry
+// restarts the repository from the completed baseline: every emission is an
+// upsert, so that only refetches blobs, where a long chain costs a tree fetch
+// per link on every retry.
 type pendingCursor struct {
 	Head  string         `json:"head"`
 	Ref   string         `json:"ref"`
 	Paths []string       `json:"paths"`
 	Done  int            `json:"done"`
 	Base  *pendingCursor `json:"base,omitempty"`
+}
+
+func (p *pendingCursor) depth() int {
+	n := 0
+	for ; p != nil; p = p.Base {
+		n++
+	}
+	return n
 }
 
 type cursor struct {
@@ -280,6 +294,10 @@ func (c *Connector) removeRepository(
 	prev, err := c.baseline(ctx, key, rc)
 	if err != nil {
 		return err
+	}
+	if prev == nil && rc.Head != "" {
+		logger.Warnf(ctx, "[GitHub] %s left the selection but the tree of its head %s is gone; "+
+			"its items stay until a full-mode sync with deletion sync on reconciles them", key, rc.Head)
 	}
 	for _, path := range slices.Sorted(maps.Keys(prev)) {
 		if err := h.Emit(ctx, c.deleted(key, rc.Ref, path)); err != nil {
@@ -393,6 +411,9 @@ func (c *Connector) streamRepository(
 		}
 		if n := i + 1; n%checkpointEvery == 0 {
 			rc.Pending = &pendingCursor{Head: head, Ref: ref, Paths: selection.Paths, Done: n, Base: base}
+			if rc.Pending.depth() > maxPendingChain {
+				rc.Pending = nil
+			}
 			next.Repositories[key] = rc
 			if err := h.Checkpoint(ctx, gitHubCursor(next, false)); err != nil {
 				return err
