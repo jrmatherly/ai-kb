@@ -345,6 +345,7 @@ Purpose: browse the external resource tree from an unsaved configuration (the cr
 | `settings` | map | no | Connector settings, for example RSS `feed_urls` |
 | `resource_ids` | []string | no | Feishu and Lark Drive read the root `folder_token` from the first entry |
 | `parent_id` | string | no | Empty lists the top level, a resource `external_id` lists its children |
+| `knowledge_base_id` | string | no | Target knowledge base (must belong to this workspace); the listing hides files it cannot import, empty hides nothing |
 
 Response: 200 `[{external_id,name,type,description,url,modified_at,parent_id,has_children,metadata}]`; failure 400 or 502 with the error envelope (see the connector errors above)
 

@@ -740,6 +740,7 @@ func (s *DataSourceService) ProcessSync(ctx context.Context, task *asynq.Task) e
 
 	forceFull := payload.ForceFull || ds.SyncMode == types.SyncModeFull
 	cursor, _ := ds.ParseSyncCursor()
+	// Not compared against the stored capabilities: every connector that filters by extension streams.
 	deletions := newRunDeletions(
 		ds, cursor, forceFull && datasource.ReconcilesFullSync(connector, config), config.Imports)
 	if forceFull {
@@ -1353,7 +1354,8 @@ func (s *DataSourceService) connectorConfig(
 func (s *DataSourceService) importCapabilities(ctx context.Context, kbID string) secutils.ImportCapabilities {
 	kb, err := s.kbService.GetKnowledgeBaseByID(ctx, kbID)
 	if err != nil {
-		logger.Warnf(ctx, "knowledge base %s not loaded, assuming every import capability: %v", kbID, err)
+		logger.Warnf(ctx, "knowledge base %s not loaded, assuming every import capability: %v",
+			secutils.SanitizeForLog(kbID), err)
 		return secutils.ImportCapabilities{Images: true, Audio: true}
 	}
 	return kb.ImportCapabilities()

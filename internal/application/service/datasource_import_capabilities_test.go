@@ -137,3 +137,41 @@ func TestListResourcesForConfigLoadsTheKnowledgeBase(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, fullImports, connector.got[2], "an unloadable knowledge base must not hide files")
 }
+
+// startCursorStreamConnector records the cursor processSyncStreaming starts it from.
+type startCursorStreamConnector struct {
+	reconcileConnector
+	called bool
+	start  *types.SyncCursor
+}
+
+func (c *startCursorStreamConnector) FetchStream(
+	_ context.Context, _ *types.DataSourceConfig, cursor *types.SyncCursor, _ datasource.StreamHandler,
+) (*types.SyncCursor, error) {
+	c.called, c.start = true, cursor
+	return &types.SyncCursor{ConnectorCursor: map[string]any{"page": "end"}}, nil
+}
+
+func TestProcessSyncStreamingRestartsWhenCapabilitiesGained(t *testing.T) {
+	run := func(t *testing.T, recorded utils.ImportCapabilities) *startCursorStreamConnector {
+		t.Helper()
+		h := newReconcileHarness(t, reconcileCase{})
+		stored, err := (&types.SyncCursor{
+			ConnectorCursor: map[string]any{"page": "3"}, Imports: &recorded,
+		}).ToJSON()
+		require.NoError(t, err)
+		h.ds.LastSyncCursor = stored
+		h.svc.kbService = &processSyncKBService{kb: &types.KnowledgeBase{
+			ID: h.ds.KnowledgeBaseID, TenantID: h.ds.TenantID,
+			VLMConfig: types.VLMConfig{Enabled: true, ModelID: "vlm"},
+		}}
+		conn := &startCursorStreamConnector{}
+		_, err = h.sync(t, conn, false, false)
+		require.NoError(t, err)
+		require.True(t, conn.called)
+		return conn
+	}
+
+	assert.Nil(t, run(t, noImports).start, "a run recorded without a vision model restarts from the top")
+	assert.Equal(t, "3", run(t, utils.ImportCapabilities{Images: true}).start.ConnectorCursor["page"])
+}

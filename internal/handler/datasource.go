@@ -363,6 +363,12 @@ func (h *DataSourceHandler) ListResourcesForConfig(c *gin.Context) {
 		_ = c.Error(apperrors.NewBadRequestError("invalid request: type and credentials are required"))
 		return
 	}
+	if req.KnowledgeBaseID != "" {
+		if _, appErr := h.getOwnedKnowledgeBase(ctx, tenantID, req.KnowledgeBaseID); appErr != nil {
+			_ = c.Error(appErr)
+			return
+		}
+	}
 
 	resources, err := h.service.ListResourcesForConfig(ctx, &types.DataSourceConfig{
 		Type:        req.Type,

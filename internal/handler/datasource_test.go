@@ -350,7 +350,16 @@ func TestDataSource_ListResourcesForConfig(t *testing.T) {
 			return []types.Resource{{ExternalID: "feed-1", Name: "Feed"}}, nil
 		},
 	}
-	router := newDataSourceTestRouter(NewDataSourceHandler(dsSvc, &stubKBServiceForDS{}))
+	kbSvc := &stubKBServiceForDS{getByID: func(_ context.Context, id string) (*types.KnowledgeBase, error) {
+		switch id {
+		case "kb-9":
+			return &types.KnowledgeBase{ID: id, TenantID: 1}, nil
+		case "kb-theirs":
+			return &types.KnowledgeBase{ID: id, TenantID: 2}, nil
+		}
+		return nil, nil
+	}}
+	router := newDataSourceTestRouter(NewDataSourceHandler(dsSvc, kbSvc))
 	post := func(body string, tenantID uint64) *httptest.ResponseRecorder {
 		w := httptest.NewRecorder()
 		req := httptest.NewRequest(http.MethodPost, "/datasource/list-resources", strings.NewReader(body))
@@ -366,6 +375,15 @@ func TestDataSource_ListResourcesForConfig(t *testing.T) {
 		`"modified_at":"0001-01-01T00:00:00Z"}]`
 	if w.Code != http.StatusOK || w.Body.String() != wantBody {
 		t.Fatalf("status %d body %s", w.Code, w.Body.String())
+	}
+	for kbID, want := range map[string]string{
+		"kb-theirs":  `{"success":false,"error":{"code":1002,"message":"access denied"}}`,
+		"kb-missing": `{"success":false,"error":{"code":1003,"message":"knowledge base not found"}}`,
+	} {
+		w := post(`{"type":"rss","credentials":{},"knowledge_base_id":"`+kbID+`"}`, 1)
+		if w.Body.String() != want {
+			t.Fatalf("%s: status %d body %s", kbID, w.Code, w.Body.String())
+		}
 	}
 	if gotParent != "p1" || gotKB != "kb-9" || gotConfig.Type != "rss" ||
 		gotConfig.Credentials["auth_headers"] != "X: y" ||
