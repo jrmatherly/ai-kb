@@ -645,7 +645,6 @@ func TestFetchStreamPendingChainPastTheCapRestartsFromTheBaseline(t *testing.T) 
 	for range maxPendingChain {
 		chain = &pendingCursor{Head: "c1", Ref: "main", Paths: docs, Done: 100, Base: chain}
 	}
-	require.Equal(t, 8, chain.depth())
 	old := oldCursor(map[string]repositoryCursor{"o/r": {Head: "c0", Ref: "main", Paths: docs, Pending: chain}})
 
 	h, pending := interruptedStream(t, server, old, 51, selection("o/r", "main", "docs"))

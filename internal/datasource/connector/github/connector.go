@@ -199,9 +199,11 @@ type repositoryCursor struct {
 // link. The chain grows by one link each time a run is interrupted and the
 // head then moves before the retry, and collapses when a run completes. Past
 // maxPendingChain links the checkpoint drops the pending instead, so the retry
-// restarts the repository from the completed baseline: every emission is an
-// upsert, so that only refetches blobs, where a long chain costs a tree fetch
-// per link on every retry.
+// restarts the repository from the completed baseline. Dropping it discards
+// the only record of the paths the interrupted runs added under ref that the
+// baseline lacks: a retry with the same selection upserts them again, but a
+// retry whose ref or paths changed has no pending to tombstone from, so those
+// items stay orphaned until a full-mode sync with deletion sync on.
 type pendingCursor struct {
 	Head  string         `json:"head"`
 	Ref   string         `json:"ref"`
@@ -286,7 +288,8 @@ func (c *Connector) FetchStream(
 
 // removeRepository tombstones everything the index holds for a repository that
 // left the selection: the completed baseline under its ref, then what an
-// interrupted run added under the pending ref, and drops its cursor entry.
+// interrupted run added under the pending ref, and drops its cursor entry. A
+// gone pending tree is reported only by effectiveBaseline's log.
 func (c *Connector) removeRepository(
 	ctx context.Context, key string, next cursor, h datasource.StreamHandler,
 ) error {
@@ -297,7 +300,7 @@ func (c *Connector) removeRepository(
 	}
 	if prev == nil && rc.Head != "" {
 		logger.Warnf(ctx, "[GitHub] %s left the selection but the tree of its head %s is gone; "+
-			"its items stay until a full-mode sync with deletion sync on reconciles them", key, rc.Head)
+			"its baseline items stay until a full-mode sync with deletion sync on reconciles them", key, rc.Head)
 	}
 	for _, path := range slices.Sorted(maps.Keys(prev)) {
 		if err := h.Emit(ctx, c.deleted(key, rc.Ref, path)); err != nil {
@@ -412,6 +415,8 @@ func (c *Connector) streamRepository(
 		if n := i + 1; n%checkpointEvery == 0 {
 			rc.Pending = &pendingCursor{Head: head, Ref: ref, Paths: selection.Paths, Done: n, Base: base}
 			if rc.Pending.depth() > maxPendingChain {
+				logger.Warnf(ctx, "[GitHub] %s: pending chain at head %s exceeds %d links, resume state discarded",
+					key, head, maxPendingChain)
 				rc.Pending = nil
 			}
 			next.Repositories[key] = rc
