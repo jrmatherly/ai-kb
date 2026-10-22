@@ -273,11 +273,16 @@ func (c *Connector) FetchStream(
 	}
 	complete := old == nil
 	next := readCursor(old)
-	// Pending.Done indexes a change list filtered by the capabilities the cursor
-	// was written under; under another filter it points at the wrong entries. A
-	// nil stamp predates the field, when the filter always admitted images and audio.
-	if old != nil && (old.Imports == nil || *old.Imports != c.imports) {
+	// Pending.Done indexes a change list computed under the cursor's recorded capabilities; under another
+	// filter it points at the wrong entries. Dropping Pending also drops the overlay effectiveBaseline
+	// rebuilds from it, so a file the interrupted run added that is gone at the new head is not
+	// tombstoned, the same trade maxPendingChain makes.
+	if old != nil && old.RecordedImports() != c.imports {
 		for key, rc := range next.Repositories {
+			if rc.Pending != nil {
+				logger.Infof(ctx,
+					"[GitHub] %s: import capabilities changed since the interrupted run, restarting its diff", key)
+			}
 			rc.Pending = nil
 			next.Repositories[key] = rc
 		}

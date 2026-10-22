@@ -59,6 +59,9 @@ type ImportCapabilities struct {
 	Audio  bool `json:"audio"`
 }
 
+// AllImportCapabilities is a knowledge base with both a vision and a speech model.
+var AllImportCapabilities = ImportCapabilities{Images: true, Audio: true}
+
 // Gained reports whether c can ingest a kind that prev could not.
 func (c ImportCapabilities) Gained(prev ImportCapabilities) bool {
 	return c.Images && !prev.Images || c.Audio && !prev.Audio

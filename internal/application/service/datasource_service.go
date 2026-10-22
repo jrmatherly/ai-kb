@@ -1035,9 +1035,9 @@ func streamStartCursor(ds *types.DataSource, forceFull bool, attempt int) (*type
 
 // startCursorFor drops a stored cursor whose run lacked a capability the
 // knowledge base has since gained, so files skipped as unimportable are
-// re-fetched. A cursor recorded before capabilities were stamped is kept.
+// re-fetched.
 func startCursorFor(stored *types.SyncCursor, imports secutils.ImportCapabilities) *types.SyncCursor {
-	if stored != nil && stored.Imports != nil && imports.Gained(*stored.Imports) {
+	if stored != nil && imports.Gained(stored.RecordedImports()) {
 		return nil
 	}
 	return stored
@@ -1154,7 +1154,8 @@ func (s *DataSourceService) processSyncStreaming(
 		return err
 	}
 	if next := startCursorFor(startCursor, config.Imports); next != startCursor {
-		logger.Infof(ctx, "import capabilities gained since the last run, restarting without a cursor")
+		logger.Infof(ctx, "import capabilities gained since the last run for data source %s "+
+			"(%+v -> %+v), restarting without a cursor", ds.ID, startCursor.RecordedImports(), config.Imports)
 		startCursor = next
 	}
 
@@ -1347,17 +1348,15 @@ func (s *DataSourceService) connectorConfig(
 	return config, nil
 }
 
-var allImports = secutils.ImportCapabilities{Images: true, Audio: true}
-
 func (s *DataSourceService) importCapabilities(ctx context.Context, kbID string) secutils.ImportCapabilities {
 	if kbID == "" {
-		return allImports
+		return secutils.AllImportCapabilities
 	}
 	kb, err := s.kbService.GetKnowledgeBaseByID(ctx, kbID)
 	if err != nil {
 		logger.Warnf(ctx, "knowledge base %s not loaded, assuming every import capability: %v",
 			secutils.SanitizeForLog(kbID), err)
-		return allImports
+		return secutils.AllImportCapabilities
 	}
 	return kb.ImportCapabilities()
 }
@@ -1439,10 +1438,11 @@ func (s *DataSourceService) ingestItem(
 	ctx context.Context, ds *types.DataSource, imports secutils.ImportCapabilities,
 	item *types.FetchedItem, tagIDs []string,
 ) (bool, error) {
-	// Only content items are checked: the URL route auto-detects its type later.
+	// Only content items are checked here: a URL item's type is known only after download, where an
+	// unimportable file fails the item instead of skipping it.
 	if len(item.Content) > 0 {
 		if m := secutils.MissingModel(path.Ext(item.FileName), imports); m != "" {
-			logger.Infof(ctx, "skipping %q: a %s model is not configured for %s files",
+			logger.Warnf(ctx, "skipping %q: a %s model is not configured for %s files",
 				item.FileName, m, path.Ext(item.FileName))
 			return false, errUnimportable
 		}

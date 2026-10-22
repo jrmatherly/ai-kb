@@ -212,3 +212,11 @@ func TestKnowledgeBaseImportCapabilities(t *testing.T) {
 	assert.Equal(t, utils.ImportCapabilities{Images: true}, kb.ImportCapabilities())
 	assert.Equal(t, utils.ImportCapabilities{}, (*KnowledgeBase)(nil).ImportCapabilities())
 }
+
+func TestSyncCursorRecordedImports(t *testing.T) {
+	images := utils.ImportCapabilities{Images: true}
+	var unset *SyncCursor
+	assert.Equal(t, utils.AllImportCapabilities, unset.RecordedImports())
+	assert.Equal(t, utils.AllImportCapabilities, (&SyncCursor{}).RecordedImports())
+	assert.Equal(t, images, (&SyncCursor{Imports: &images}).RecordedImports())
+}

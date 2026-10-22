@@ -455,6 +455,15 @@ type SyncCursor struct {
 	Imports *utils.ImportCapabilities `json:"imports,omitempty"`
 }
 
+// RecordedImports returns the capabilities the cursor was recorded under. A cursor from before the
+// Imports field was filtered by the shared extension set alone, which admitted every image and audio type.
+func (c *SyncCursor) RecordedImports() utils.ImportCapabilities {
+	if c == nil || c.Imports == nil {
+		return utils.AllImportCapabilities
+	}
+	return *c.Imports
+}
+
 // SyncResult summarizes the outcome of a sync operation
 type SyncResult struct {
 	// Total items processed

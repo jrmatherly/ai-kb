@@ -48,4 +48,6 @@ func TestGained(t *testing.T) {
 	require.True(t, ImportCapabilities{Images: true}.Gained(ImportCapabilities{}))
 	require.False(t, ImportCapabilities{}.Gained(ImportCapabilities{Images: true}))
 	require.False(t, ImportCapabilities{Images: true}.Gained(ImportCapabilities{Images: true}))
+	require.True(t, ImportCapabilities{Audio: true}.Gained(ImportCapabilities{}))
+	require.False(t, ImportCapabilities{Audio: true}.Gained(ImportCapabilities{Audio: true}))
 }

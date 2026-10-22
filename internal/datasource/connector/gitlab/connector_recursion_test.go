@@ -325,3 +325,54 @@ func TestNestedDirectoriesSkipAudioWithoutASR(t *testing.T) {
 		})
 	}
 }
+
+func TestCompareSkipsTombstonesForUnimportableFiles(t *testing.T) {
+	for _, tc := range []struct {
+		name string
+		caps utils.ImportCapabilities
+		want []string
+	}{
+		{name: "without", caps: utils.ImportCapabilities{}, want: []string{"removed.md"}},
+		{name: "with", caps: utils.AllImportCapabilities, want: []string{"removed.md", "talk.mp3"}},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			allowLocalGitLabServer(t)
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				w.Header().Set("Content-Type", "application/json")
+				switch r.URL.Path {
+				case "/api/v4/projects/1":
+					_, _ = w.Write([]byte(`{"id":1,"name":"docs","path_with_namespace":"group/docs",` +
+						`"default_branch":"main"}`))
+				case "/api/v4/projects/1/repository/commits/main":
+					_, _ = w.Write([]byte(`{"id":"head"}`))
+				case "/api/v4/projects/1/repository/compare":
+					_, _ = w.Write([]byte(`{"diffs":[
+						{"old_path":"removed.md","new_path":"removed.md","deleted_file":true},
+						{"old_path":"talk.mp3","new_path":"talk.mp3","deleted_file":true}
+					]}`))
+				default:
+					http.NotFound(w, r)
+				}
+			}))
+			defer server.Close()
+			cfg := &types.DataSourceConfig{
+				Credentials: map[string]interface{}{"base_url": server.URL, "access_token": "token"},
+				Imports:     tc.caps,
+				Settings: map[string]interface{}{"projects": []interface{}{
+					map[string]interface{}{"project_id": "1", "paths": []interface{}{}},
+				}},
+			}
+
+			handler := &gitLabStreamRecorder{}
+			old := gitLabCursor(cursor{Projects: map[string]string{"1": "previous"}})
+			_, err := NewConnector().FetchStream(context.Background(), cfg, old, handler)
+			require.NoError(t, err)
+			got := make([]string, 0, len(handler.items))
+			for _, item := range handler.items {
+				require.True(t, item.IsDeleted)
+				got = append(got, item.Metadata["gitlab_path"])
+			}
+			require.Equal(t, tc.want, got)
+		})
+	}
+}

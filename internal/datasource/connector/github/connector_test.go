@@ -1103,6 +1103,10 @@ func TestFetchStreamResumeAfterALostCapabilityRestartsTheDiff(t *testing.T) {
 		{name: "lost", stamp: &utils.ImportCapabilities{Images: true}, want: restarted},
 		{name: "unstamped", want: restarted},
 		{
+			name: "unstamped with every capability", caps: utils.AllImportCapabilities,
+			want: []string{"+o/r:main:docs/c.md=c", "+o/r:main:docs/d.md=d"},
+		},
+		{
 			name: "unchanged", stamp: &utils.ImportCapabilities{Images: true},
 			caps: utils.ImportCapabilities{Images: true},
 			want: []string{"+o/r:main:docs/c.md=c", "+o/r:main:docs/d.md=d"},

@@ -32,7 +32,7 @@ func TestIngestItemSkipsUnimportableBeforeDeleting(t *testing.T) {
 	assert.False(t, isUpdate)
 	assert.Empty(t, ks.events, "an unimportable item must leave the existing row alone")
 
-	isUpdate, err = svc.ingestItem(context.Background(), ds, allImports, pngItem(), nil)
+	isUpdate, err = svc.ingestItem(context.Background(), ds, utils.AllImportCapabilities, pngItem(), nil)
 	require.NoError(t, err)
 	assert.True(t, isUpdate)
 	assert.Equal(t, []string{"delete:old", "create:shot.png"}, ks.events)
@@ -45,7 +45,7 @@ func TestIngestItemPrecheckIgnoresURLOnlyItems(t *testing.T) {
 	svc := &DataSourceService{knowledgeService: ks}
 
 	isUpdate, err := svc.ingestItem(context.Background(), ds, noImports, &types.FetchedItem{
-		ExternalID: "url:1", URL: "https://example.com/photo",
+		ExternalID: "url:1", URL: "https://example.com/photo", FileName: "photo.png",
 	}, nil)
 	require.NoError(t, err)
 	assert.False(t, isUpdate)
@@ -64,7 +64,7 @@ func TestApplyFetchedItemCountsUnimportableAsSkipped(t *testing.T) {
 	assert.Empty(t, ks.events)
 
 	result = &types.SyncResult{}
-	svc.applyFetchedItem(context.Background(), ds, allImports, pngItem(), nil, result)
+	svc.applyFetchedItem(context.Background(), ds, utils.AllImportCapabilities, pngItem(), nil, result)
 	assert.Equal(t, &types.SyncResult{Created: 1}, result)
 }
 
@@ -126,13 +126,34 @@ func TestListResourcesForConfigLoadsTheKnowledgeBase(t *testing.T) {
 	_, err = svc.ListResourcesForConfig(context.Background(),
 		&types.DataSourceConfig{Type: "recording-list"}, "", "")
 	require.NoError(t, err)
-	assert.Equal(t, []utils.ImportCapabilities{noImports, allImports}, connector.got)
+	assert.Equal(t, []utils.ImportCapabilities{noImports, utils.AllImportCapabilities}, connector.got)
 
 	svc.kbService = &processSyncKBService{getErr: errors.New("gone")}
 	_, err = svc.ListResourcesForConfig(context.Background(),
 		&types.DataSourceConfig{Type: "recording-list"}, "kb-1", "")
 	require.NoError(t, err)
-	assert.Equal(t, allImports, connector.got[2], "an unloadable knowledge base must not hide files")
+	assert.Equal(t, utils.AllImportCapabilities, connector.got[2], "an unloadable knowledge base must not hide files")
+}
+
+func TestListAvailableResourcesLoadsTheKnowledgeBase(t *testing.T) {
+	connector := &recordingListConnector{}
+	registry := datasource.NewConnectorRegistry()
+	require.NoError(t, registry.Register(connector))
+	ds := &types.DataSource{
+		ID: "ds-1", KnowledgeBaseID: "kb-1", Type: "recording-list", Config: []byte(`{"type":"recording-list"}`),
+	}
+	svc := &DataSourceService{
+		connectorRegistry: registry,
+		dsRepo:            newKBDeleteDSRepo(ds.KnowledgeBaseID, ds),
+		kbService:         &processSyncKBService{kb: &types.KnowledgeBase{ID: "kb-1"}},
+	}
+
+	_, err := svc.ListAvailableResources(context.Background(), ds.ID, "")
+	require.NoError(t, err)
+	svc.kbService = &processSyncKBService{getErr: errors.New("gone")}
+	_, err = svc.ListAvailableResources(context.Background(), ds.ID, "")
+	require.NoError(t, err)
+	assert.Equal(t, []utils.ImportCapabilities{noImports, utils.AllImportCapabilities}, connector.got)
 }
 
 // startCursorStreamConnector records the cursor processSyncStreaming starts it from.
