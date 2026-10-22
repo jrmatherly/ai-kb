@@ -510,6 +510,155 @@ func numberedDocs(n int) map[string]string {
 	return files
 }
 
+// interruptedStream runs a sync from old that fails at the failAt-th emit and
+// returns the recorder and the last checkpoint it took.
+func interruptedStream(
+	t *testing.T, server *fakeServer, old *types.SyncCursor, failAt int, repos ...map[string]interface{},
+) (*gitHubStreamRecorder, *types.SyncCursor) {
+	t.Helper()
+	h := &gitHubStreamRecorder{failAt: failAt}
+	next, err := stream(t, server, old, h, repos...)
+	require.EqualError(t, err, "ingest failed")
+	require.Nil(t, next)
+	require.NotEmpty(t, h.checkpoints)
+	return h, h.checkpoints[len(h.checkpoints)-1]
+}
+
+// emittedBodies maps each path to the bodies emitted for it, in order.
+func emittedBodies(items ...[]types.FetchedItem) map[string][]string {
+	out := map[string][]string{}
+	for _, list := range items {
+		for _, item := range list {
+			out[item.Metadata["github_path"]] = append(out[item.Metadata["github_path"]], string(item.Content))
+		}
+	}
+	return out
+}
+
+// Three runs under one ref: c0 is the completed baseline, c1 changes every
+// guide and is cut off at 100, c2 changes g001..g050 again, reverts g060 to its
+// c0 body and adds g121, and the run against it is cut off at 50. Its diff is
+// against the c0 baseline overlaid with the c1 prefix (g001..g050 then g060,
+// g101..g121), so the retry must skip 50 entries of that same list, not of the
+// c0-to-c2 diff, which does not contain the revert of g060 at all.
+func TestFetchStreamResumeAfterOverlayRunContinuesTheOverlayDiff(t *testing.T) {
+	c0, c1, c2 := map[string]string{}, map[string]string{}, map[string]string{}
+	for _, files := range []map[string]string{c0, c1, c2} {
+		files["docs/a.md"], files["docs/b.md"] = "a", "b"
+	}
+	for i := 1; i <= 120; i++ {
+		name := fmt.Sprintf("docs/guides/g%03d.md", i)
+		c0[name], c1[name], c2[name] = fmt.Sprint(i), fmt.Sprintf("%d.1", i), fmt.Sprintf("%d.1", i)
+		if i <= 50 {
+			c2[name] = fmt.Sprintf("%d.2", i)
+		}
+	}
+	c2["docs/guides/g060.md"] = c0["docs/guides/g060.md"]
+	c2["docs/guides/g121.md"] = "121.2"
+	repo := fakeRepo{
+		commits: map[string]fakeCommit{"c0": {files: c0}, "c1": {files: c1}, "c2": {files: c2}},
+		refs:    map[string]string{"main": "c1"},
+	}
+	server := fakeGitHub(t, repo)
+	old := oldCursor(map[string]repositoryCursor{"o/r": {Head: "c0", Ref: "main", Paths: []string{"docs"}}})
+	docs := []string{"docs"}
+
+	first, pending := interruptedStream(t, server, old, 101, selection("o/r", "main", "docs"))
+	var want []string
+	for i := 1; i <= 100; i++ {
+		want = append(want, fmt.Sprintf("+o/r:main:docs/guides/g%03d.md=%d.1", i, i))
+	}
+	require.Equal(t, want, summary(server.base(), first.items))
+	c1Pending := &pendingCursor{Head: "c1", Ref: "main", Paths: docs, Done: 100}
+	require.Equal(t, map[string]repositoryCursor{"o/r": {Head: "c0", Ref: "main", Paths: docs, Pending: c1Pending}},
+		repositories(t, pending))
+
+	repo.refs["main"] = "c2"
+	second, pending := interruptedStream(t, server, pending, 51, selection("o/r", "main", "docs"))
+	want = nil
+	for i := 1; i <= 50; i++ {
+		want = append(want, fmt.Sprintf("+o/r:main:docs/guides/g%03d.md=%d.2", i, i))
+	}
+	require.Equal(t, want, summary(server.base(), second.items))
+	require.Equal(t, map[string]repositoryCursor{"o/r": {Head: "c0", Ref: "main", Paths: docs, Pending: &pendingCursor{
+		Head: "c2", Ref: "main", Paths: docs, Done: 50, Base: c1Pending,
+	}}}, repositories(t, pending))
+
+	third := &gitHubStreamRecorder{}
+	next, err := stream(t, server, pending, third, selection("o/r", "main", "docs"))
+	require.NoError(t, err)
+	want = []string{"+o/r:main:docs/guides/g060.md=60"}
+	for i := 101; i <= 120; i++ {
+		want = append(want, fmt.Sprintf("+o/r:main:docs/guides/g%03d.md=%d.1", i, i))
+	}
+	want = append(want, "+o/r:main:docs/guides/g121.md=121.2")
+	require.Equal(t, want, summary(server.base(), third.items))
+	require.Equal(t, map[string]repositoryCursor{"o/r": {Head: "c2", Ref: "main", Paths: docs}}, repositories(t, next))
+
+	// Across the three runs every guide was emitted and the last body emitted
+	// for each is its c2 body. The paths emitted twice are exactly those whose
+	// body changed after the first run indexed them: g001..g050 (c1 body, then
+	// c2 body) and g060 (c1 body, then the c0 body c2 reverted to).
+	bodies := emittedBodies(first.items, second.items, third.items)
+	require.Len(t, bodies, 121)
+	for i := 1; i <= 121; i++ {
+		name := fmt.Sprintf("docs/guides/g%03d.md", i)
+		got := bodies[name]
+		require.Equal(t, c2[name], got[len(got)-1], name)
+		switch {
+		case i <= 50:
+			require.Equal(t, []string{fmt.Sprintf("%d.1", i), fmt.Sprintf("%d.2", i)}, got, name)
+		case i == 60:
+			require.Equal(t, []string{"60.1", "60"}, got, name)
+		default:
+			require.Len(t, got, 1, name)
+		}
+	}
+}
+
+// A first sync of 120 files cut off at 100, then the head moves (f001..f050
+// changed, f121 added) and the run against it is cut off at 50. Its diff was
+// against the c1 prefix (f001..f050 then f101..f121), so the retry emits the
+// 21 entries after the first 50 and no tombstones.
+func TestFetchStreamFreshRepositoryResumeAfterOverlayRun(t *testing.T) {
+	c2 := numberedDocs(121)
+	for i := 1; i <= 50; i++ {
+		c2[fmt.Sprintf("docs/f%03d.md", i)] = fmt.Sprintf("%d.2", i)
+	}
+	repo := fakeRepo{
+		commits: map[string]fakeCommit{"c1": {files: numberedDocs(120)}, "c2": {files: c2}},
+		refs:    map[string]string{"main": "c1"},
+	}
+	server := fakeGitHub(t, repo)
+	docs := []string{"docs"}
+
+	_, pending := interruptedStream(t, server, nil, 101, selection("o/r", "main", "docs"))
+	c1Pending := &pendingCursor{Head: "c1", Ref: "main", Paths: docs, Done: 100}
+	require.Equal(t, map[string]repositoryCursor{"o/r": {Pending: c1Pending}}, repositories(t, pending))
+
+	repo.refs["main"] = "c2"
+	second, pending := interruptedStream(t, server, pending, 51, selection("o/r", "main", "docs"))
+	var want []string
+	for i := 1; i <= 50; i++ {
+		want = append(want, fmt.Sprintf("+o/r:main:docs/f%03d.md=%d.2", i, i))
+	}
+	require.Equal(t, want, summary(server.base(), second.items))
+	require.Equal(t, map[string]repositoryCursor{"o/r": {Pending: &pendingCursor{
+		Head: "c2", Ref: "main", Paths: docs, Done: 50, Base: c1Pending,
+	}}}, repositories(t, pending))
+
+	resumed := &gitHubStreamRecorder{}
+	next, err := stream(t, server, pending, resumed, selection("o/r", "main", "docs"))
+	require.NoError(t, err)
+	want = nil
+	for i := 101; i <= 120; i++ {
+		want = append(want, fmt.Sprintf("+o/r:main:docs/f%03d.md=%d", i, i))
+	}
+	want = append(want, "+o/r:main:docs/f121.md=121")
+	require.Equal(t, want, summary(server.base(), resumed.items))
+	require.Equal(t, map[string]repositoryCursor{"o/r": {Head: "c2", Ref: "main", Paths: docs}}, repositories(t, next))
+}
+
 func TestFetchStreamHeadMovedAfterPendingCheckpointContinuesFromPendingPrefix(t *testing.T) {
 	c2 := numberedDocs(121)
 	c2["docs/f050.md"] = "changed"

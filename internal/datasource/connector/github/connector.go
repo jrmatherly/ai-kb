@@ -188,11 +188,20 @@ type repositoryCursor struct {
 // that prefix. Under the same ref it becomes the effective baseline, so the
 // new diff continues from what is already indexed; under another ref what the
 // new selection does not own is tombstoned before its own diff starts over.
+//
+// Done is an offset into the list the interrupted run computed, and a run that
+// resumed from an earlier pending computed its list against that pending's
+// prefix overlaid on the baseline, not against the baseline alone. Base keeps
+// that earlier pending so the same list can be rebuilt; it is nil when the run
+// diffed against the completed baseline. Rebuilding costs one tree fetch per
+// link. The chain grows by one link each time a run is interrupted and the
+// head then moves before the retry, and collapses when a run completes.
 type pendingCursor struct {
-	Head  string   `json:"head"`
-	Ref   string   `json:"ref"`
-	Paths []string `json:"paths"`
-	Done  int      `json:"done"`
+	Head  string         `json:"head"`
+	Ref   string         `json:"ref"`
+	Paths []string       `json:"paths"`
+	Done  int            `json:"done"`
+	Base  *pendingCursor `json:"base,omitempty"`
 }
 
 type cursor struct {
@@ -284,22 +293,29 @@ func (c *Connector) streamRepository(
 		return err
 	}
 	prevRef, start := rc.Ref, 0
+	var base *pendingCursor
 	if p := rc.Pending; p != nil {
 		switch {
 		case p.Head == head && p.Ref == ref && slices.Equal(p.Paths, selection.Paths):
-			start = p.Done
+			start, base = p.Done, p.Base
+			if p.Base != nil {
+				if prev, err = c.effectiveBaseline(ctx, key, rc, prev, p.Base); err != nil {
+					return err
+				}
+				prevRef = ref
+			}
 		case p.Ref == ref && (rc.Ref == ref || len(prev) == 0):
-			if prev, err = c.effectiveBaseline(ctx, key, rc, prev); err != nil {
+			if prev, err = c.effectiveBaseline(ctx, key, rc, prev, p); err != nil {
 				return err
 			}
-			prevRef = ref
+			prevRef, base = ref, p
 		default:
 			// The interrupted run's items are under p.Ref, which differs from
 			// ref or from the baseline's ref. One the new snapshot re-emits
 			// under the same ref must not be deleted first (the service would
 			// drop the row before re-adding it), and one the baseline holds
 			// under that ref is left to the new diff, which deletes it there.
-			pending, err := c.effectiveBaseline(ctx, key, rc, prev)
+			pending, err := c.effectiveBaseline(ctx, key, rc, prev, p)
 			if err != nil {
 				return err
 			}
@@ -334,7 +350,7 @@ func (c *Connector) streamRepository(
 			return err
 		}
 		if n := i + 1; n%checkpointEvery == 0 {
-			rc.Pending = &pendingCursor{Head: head, Ref: ref, Paths: selection.Paths, Done: n}
+			rc.Pending = &pendingCursor{Head: head, Ref: ref, Paths: selection.Paths, Done: n, Base: base}
 			next.Repositories[key] = rc
 			if err := h.Checkpoint(ctx, gitHubCursor(next, false)); err != nil {
 				return err
@@ -368,14 +384,23 @@ func (c *Connector) baseline(ctx context.Context, key string, rc repositoryCurso
 // The overlay starts empty when the completed cursor was under another ref or
 // had no head. When the pending head's tree is gone nothing is known about
 // what that run emitted, so the baseline is returned as it is.
+//
+// A pending with a Base was computed against that base's own effective
+// baseline, under the same ref, so the chain is rebuilt from the oldest link.
 func (c *Connector) effectiveBaseline(
-	ctx context.Context, key string, rc repositoryCursor, prev snapshot,
+	ctx context.Context, key string, rc repositoryCursor, prev snapshot, p *pendingCursor,
 ) (snapshot, error) {
-	p := rc.Pending
+	var err error
+	if p.Base != nil {
+		if prev, err = c.effectiveBaseline(ctx, key, rc, prev, p.Base); err != nil {
+			return nil, err
+		}
+	}
+	sameRef := p.Base != nil || rc.Ref == p.Ref
 	pendingSnap, err := c.snapshot(ctx, key, p.Head, p.Paths)
 	if errors.Is(err, errMissingCommit) {
 		logger.Infof(ctx, "[GitHub] %s: pending head %s is gone, nothing to reconcile", key, p.Head)
-		if rc.Ref == p.Ref {
+		if sameRef {
 			return prev, nil
 		}
 		return snapshot{}, nil
@@ -383,9 +408,9 @@ func (c *Connector) effectiveBaseline(
 	if err != nil {
 		return nil, err
 	}
-	emitted := diff(prev, pendingSnap, rc.Ref == p.Ref)
+	emitted := diff(prev, pendingSnap, sameRef)
 	overlay := snapshot{}
-	if rc.Ref == p.Ref {
+	if sameRef {
 		maps.Copy(overlay, prev)
 	}
 	for _, ch := range emitted[:min(p.Done, len(emitted))] {
