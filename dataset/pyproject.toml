@@ -6,5 +6,7 @@ requires-python = ">=3.11"
 dependencies = ["openai>=2", "pandas>=2.2", "pyarrow>=17"]
 
 [tool.uv]
-required-version = ">=0.13.0"
+# >=0.12.19 is the uv Dependabot runs (dependabot-core uv/Dockerfile); a higher floor stops its security PRs
+# for this project, while the image and CI install the newest uv the spec allows.
+required-version = ">=0.12.19"
 exclude-newer = "2 days"

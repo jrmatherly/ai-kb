@@ -7,8 +7,7 @@ cluster bundle) costs an hour; a dependency fix or a red main found after it cos
 Blocks (exit 1):
   - HEAD is not on origin, or a CI run on HEAD failed or has not finished: push, then wait.
   - An open Dependabot alert. guards.yml fails on one too, but an alert opened after HEAD's run
-    finished leaves that run green, so the gate asks again. Dependabot cannot write the uv
-    lockfiles (uv 0.13 required, Dependabot ships 0.12), so an alert there never arrives as a PR.
+    finished leaves that run green, so the gate asks again.
 Notes (printed, exit 0):
   - Upgrades `uv lock --upgrade` would take now in each uv project, past the release cooldown.
 
