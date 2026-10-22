@@ -11,7 +11,7 @@ A `bitbucket` data source connector that syncs document files from the directori
 - No `bitbucket` string anywhere in the repository. Unlike GitHub, there is no placeholder type constant or metadata entry to flip.
 - Three repository-file connectors share `internal/datasource/connector/repofile/` (`NormalizePath`, `CollapsePaths`, `InScope`, `IsSupported`, `KnowledgeRelativePath`). The GitHub connector is the structural model: stateless connector configured per call, `settings.repositories[]` of `{repository, ref, paths}`, a per-repository cursor with a pending checkpoint, `CompleteListing` on a nil-cursor run.
 - The Confluence connector (`connector/confluence/`) shares nothing usable. Its edition switch, `_links.next` pagination, page and space models, HTML to Markdown conversion and asset inlining are document-connector concerns; the only overlap with Bitbucket is one Basic-auth call. Reviewed 2026-10-22, file and line in the session notes; the premise that an "Atlassian helper" would serve both is refuted.
-- Upstream Tencent/WeKnora has no Bitbucket connector, so there is nothing to adopt and the package is our own work.
+- Upstream has no Bitbucket connector, so there is nothing to adopt and the package is our own work.
 
 ## Bitbucket Cloud API facts the design rests on
 
