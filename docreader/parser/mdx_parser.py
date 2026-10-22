@@ -10,6 +10,11 @@ import re
 
 from docreader.models.document import Document
 from docreader.parser.base_parser import BaseParser
+from docreader.parser.chain_parser import PipelineParser
+from docreader.parser.markdown_parser import (
+    MarkdownImageBase64,
+    MarkdownTableFormatter,
+)
 from docreader.utils import endecode
 
 _FENCE_OPEN = re.compile(r"^\s*(`{3,}|~{3,})")
@@ -284,3 +289,7 @@ class MdxPreprocessor(BaseParser):
 
     def parse_into_text(self, content: bytes) -> Document:
         return Document(content=mdx_to_markdown(endecode.decode_bytes(content)))
+
+
+class MdxParser(PipelineParser):
+    _parser_cls = (MdxPreprocessor, MarkdownTableFormatter, MarkdownImageBase64)

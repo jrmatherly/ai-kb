@@ -10,6 +10,7 @@ from docreader.parser.html_parser import HTMLParser
 from docreader.parser.image_parser import ImageParser
 from docreader.parser.markdown_parser import MarkdownParser
 from docreader.parser.markitdown_parser import MarkitdownParser
+from docreader.parser.mdx_parser import MdxParser
 from docreader.parser.mhtml_parser import MHTMLParser
 from docreader.parser.opendataloader_parser import (
     OpenDataLoaderParser,
@@ -164,6 +165,7 @@ def _build_default_registry() -> ParserEngineRegistry:
             "pdf": PDFParser,
             "md": MarkdownParser,
             "markdown": MarkdownParser,
+            "mdx": MdxParser,
             "xlsx": ExcelParser,
             "xls": ExcelParser,
             "xlsb": ExcelParser,

@@ -1,7 +1,7 @@
 import os
 import unittest
 
-from docreader.parser.mdx_parser import mdx_to_markdown
+from docreader.parser.mdx_parser import MdxParser, mdx_to_markdown
 
 FIXTURES = os.path.join(os.path.dirname(__file__), "fixtures", "mdx")
 
@@ -129,3 +129,11 @@ class MdxToMarkdownTest(unittest.TestCase):
         for src in cases:
             with self.subTest(src=src):
                 self.assertEqual(mdx_to_markdown(src), "# T\n\nHi\n")
+
+
+class MdxParserTest(unittest.TestCase):
+    def test_pipeline_runs_preprocessor_then_tables(self):
+        src = b"import X from 'y'\n\n|a|b|\n|-|-|\n|1|2|\n"
+        doc = MdxParser(file_name="t.mdx").parse_into_text(src)
+        self.assertNotIn("import", doc.content)
+        self.assertIn("| a | b |", doc.content)
