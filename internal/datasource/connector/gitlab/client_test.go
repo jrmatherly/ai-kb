@@ -308,7 +308,8 @@ func TestIsSupportedFile(t *testing.T) {
 		want bool
 	}{
 		{file: "docs/guide.MD", want: true},
-		{file: "docs/guide.mdx", want: true},
+		{file: "docs/guide.mdx", want: false},
+		{file: "notes/plan.xmind", want: true},
 		{file: "report.pdf", want: true},
 		{file: "src/main.go", want: false},
 		{file: "archive.tar.gz", want: false},

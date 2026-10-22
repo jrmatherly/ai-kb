@@ -30,7 +30,9 @@ func TestInScopeMatchesRootOrDescendant(t *testing.T) {
 	require.True(t, InScope("any/file.md", nil))
 }
 
-func TestIsSupportedIsCaseInsensitiveOnExtension(t *testing.T) {
+func TestIsSupportedFollowsTheSharedImportSet(t *testing.T) {
 	require.True(t, IsSupported("README.MD"))
+	require.True(t, IsSupported("notes/plan.xmind"), "every upload-importable extension syncs")
+	require.False(t, IsSupported("docs/guide.mdx"), "an extension the create gate rejects is never fetched")
 	require.False(t, IsSupported("main.go"))
 }

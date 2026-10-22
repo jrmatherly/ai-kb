@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/jrmatherly/ai-kb/internal/datasource"
+	"github.com/jrmatherly/ai-kb/internal/utils"
 )
 
 // NormalizePath trims a configured repository path and rejects traversal and
@@ -62,23 +63,11 @@ func InScope(file string, roots []string) bool {
 	return false
 }
 
-// IsSupported reports whether file has an extension the knowledge import
-// pipeline can process.
+// IsSupported reports whether file has an extension every knowledge import
+// path accepts (internal/utils/import_filetypes.go), so a repository sync never
+// fetches a blob the create gate would reject.
 func IsSupported(file string) bool {
-	_, ok := supportedExtensions[strings.ToLower(path.Ext(file))]
-	return ok
-}
-
-// supportedExtensions limits repository sync to formats the current knowledge
-// import pipeline can process. This is intentionally local to the git
-// connectors: repositories expose arbitrary blobs, unlike document-centric
-// sources.
-var supportedExtensions = map[string]struct{}{
-	".pdf": {}, ".txt": {}, ".docx": {}, ".doc": {}, ".epub": {},
-	".html": {}, ".htm": {}, ".mhtml": {}, ".md": {}, ".markdown": {}, ".mdx": {},
-	".png": {}, ".jpg": {}, ".jpeg": {}, ".gif": {},
-	".csv": {}, ".xlsx": {}, ".xls": {}, ".xlsb": {}, ".pptx": {}, ".ppt": {}, ".json": {},
-	".mp3": {}, ".wav": {}, ".m4a": {}, ".flac": {}, ".ogg": {},
+	return utils.IsSupportedImportExtension(path.Ext(file))
 }
 
 // KnowledgeRelativePath maps a repository file to the KB folder convention:
