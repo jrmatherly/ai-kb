@@ -17,7 +17,10 @@ dependencies = [
     "pandas>=3.0.6",
     "xlrd>=2.0.0",
     "pillow>=12.2.0",
-    "playwright>=1.55.0",
+    # <1.63: WebKit 1.63 and 1.64 follow a redirect by dialing the origin directly, skipping the SSRF proxy.
+    # Lift the cap when test_webkit_redirects_and_subresources_use_proxy (tests/test_ssrf_proxy.py)
+    # passes on a newer release; the cap also hides the upgrade from the release preflight notes.
+    "playwright>=1.55.0,<1.63",
     "protobuf>=6.33.5",
     "pydantic>=2.13.4",
     "pypdf>=6.19.0",
