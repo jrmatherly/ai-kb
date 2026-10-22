@@ -20,7 +20,7 @@ from docreader.utils import endecode
 _FENCE_OPEN = re.compile(r"^\s*(`{3,}|~{3,})")
 _FENCE_CLOSE = re.compile(r"^\s*(`{3,}|~{3,})\s*$")
 _ESM_START = re.compile(r"import\b|export ")
-_ADMONITION_OPEN = re.compile(r"^\s*:::(\w+)(?:\[(.*)\])?\s*$")
+_ADMONITION_OPEN = re.compile(r"^\s*:::(\w+)(?:\[(.*)\]|\s+(.+))?\s*$")
 _ADMONITION_CLOSE = re.compile(r"^\s*:::\s*$")
 _FRONTMATTER_FIELD = re.compile(r"^(\w+):(.*)$")
 _YAML_LINE = re.compile(r"""(\s|#|-\s|-$|[\w.-]+\s*:|"[^"]*"\s*:|'[^']*'\s*:)""")
@@ -97,7 +97,10 @@ def _render_tag(tag: str) -> list[str]:
     if head.group(2) in ("img", "Image"):
         src = attrs.get("src")
         return [f"![{attrs.get('alt', '')}]({src})"] if src else []
-    title = attrs.get("title") or attrs.get("label") or attrs.get("value")
+    title = next(
+        (attrs[k] for k in ("title", "label", "name", "path", "value") if attrs.get(k)),
+        None,
+    )
     if not title:
         return []
     detail = attrs.get("description") or attrs.get("alt")
@@ -124,6 +127,10 @@ def _scan_line(text: str, pos: int) -> tuple[list[tuple[str, bool]], int, bool] 
     eol = _line_end(text, pos)
     while pos < len(text) and text[pos] != "\n":
         c = text[pos]
+        if c == "\\" and text[pos + 1 : pos + 2] not in ("", "\n"):
+            buf.append(text[pos : pos + 2])
+            pos += 2
+            continue
         if c == "`" and (backticks := _BACKTICKS.match(text, pos)):
             run = backticks.group(0)
             close = text.find(run, pos + len(run), eol)
@@ -145,6 +152,9 @@ def _scan_line(text: str, pos: int) -> tuple[list[tuple[str, bool]], int, bool] 
             if pos > eol:
                 eol = _line_end(text, pos)
             changed = True
+            head = _TAG_HEAD.match(tag)
+            if head and (head.group(2) or "").lower() == "br":
+                buf.append(" ")
             generated = _render_tag(tag)
             if generated:
                 pieces.append(("".join(buf), False))
@@ -254,9 +264,8 @@ def mdx_to_markdown(text: str) -> str:
             continue
         elif m := _ADMONITION_OPEN.match(line):
             label = m.group(1).capitalize()
-            emit_generated(
-                f"**{label}: {m.group(2)}**" if m.group(2) else f"**{label}**"
-            )
+            heading = m.group(2) or (m.group(3) or "").strip()
+            emit_generated(f"**{label}: {heading}**" if heading else f"**{label}**")
             i += 1
             continue
         elif _ADMONITION_CLOSE.match(line):
