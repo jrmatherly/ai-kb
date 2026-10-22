@@ -14,38 +14,6 @@ permissions:
   contents: read
 
 jobs:
-  dependabot-alerts:
-    name: 🔎 No open Dependabot alert
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    # A fork's token has no security-events scope; the same check runs when the PR merges.
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
-    permissions:
-      contents: read
-      security-events: read
-    steps:
-      # The same check scripts/release-preflight.py runs before a bump, here on every push so an
-      # alert is red on main and not only on the release machine. Dependabot rescans a pushed
-      # manifest a minute or two after the push, so a commit that fixes an alert waits for that.
-      - name: 🔎 List open alerts
-        env:
-          GH_TOKEN: ${{ github.token }}
-          GH_REPO: ${{ github.repository }}
-        run: |
-          # The log is public: count only, the details are in the Security tab and in the
-          # local scripts/release-preflight.py output.
-          for attempt in 1 2 3 4 5 6 7 8 9; do
-            count=$(gh api 'repos/{owner}/{repo}/dependabot/alerts?state=open&per_page=100' --jq 'length')
-            [ "$count" = 0 ] && break
-            echo "$count open alert(s) after check $attempt; waiting for Dependabot to rescan"
-            sleep 20
-          done
-          if [ "$count" != 0 ]; then
-            echo "::error::$count open Dependabot alert(s): see the repository's Security tab"
-            exit 1
-          fi
-          echo "no open Dependabot alert"
-
   english-only:
     name: 🔎 English only
     runs-on: ubuntu-latest

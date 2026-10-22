@@ -11,7 +11,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changes
 
-- **ADDED**: `make bump-version` runs `scripts/release-preflight.py` first and refuses the bump while `HEAD` is not on `origin`, a CI run on it has failed or not finished, or a Dependabot alert is open; it also lists the upgrades uv would take in each uv project. `SKIP_PREFLIGHT=1` skips it. A release cycle was spent on 2026.10.22 before the pypdf alerts were noticed.
+- **ADDED**: `make bump-version` runs `scripts/release-preflight.py` first and refuses the bump while `HEAD` is not on `origin`, a CI run on it has failed or not finished, or a Dependabot alert is open; it also lists the upgrades uv would take in each uv project. `SKIP_PREFLIGHT=1` skips it. A release cycle was spent on 2026.10.22 before the pypdf alerts were noticed; the check runs on the release machine because the workflow token cannot read the alerts API.
 
 ## [2026.10.22] - 2026-10-22
 
