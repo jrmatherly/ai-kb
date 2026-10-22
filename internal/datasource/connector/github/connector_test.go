@@ -45,6 +45,8 @@ type fakeRepo struct {
 	aliases []string
 	// status makes every request for a repository key answer that status.
 	status map[string]int
+	// statusBody is the body written after a status answer for that key.
+	statusBody map[string]string
 	// truncateDirs makes the non-recursive listing of these directories answer
 	// truncated with its entries.
 	truncateDirs map[string]bool
@@ -161,6 +163,7 @@ func fakeGitHub(t *testing.T, repo fakeRepo) *fakeServer {
 		for key, status := range repo.status {
 			if p == "/repos/"+key || strings.HasPrefix(p, "/repos/"+key+"/") {
 				w.WriteHeader(status)
+				_, _ = w.Write([]byte(repo.statusBody[key]))
 				return
 			}
 		}
@@ -914,6 +917,26 @@ func TestFetchStreamRemovedRepositoryServerErrorKeepsItsEntry(t *testing.T) {
 	h := &gitHubStreamRecorder{}
 	next, err := stream(t, server, old, h, selection("o/r", "main", "docs"))
 	require.ErrorContains(t, err, "status 500")
+	require.Nil(t, next)
+	require.Empty(t, h.items)
+	require.Equal(t, gone, repositories(t, h.checkpoints[len(h.checkpoints)-1])["o/gone"])
+}
+
+// A header-less secondary rate limit on a removed repository is a throttle, not
+// lost access: the run stops and the cursor entry survives.
+func TestFetchStreamRemovedRepositorySecondaryRateLimitKeepsItsEntry(t *testing.T) {
+	server := fakeGitHub(t, fakeRepo{
+		commits:    map[string]fakeCommit{"c1": {files: map[string]string{"docs/a.md": "a"}}},
+		status:     map[string]int{"o/gone": http.StatusForbidden},
+		statusBody: map[string]string{"o/gone": secondaryLimitBody},
+	})
+	docs := []string{"docs"}
+	gone := repositoryCursor{Head: "c1", Ref: "main", Paths: docs}
+	old := oldCursor(map[string]repositoryCursor{"o/r": {Head: "c1", Ref: "main", Paths: docs}, "o/gone": gone})
+
+	h := &gitHubStreamRecorder{}
+	next, err := stream(t, server, old, h, selection("o/r", "main", "docs"))
+	require.ErrorIs(t, err, errRateLimited)
 	require.Nil(t, next)
 	require.Empty(t, h.items)
 	require.Equal(t, gone, repositories(t, h.checkpoints[len(h.checkpoints)-1])["o/gone"])

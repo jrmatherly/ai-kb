@@ -108,10 +108,14 @@ func TestAPIErrorMapsToSentinels(t *testing.T) {
 	}
 }
 
+const secondaryLimitBody = `{"message":"You have exceeded a secondary rate limit. ` +
+	`Please wait a few minutes before you try again.","documentation_url":"https://docs.github.com/rest"}`
+
 func TestRateLimitIsNotPermissionDenied(t *testing.T) {
 	for name, tc := range map[string]struct {
 		status int
 		hdr    http.Header
+		body   string
 		reset  string
 	}{
 		"primary 403": {
@@ -124,6 +128,12 @@ func TestRateLimitIsNotPermissionDenied(t *testing.T) {
 			hdr:    http.Header{"Retry-After": {"120"}, "X-Ratelimit-Remaining": {"4000"}},
 			reset:  "unknown",
 		},
+		"header-less secondary 403": {
+			status: http.StatusForbidden,
+			hdr:    http.Header{},
+			body:   secondaryLimitBody,
+			reset:  "unknown",
+		},
 		"429": {status: http.StatusTooManyRequests, hdr: http.Header{}, reset: "unknown"},
 	} {
 		t.Run(name, func(t *testing.T) {
@@ -132,6 +142,7 @@ func TestRateLimitIsNotPermissionDenied(t *testing.T) {
 					w.Header()[k] = v
 				}
 				w.WriteHeader(tc.status)
+				_, _ = w.Write([]byte(tc.body))
 			})
 			err := newTestClient(t, server).ping(context.Background())
 			require.ErrorIs(t, err, errRateLimited)
