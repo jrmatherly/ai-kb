@@ -48,3 +48,45 @@ test('sidebar drag bounds, collapse, button restore, and saved width stay consis
     else Reflect.deleteProperty(globalThis, 'localStorage')
   }
 })
+
+test('phone overlay keeps the docked preference and never persists', () => {
+  const originalStorage = Object.getOwnPropertyDescriptor(globalThis, 'localStorage')
+  const storage = new Map<string, string>()
+  Object.defineProperty(globalThis, 'localStorage', {
+    configurable: true,
+    value: {
+      getItem: (key: string) => storage.get(key) ?? null,
+      setItem: (key: string, value: string) => storage.set(key, value),
+    },
+  })
+  try {
+    setActivePinia(createPinia())
+    const ui = useUIStore()
+    ui.collapseSidebar()
+    ui.setSidebarOverlay(true)
+    assert.equal(ui.sidebarDisplayWidth, 0, 'overlay gives the content the full width')
+    assert.equal(ui.sidebarRail, false, 'overlay never shows the icon rail')
+
+    const savedBefore = storage.get('sidebar_collapsed')
+    ui.toggleSidebar()
+    assert.equal(ui.sidebarOverlayOpen, true)
+    assert.equal(ui.sidebarCollapsed, true, 'toggle in overlay leaves the docked preference')
+    assert.equal(storage.get('sidebar_collapsed'), savedBefore, 'toggle in overlay does not persist')
+    ui.collapseSidebar()
+    assert.equal(ui.sidebarOverlayOpen, false, 'collapse in overlay closes the drawer')
+    assert.equal(storage.get('sidebar_collapsed'), savedBefore, 'collapse in overlay does not persist')
+    ui.expandSidebar()
+    assert.equal(ui.sidebarOverlayOpen, true, 'expand in overlay opens the drawer, as the onboarding tour relies on')
+    assert.equal(storage.get('sidebar_collapsed'), savedBefore, 'expand in overlay does not persist')
+    ui.sidebarOverlayOpen = false
+
+    ui.toggleSidebar()
+    ui.setSidebarOverlay(false)
+    assert.equal(ui.sidebarOverlayOpen, false, 'leaving overlay closes the drawer')
+    assert.equal(ui.sidebarDisplayWidth, SIDEBAR_COLLAPSED_WIDTH)
+    assert.equal(ui.sidebarRail, true)
+  } finally {
+    if (originalStorage) Object.defineProperty(globalThis, 'localStorage', originalStorage)
+    else Reflect.deleteProperty(globalThis, 'localStorage')
+  }
+})

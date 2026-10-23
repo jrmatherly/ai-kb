@@ -345,6 +345,8 @@ export default {
     unpinFailed: 'Failed to unpin, please try again later',
     search: 'Search',
     collapseSidebar: 'Collapse Sidebar',
+    closeSidebar: 'Close Sidebar',
+    openSidebar: 'Open Sidebar',
     expandSidebar: 'Expand Sidebar',
     logoutSuccess: 'Logged out successfully',
     myChats: 'My chats',

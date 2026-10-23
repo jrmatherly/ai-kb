@@ -1,12 +1,12 @@
 <template>
-  <div class="user-menu" :class="{ 'user-menu--collapsed': uiStore.sidebarCollapsed }" ref="menuRef">
+  <div class="user-menu" :class="{ 'user-menu--collapsed': uiStore.sidebarRail }" ref="menuRef">
     <!-- User button -->
     <div class="user-button" data-guide="user-menu" @click="toggleMenu">
       <div class="user-avatar">
         <img v-if="userAvatar" :src="userAvatar" :alt="$t('common.avatar')" />
         <span v-else class="avatar-placeholder">{{ userInitial }}</span>
       </div>
-      <template v-if="!uiStore.sidebarCollapsed">
+      <template v-if="!uiStore.sidebarRail">
         <div class="user-info">
           <!-- Multiple spaces / superuser: space name on the first line, username · role on the second. Single space: nickname + email. -->
           <template v-if="showTenantIdentityLine">

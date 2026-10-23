@@ -1,6 +1,15 @@
 <template>
-    <div class="main" ref="dropzone" :style="{ '--sidebar-width': `${uiStore.sidebarDisplayWidth}px` }">
+    <div class="main" :class="{ 'main--overlay': uiStore.sidebarOverlay }" ref="dropzone" :style="{ '--sidebar-width': `${uiStore.sidebarDisplayWidth}px` }">
         <Menu></Menu>
+        <button v-if="uiStore.sidebarOverlay && !uiStore.sidebarOverlayOpen" class="sidebar-open-btn" type="button"
+            :aria-label="t('menu.openSidebar')" @click="uiStore.toggleSidebar">
+            <svg viewBox="0 0 16 16" width="16" height="16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <line x1="2" y1="4" x2="14" y2="4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+                <line x1="2" y1="8" x2="14" y2="8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+                <line x1="2" y1="12" x2="14" y2="12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+            </svg>
+        </button>
+        <div class="sidebar-backdrop" v-if="uiStore.sidebarOverlayOpen" @click="uiStore.sidebarOverlayOpen = false" />
         <div v-if="isRouterAlive" class="platform-route-outlet">
             <RouterView />
         </div>
@@ -44,6 +53,14 @@ const commandPaletteStore = useCommandPaletteStore();
 const uiStore = useUIStore();
 let ismask = ref(false)
 const { t } = useI18n();
+
+let sidebarOverlayQuery: MediaQueryList
+const handleSidebarOverlayChange = (e: MediaQueryListEvent) => uiStore.setSidebarOverlay(e.matches)
+const handleSidebarOverlayEscape = (e: KeyboardEvent) => {
+    if (e.key === 'Escape') uiStore.sidebarOverlayOpen = false
+}
+
+watch(() => route.fullPath, () => { uiStore.sidebarOverlayOpen = false })
 
 const isRouterAlive = ref(true)
 const reloadApp = () => {
@@ -196,6 +213,10 @@ const handleGlobalDrop = async (event: DragEvent) => {
 
 // Add global event listeners when the component mounts
 onMounted(() => {
+    sidebarOverlayQuery = window.matchMedia('(max-width: 767px)')
+    uiStore.setSidebarOverlay(sidebarOverlayQuery.matches)
+    sidebarOverlayQuery.addEventListener('change', handleSidebarOverlayChange)
+    window.addEventListener('keydown', handleSidebarOverlayEscape)
     document.addEventListener('dragenter', handleGlobalDragEnter, true);
     document.addEventListener('dragover', handleGlobalDragOver, true);
     document.addEventListener('dragleave', handleGlobalDragLeave, true);
@@ -231,6 +252,8 @@ function maybeOpenCmdkFromRoute() {
 
 // Remove global event listeners when the component unmounts
 onUnmounted(() => {
+    sidebarOverlayQuery.removeEventListener('change', handleSidebarOverlayChange)
+    window.removeEventListener('keydown', handleSidebarOverlayEscape)
     document.removeEventListener('dragenter', handleGlobalDragEnter, true);
     document.removeEventListener('dragover', handleGlobalDragOver, true);
     document.removeEventListener('dragleave', handleGlobalDragLeave, true);
@@ -257,6 +280,32 @@ onUnmounted(() => {
     background: var(--td-bg-color-container);
 }
 
+/* Below TDesign drawers (default z-index 1500), so an open drawer covers it */
+.sidebar-open-btn {
+    position: fixed;
+    top: 8px;
+    left: 8px;
+    z-index: 100;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    color: var(--td-text-color-primary);
+    background: var(--td-bg-color-container);
+    border: 1px solid var(--td-component-stroke);
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.sidebar-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 998;
+    background: rgba(0, 0, 0, 0.35);
+}
+
 /* Right-hand route area: fills the remaining width and the full column height, and passes min-height:0 to child pages for inner flex scrolling */
 .platform-route-outlet {
     flex: 1;
@@ -265,6 +314,11 @@ onUnmounted(() => {
     display: flex;
     flex-direction: column;
     overflow: hidden;
+}
+
+/* Keeps page headers clear of the fixed open button */
+.main--overlay .platform-route-outlet {
+    padding-top: 44px;
 }
 
 .upload-mask {
