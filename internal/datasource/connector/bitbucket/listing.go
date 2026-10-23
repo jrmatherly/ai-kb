@@ -139,8 +139,8 @@ func leadsToRoot(dir string, roots []string) bool {
 // offset valid across runs.
 //
 // Under the same ref the diffstat head..base (Bitbucket's new..old direction)
-// decides: its removed entries in the recorded scope that the new listing lacks
-// are tombstones, its added and modified entries present in the new listing are
+// decides: its entries whose old path is in the recorded scope and absent from
+// the new listing are tombstones, its added and modified entries present in it are
 // items, a root that left the selection tombstones its recorded listing and a
 // root that entered it emits its new listing. A first sync, a changed ref and a
 // gone recorded head are the degenerate cases with an empty intersection: every
@@ -216,10 +216,11 @@ func (c *Connector) changeList(
 					continue
 				}
 			}
-			// A removed file, or a modified one the new listing no longer
-			// offers (it gained the lfs or link attribute, or its extension
-			// stopped being importable), leaves the index.
-			if e.Old == nil || (e.Status != "removed" && e.Status != "modified") {
+			// Any old path the new listing no longer offers leaves the index,
+			// whatever the status: a removed file, one that gained the lfs or
+			// link attribute or stopped being importable, or a status Bitbucket
+			// adds later.
+			if e.Old == nil {
 				continue
 			}
 			p := e.Old.Path

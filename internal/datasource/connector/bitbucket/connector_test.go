@@ -48,6 +48,8 @@ type fakeRepo struct {
 	aliases []string
 	// status makes every request under a repository key answer that status.
 	status map[string]int
+	// diffstat is appended to every diffstat answer, for statuses the fake does not derive.
+	diffstat []any
 }
 
 func (r fakeRepo) commitOf(ref string) (string, bool) {
@@ -329,7 +331,7 @@ func (r fakeRepo) serveDiffstat(w http.ResponseWriter, req *http.Request, newHea
 			values = append(values, map[string]any{"status": "modified", "old": ref, "new": ref})
 		}
 	}
-	page(w, req, values)
+	page(w, req, append(values, r.diffstat...))
 }
 
 type streamRecorder struct {
@@ -639,6 +641,47 @@ func TestFetchStreamModifiedFileThatLeftTheListingIsTombstoned(t *testing.T) {
 	require.Equal(t, map[string]repositoryCursor{"ws/r": {Head: "c2", Ref: "main", Paths: docs}}, repositories(t, next))
 }
 
+func TestFetchStreamTypeChangedFileThatLeftTheListingIsTombstoned(t *testing.T) {
+	ref := map[string]string{"path": "docs/a.md"}
+	server := fakeBitbucket(t, fakeRepo{
+		commits: map[string]map[string]string{
+			"c1": {"docs/a.md": "a", "docs/b.md": "b"},
+			"c2": {"docs/a.md": "a", "docs/b.md": "b"},
+		},
+		attributes: map[string]map[string][]string{"c2": {"docs/a.md": {"link"}}},
+		refs:       map[string]string{"main": "c2"},
+		diffstat:   []any{map[string]any{"status": "type changed", "old": ref, "new": ref}},
+	})
+	old := oldCursor(map[string]repositoryCursor{"ws/r": {Head: "c1", Ref: "main", Paths: docs}})
+
+	h := &streamRecorder{}
+	next, err := stream(t, server, old, h, selection("ws/r", "main", "docs"))
+	require.NoError(t, err)
+	require.Equal(t, []string{"-ws/r:main:docs/a.md"}, summary(server.URL, h.items))
+	require.Empty(t, server.rawRequests())
+	require.Equal(t, map[string]repositoryCursor{"ws/r": {Head: "c2", Ref: "main", Paths: docs}}, repositories(t, next))
+}
+
+func TestFetchStreamUnreadableCursorEntryIsAFirstSync(t *testing.T) {
+	server := fakeBitbucket(t, fakeRepo{
+		commits: map[string]map[string]string{"c1": {"docs/a.md": "a", "docs/b.md": "b"}},
+		aliases: []string{"ws/other"},
+	})
+	kept := repositoryCursor{Head: "c1", Ref: "main", Paths: docs}
+	old := &types.SyncCursor{
+		ConnectorCursor: map[string]interface{}{"repositories": map[string]interface{}{
+			"ws/r": "c0", "ws/other": kept,
+		}},
+		Imports: &utils.ImportCapabilities{},
+	}
+
+	h := &streamRecorder{}
+	next, err := stream(t, server, old, h, selection("ws/r", "main", "docs"), selection("ws/other", "main", "docs"))
+	require.NoError(t, err)
+	require.Equal(t, []string{"+ws/r:main:docs/a.md=a", "+ws/r:main:docs/b.md=b"}, summary(server.URL, h.items))
+	require.Equal(t, map[string]repositoryCursor{"ws/r": kept, "ws/other": kept}, repositories(t, next))
+}
+
 func TestFetchStreamNarrowingAndWideningARoot(t *testing.T) {
 	files := map[string]string{"docs/a.md": "a", "docs/sub/b.md": "b"}
 	sub := []string{"docs/sub"}
@@ -679,7 +722,7 @@ func TestCursorRoundTripsThroughPersistedJSON(t *testing.T) {
 	var persisted map[string]interface{}
 	require.NoError(t, json.Unmarshal(raw, &persisted))
 
-	got := readCursor(&types.SyncCursor{ConnectorCursor: persisted})
+	got := readCursor(context.Background(), &types.SyncCursor{ConnectorCursor: persisted})
 	require.Equal(t, value.Repositories, got.Repositories)
 	require.Contains(t, persisted["raw"],
 		`"pending":{"head":"c2","ref":"release","paths":null,"done":7,"unknown":true}`)
@@ -766,6 +809,28 @@ func TestListingFallsBackToPerDirectoryWalkOnTimeout(t *testing.T) {
 			"/repositories/ws/r/src/c1/docs/d/d/d/d/d/d/d/d/d/d/?max_depth=10" + fields,
 		}, server.requestsMatching("max_depth="))
 		require.Empty(t, server.requestsMatching("/src/c1/src/"))
+	})
+	t.Run("walks a deep directory of the whole repository", func(t *testing.T) {
+		deepDir := strings.TrimSuffix(strings.Repeat("d/", fallbackListingDepth), "/")
+		server := fakeBitbucket(t, fakeRepo{
+			commits: map[string]map[string]string{"c1": {
+				"a.md": "a", deepDir + "/leaf.md": "x", "docs/sub/b.md": "b",
+			}},
+			timeout: map[string]bool{"c1": true},
+		})
+
+		h := &streamRecorder{}
+		_, err := stream(t, server, nil, h, selection("ws/r", "main"))
+		require.NoError(t, err)
+		require.Equal(t, []string{
+			"+ws/r:main:a.md=a", "+ws/r:main:" + deepDir + "/leaf.md=x", "+ws/r:main:docs/sub/b.md=b",
+		}, summary(server.URL, h.items))
+		require.Equal(t, []string{
+			"/repositories/ws/r/src/c1/?max_depth=50" + fields,
+			"/repositories/ws/r/src/c1/?max_depth=10" + fields,
+			"/repositories/ws/r/src/c1/" + deepDir + "/?max_depth=10" + fields,
+		}, server.requestsMatching("max_depth="))
+		require.Empty(t, server.requestsMatching("/src/c1/docs/?"))
 	})
 	t.Run("a directory timeout fails the sync", func(t *testing.T) {
 		deepDir := strings.TrimSuffix(strings.Repeat("d/", fallbackListingDepth), "/")
@@ -1220,6 +1285,41 @@ func TestRateLimitEndsTheRunAfterACheckpoint(t *testing.T) {
 	require.Equal(t, map[string]repositoryCursor{
 		"ws/r": {Pending: &pendingCursor{Head: "c1", Ref: "main", Paths: docs, Done: 50}},
 	}, repositories(t, h.checkpoints[len(h.checkpoints)-1]))
+}
+
+func TestRateLimitedDiffstatKeepsThePending(t *testing.T) {
+	inner := fakeBitbucket(t, fakeRepo{
+		commits: map[string]map[string]string{
+			"c1": {"docs/a.md": "a"}, "c2": {"docs/a.md": "a2", "docs/b.md": "b"},
+		},
+		refs:    map[string]string{"main": "c2"},
+		aliases: []string{"ws/other"},
+	})
+	limited := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if strings.HasPrefix(r.URL.Path, "/repositories/ws/r/diffstat/") {
+			w.Header().Set("x-ratelimit-reset", "3600")
+			w.WriteHeader(http.StatusTooManyRequests)
+			return
+		}
+		inner.Config.Handler.ServeHTTP(w, r)
+	}))
+	t.Cleanup(limited.Close)
+	server := &fakeServer{Server: limited}
+	pending := repositoryCursor{
+		Head: "c1", Ref: "main", Paths: docs,
+		Pending: &pendingCursor{Head: "c2", Ref: "main", Paths: docs, Done: 1},
+	}
+	unchanged := repositoryCursor{Head: "c2", Ref: "main", Paths: docs}
+	old := oldCursor(map[string]repositoryCursor{"ws/other": unchanged, "ws/r": pending})
+
+	h := &streamRecorder{}
+	next, err := stream(t, server, old, h, selection("ws/other", "main", "docs"), selection("ws/r", "main", "docs"))
+	require.ErrorIs(t, err, errRateLimited)
+	require.Nil(t, next)
+	require.Empty(t, h.items)
+	require.NotEmpty(t, h.checkpoints)
+	require.Equal(t, map[string]repositoryCursor{"ws/other": unchanged, "ws/r": pending},
+		repositories(t, h.checkpoints[len(h.checkpoints)-1]))
 }
 
 func TestEmptyFileSyncsItsPath(t *testing.T) {

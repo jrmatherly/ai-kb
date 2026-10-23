@@ -326,21 +326,28 @@ func (c *client) headCommit(ctx context.Context, key, ref string) (string, error
 		Target commitRef `json:"target"`
 	}
 	escaped := url.PathEscape(ref)
-	err := c.fetch(ctx, c.baseURL+repoPath(key)+"/refs/branches/"+escaped, &named)
+	endpoint := repoPath(key) + "/refs/branches/" + escaped
+	err := c.fetch(ctx, c.baseURL+endpoint, &named)
 	if errors.Is(err, datasource.ErrResourceNotFound) {
-		err = c.fetch(ctx, c.baseURL+repoPath(key)+"/refs/tags/"+escaped, &named)
+		endpoint = repoPath(key) + "/refs/tags/" + escaped
+		err = c.fetch(ctx, c.baseURL+endpoint, &named)
 	}
-	if err == nil {
-		return named.Target.Hash, nil
+	hash := named.Target.Hash
+	if err != nil {
+		if !errors.Is(err, datasource.ErrResourceNotFound) || !fullHash.MatchString(ref) {
+			return "", err
+		}
+		var commit commitRef
+		endpoint = repoPath(key) + "/commit/" + escaped
+		if err := c.fetch(ctx, c.baseURL+endpoint, &commit); err != nil {
+			return "", err
+		}
+		hash = commit.Hash
 	}
-	if !errors.Is(err, datasource.ErrResourceNotFound) || !fullHash.MatchString(ref) {
-		return "", err
+	if hash == "" {
+		return "", fmt.Errorf("bitbucket API %s: no commit hash in the response", endpoint)
 	}
-	var commit commitRef
-	if err := c.fetch(ctx, c.baseURL+repoPath(key)+"/commit/"+escaped, &commit); err != nil {
-		return "", err
-	}
-	return commit.Hash, nil
+	return hash, nil
 }
 
 func (c *client) commitExists(ctx context.Context, key, hash string) (bool, error) {

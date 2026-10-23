@@ -213,7 +213,7 @@ type cursor struct {
 
 // readCursor decodes the previous cursor. A repository value that is not an
 // object (an older cursor shape) counts as no previous head.
-func readCursor(old *types.SyncCursor) cursor {
+func readCursor(ctx context.Context, old *types.SyncCursor) cursor {
 	out := cursor{Repositories: map[string]repositoryCursor{}}
 	if old == nil {
 		return out
@@ -223,9 +223,11 @@ func readCursor(old *types.SyncCursor) cursor {
 	_ = json.Unmarshal(b, &raw)
 	for key, v := range raw {
 		var rc repositoryCursor
-		if json.Unmarshal(v, &rc) == nil {
-			out.Repositories[key] = rc
+		if err := json.Unmarshal(v, &rc); err != nil {
+			logger.Warnf(ctx, "[Bitbucket] %s: cursor entry is unreadable (%v), treating it as a first sync", key, err)
+			continue
 		}
+		out.Repositories[key] = rc
 	}
 	return out
 }
@@ -256,7 +258,7 @@ func (c *Connector) FetchStream(
 		return nil, err
 	}
 	complete := old == nil
-	next := readCursor(old)
+	next := readCursor(ctx, old)
 	// Pending.Done indexes a change list computed under the cursor's recorded
 	// capabilities; under another filter it points at the wrong entries.
 	if old != nil && old.RecordedImports() != c.imports {

@@ -278,6 +278,8 @@ func TestHeadCommitResolvesBranchThenTagThenHash(t *testing.T) {
 		switch r.URL.EscapedPath() {
 		case "/repositories/ws/repo/refs/branches/release%2F1.0":
 			_, _ = w.Write([]byte(`{"target":{"hash":"b1"}}`))
+		case "/repositories/ws/repo/refs/branches/empty":
+			_, _ = w.Write([]byte(`{"target":{}}`))
 		case "/repositories/ws/repo/refs/tags/v1":
 			_, _ = w.Write([]byte(`{"target":{"hash":"t1"}}`))
 		case "/repositories/ws/repo/commit/" + hash:
@@ -295,8 +297,11 @@ func TestHeadCommitResolvesBranchThenTagThenHash(t *testing.T) {
 		require.Equal(t, want, got, ref)
 	}
 
+	_, err := c.headCommit(ctx, "ws/repo", "empty")
+	require.ErrorContains(t, err, "no commit hash")
+
 	rec = recorder{}
-	_, err := c.headCommit(ctx, "ws/repo", "nope")
+	_, err = c.headCommit(ctx, "ws/repo", "nope")
 	require.ErrorIs(t, err, datasource.ErrResourceNotFound)
 	require.Equal(t, []string{
 		"/repositories/ws/repo/refs/branches/nope", "/repositories/ws/repo/refs/tags/nope",
