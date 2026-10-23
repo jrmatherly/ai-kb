@@ -87,6 +87,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { channelLabelKey } from '@/utils/channelLabel';
 import type { DocumentInfoData, DocumentInfoDocument } from '@/types/tool-results';
 
 const props = defineProps<{
@@ -101,28 +102,7 @@ const totalChunkCount = computed(() =>
   documents.value.reduce((sum, doc) => sum + (doc.chunk_count || 0), 0),
 );
 
-const channelLabelMap: Record<string, string> = {
-  web: 'knowledgeBase.channelWeb',
-  api: 'knowledgeBase.channelApi',
-  browser_extension: 'knowledgeBase.channelBrowserExtension',
-  wechat: 'knowledgeBase.channelWechat',
-  wecom: 'knowledgeBase.channelWecom',
-  feishu: 'knowledgeBase.channelFeishu',
-  gitlab: 'knowledgeBase.channelGitLab',
-  github: 'knowledgeBase.channelGitHub',
-  bitbucket: 'knowledgeBase.channelBitbucket',
-  seafile: 'knowledgeBase.channelSeafile',
-  confluence: 'knowledgeBase.channelConfluence',
-  dingtalk: 'knowledgeBase.channelDingtalk',
-  slack: 'knowledgeBase.channelSlack',
-  im: 'knowledgeBase.channelIm',
-  ima: 'knowledgeBase.channelIma',
-};
-
-const getChannelLabel = (channel: string) => {
-  const key = channelLabelMap[channel];
-  return key ? t(key) : t('knowledgeBase.channelUnknown');
-};
+const getChannelLabel = (channel: string) => t(channelLabelKey(channel));
 
 const formatSource = (doc: DocumentInfoDocument) => {
   if (doc.type && doc.source) {

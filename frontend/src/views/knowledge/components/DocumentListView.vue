@@ -2,6 +2,7 @@
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { formatFileSize } from '@/utils/files';
+import { CHANNEL_LABEL_KEYS, UPLOAD_CHANNELS } from '@/utils/channelLabel';
 import KnowledgeTagPopover from './KnowledgeTagPopover.vue';
 import DocumentFileIcon from './DocumentFileIcon.vue';
 import DocumentActionMenu from './DocumentActionMenu.vue';
@@ -94,24 +95,9 @@ const formatTime = (time?: string) => {
 
 const getSourceInfo = (item: KnowledgeItem): { icon: string; label: string } => {
   const ch = item.channel;
-  if (ch === 'feishu') return { icon: 'cloud-download', label: t('knowledgeBase.channelFeishu') };
-  // Drive (cloud drive) connectors use their own channel so Drive docs show
-  // "Feishu Drive" / "Lark Drive", distinct from the wiki connector's "Feishu".
-  if (ch === 'feishu_drive') return { icon: 'cloud-download', label: t('knowledgeBase.channelFeishuDrive') };
-  if (ch === 'lark_drive') return { icon: 'cloud-download', label: t('knowledgeBase.channelLarkDrive') };
-  if (ch === 'notion') return { icon: 'cloud-download', label: t('knowledgeBase.channelNotion') };
-  if (ch === 'yuque') return { icon: 'cloud-download', label: t('knowledgeBase.channelYuque') };
-  if (ch === 'confluence') return { icon: 'cloud-download', label: t('knowledgeBase.channelConfluence') };
-  if (ch === 'gitlab') return { icon: 'cloud-download', label: t('knowledgeBase.channelGitLab') };
-  if (ch === 'github') return { icon: 'cloud-download', label: t('knowledgeBase.channelGitHub') };
-  if (ch === 'bitbucket') return { icon: 'cloud-download', label: t('knowledgeBase.channelBitbucket') };
-  if (ch === 'seafile') return { icon: 'cloud-download', label: t('knowledgeBase.channelSeafile') };
-  if (ch === 'ima') return { icon: 'cloud-download', label: t('knowledgeBase.channelIma') };
-  if (ch === 'wechat') return { icon: 'cloud-download', label: t('knowledgeBase.channelWechat') };
-  if (ch === 'wecom') return { icon: 'cloud-download', label: t('knowledgeBase.channelWecom') };
-  if (ch === 'dingtalk') return { icon: 'cloud-download', label: t('knowledgeBase.channelDingtalk') };
-  if (ch === 'slack') return { icon: 'cloud-download', label: t('knowledgeBase.channelSlack') };
-  if (ch === 'im') return { icon: 'cloud-download', label: t('knowledgeBase.channelIm') };
+  if (ch && !UPLOAD_CHANNELS.has(ch) && Object.hasOwn(CHANNEL_LABEL_KEYS, ch)) {
+    return { icon: 'cloud-download', label: t(CHANNEL_LABEL_KEYS[ch]) };
+  }
   if (item.type === 'url') return { icon: 'link', label: t('knowledgeBase.channelUrl') };
   if (item.type === 'manual') return { icon: 'edit', label: t('knowledgeBase.channelManual') };
   return { icon: 'upload', label: t('knowledgeBase.channelUpload') };

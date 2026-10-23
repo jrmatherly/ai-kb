@@ -423,6 +423,7 @@ A per-item failure is a `types.FetchedItem` with no content and `error_reason_co
 
 - Add an entry to `connectorDefs` in `frontend/src/views/knowledge/settings/DataSourceEditorDialog.vue` with the type, doc links and one field per credential key (`labelKey`, `placeholder`, `secret: true` for secrets), and add the label keys to `en-US.ts`.
 - Add the icon under `frontend/src/assets/img/` and map the type to it in `frontend/src/views/knowledge/settings/datasourceIcons.ts`.
+- Add the connector's channel to `CHANNEL_LABEL_KEYS` in `frontend/src/utils/channelLabel.ts`, in the position the source filter should list it, with a `knowledgeBase.channel*` key in `en-US.ts`; `channelLabel.test.ts` fails while a `types.Channel*` constant, or a `types.ConnectorType*` constant that documents carry as their channel, has no label.
 
 ## Optional Interfaces
 

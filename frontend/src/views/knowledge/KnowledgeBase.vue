@@ -10,6 +10,7 @@ import KBSwitcherDropdown from '@/components/KBSwitcherDropdown.vue';
 import { useUIStore } from '@/stores/ui';
 import { useOrganizationStore } from '@/stores/organization';
 import { useAuthStore } from '@/stores/auth';
+import { channelLabelKey, sourceFilterChannels } from '@/utils/channelLabel';
 import { permissionCanEditKB, permissionCanManageKB } from '@/utils/kbPermission';
 import { useChatResourcesStore } from '@/stores/chatResources';
 import { useEditorResourcesStore } from '@/stores/editorResources';
@@ -684,21 +685,7 @@ const sourceOptions = computed(() => [
   { label: t('knowledgeBase.sourceManual'), value: 'manual' },
   { label: t('knowledgeBase.sourceApi'), value: 'api' },
   { label: t('knowledgeBase.sourceBrowserExtension'), value: 'browser_extension' },
-  { label: t('knowledgeBase.channelFeishu'), value: 'feishu' },
-  { label: t('knowledgeBase.channelFeishuDrive'), value: 'feishu_drive' },
-  { label: t('knowledgeBase.channelNotion'), value: 'notion' },
-  { label: t('knowledgeBase.channelYuque'), value: 'yuque' },
-  { label: t('knowledgeBase.channelConfluence'), value: 'confluence' },
-  { label: t('knowledgeBase.channelGitLab'), value: 'gitlab' },
-  { label: t('knowledgeBase.channelGitHub'), value: 'github' },
-  { label: t('knowledgeBase.channelBitbucket'), value: 'bitbucket' },
-  { label: t('knowledgeBase.channelSeafile'), value: 'seafile' },
-  { label: t('knowledgeBase.channelIma'), value: 'ima' },
-  { label: t('knowledgeBase.channelWechat'), value: 'wechat' },
-  { label: t('knowledgeBase.channelWecom'), value: 'wecom' },
-  { label: t('knowledgeBase.channelDingtalk'), value: 'dingtalk' },
-  { label: t('knowledgeBase.channelSlack'), value: 'slack' },
-  { label: t('knowledgeBase.channelIm'), value: 'im' },
+  ...sourceFilterChannels().map((value) => ({ label: t(channelLabelKey(value)), value })),
 ]);
 // Date range as [start, end] in "YYYY-MM-DD" form (t-date-range-picker default).
 const updatedTimeRange = ref<string[]>([]);

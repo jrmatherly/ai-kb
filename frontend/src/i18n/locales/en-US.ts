@@ -803,6 +803,7 @@ export default {
     channelGitHub: 'GitHub',
     channelBitbucket: 'Bitbucket',
     channelSeafile: 'Seafile',
+    channelRss: 'RSS',
     channelIma: 'Tencent IMA',
     channelUpload: 'Upload',
     channelManual: 'Manual',

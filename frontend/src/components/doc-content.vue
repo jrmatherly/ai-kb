@@ -20,6 +20,7 @@ import { ensureLiteralSingleTildeOnGlobalMarked } from '@/utils/markedLiteralTil
 import { openMermaidFullscreen } from '@/utils/mermaidViewer';
 import { diffWikiLines, type WikiDiffLine } from '@/utils/wikiLineDiff';
 import { useI18n } from 'vue-i18n';
+import { channelLabelKey } from '@/utils/channelLabel';
 import { useAuthStore } from '@/stores/auth';
 import DocumentPreview from '@/components/document-preview.vue';
 import DocumentFileIcon from '@/views/knowledge/components/DocumentFileIcon.vue';
@@ -978,32 +979,7 @@ const getDisplayTitle = () => {
   return props.details.title;
 };
 
-const channelLabelMap: Record<string, string> = {
-  web: 'knowledgeBase.channelWeb',
-  api: 'knowledgeBase.channelApi',
-  browser_extension: 'knowledgeBase.channelBrowserExtension',
-  wechat: 'knowledgeBase.channelWechat',
-  wecom: 'knowledgeBase.channelWecom',
-  feishu: 'knowledgeBase.channelFeishu',
-  gitlab: 'knowledgeBase.channelGitLab',
-  github: 'knowledgeBase.channelGitHub',
-  bitbucket: 'knowledgeBase.channelBitbucket',
-  seafile: 'knowledgeBase.channelSeafile',
-  confluence: 'knowledgeBase.channelConfluence',
-  // Drive connectors get their own channel so Drive docs show
-  // "Feishu Drive" / "Lark Drive", distinct from the wiki connector's "Feishu".
-  feishu_drive: 'knowledgeBase.channelFeishuDrive',
-  lark_drive: 'knowledgeBase.channelLarkDrive',
-  dingtalk: 'knowledgeBase.channelDingtalk',
-  slack: 'knowledgeBase.channelSlack',
-  im: 'knowledgeBase.channelIm',
-  ima: 'knowledgeBase.channelIma',
-};
-
-const getChannelLabel = (channel: string) => {
-  const key = channelLabelMap[channel];
-  return key ? t(key) : t('knowledgeBase.channelUnknown');
-};
+const getChannelLabel = (channel: string) => t(channelLabelKey(channel));
 
 // Get the type label
 const getTypeLabel = () => {

@@ -2,6 +2,7 @@
 import { ref, computed, nextTick, onBeforeUnmount, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { formatFileSize } from '@/utils/files';
+import { channelLabelKey } from '@/utils/channelLabel';
 import { formatReferenceSnippet } from '@/utils/referenceSources';
 import KnowledgeTagPopover from './KnowledgeTagPopover.vue';
 import DocumentFileIcon from './DocumentFileIcon.vue';
@@ -146,28 +147,7 @@ const getKnowledgeType = (item: KnowledgeCard) => {
   return '--';
 };
 
-const channelLabelMap: Record<string, string> = {
-  web: 'knowledgeBase.channelWeb',
-  api: 'knowledgeBase.channelApi',
-  browser_extension: 'knowledgeBase.channelBrowserExtension',
-  wechat: 'knowledgeBase.channelWechat',
-  wecom: 'knowledgeBase.channelWecom',
-  feishu: 'knowledgeBase.channelFeishu',
-  gitlab: 'knowledgeBase.channelGitLab',
-  github: 'knowledgeBase.channelGitHub',
-  bitbucket: 'knowledgeBase.channelBitbucket',
-  seafile: 'knowledgeBase.channelSeafile',
-  confluence: 'knowledgeBase.channelConfluence',
-  dingtalk: 'knowledgeBase.channelDingtalk',
-  slack: 'knowledgeBase.channelSlack',
-  im: 'knowledgeBase.channelIm',
-  ima: 'knowledgeBase.channelIma',
-};
-
-const getChannelLabel = (channel: string) => {
-  const key = channelLabelMap[channel];
-  return key ? t(key) : t('knowledgeBase.channelUnknown');
-};
+const getChannelLabel = (channel: string) => t(channelLabelKey(channel));
 
 // --- Card click handler ---
 const onCardClick = (item: KnowledgeCard) => {

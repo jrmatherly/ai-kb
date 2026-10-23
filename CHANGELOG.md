@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Bug Fixes
+
+- **FIXED**: Documents synced from Notion, Yuque, Feishu Drive and Lark Drive show their source in the card hover, the document detail drawer and the chat document panel instead of "Unknown"; RSS documents are labelled "RSS" everywhere; Lark Drive and RSS appear in the knowledge base source filter. Every view now reads one channel table, which a test holds to the backend's channel constants.
+
 ### Changes
 
 - **NEW**: **Bitbucket data source**: sync document files from the directories of Bitbucket Cloud repositories with an API token (plus the Atlassian account email) or a workspace, project or repository access token. Incremental sync asks Bitbucket for the files changed between two commits, so a force-push is handled; progress resumes after the hourly rate limit; files over 100 MB are reported per item, and Git LFS files are not imported. Offered by default next to Notion, Confluence and GitHub: `bitbucket` joins the `AIKB_DATASOURCE_TYPES` default, so a deployment that sets the variable must list it to keep it.
