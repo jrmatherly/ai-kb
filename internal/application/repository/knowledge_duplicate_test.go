@@ -92,6 +92,10 @@ func TestCheckKnowledgeExists_FileSourceIdentity(t *testing.T) {
 			"github item of another source", "ds-3", "github:https://api.github.com:o/r:main:README.md",
 			"same-hash", "md", false,
 		},
+		{
+			"bitbucket item of another source", "ds-4", "bitbucket:https://api.bitbucket.org/2.0:ws/r:main:README.md",
+			"same-hash", "md", false,
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			exists, _, err := repo.CheckKnowledgeExists(context.Background(), 1, "kb-1", &types.KnowledgeCheckParams{

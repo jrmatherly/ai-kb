@@ -300,6 +300,14 @@ var ConnectorMetadataRegistry = map[string]ConnectorMetadata{
 		AuthType:     "token",
 		Capabilities: []string{"incremental", "hierarchical", "deletion_sync", CapabilityFullSyncReconcile},
 	},
+	types.ConnectorTypeBitbucket: {
+		Type:         types.ConnectorTypeBitbucket,
+		Name:         "Bitbucket",
+		Description:  "Sync files from Bitbucket Cloud repositories",
+		Priority:     4,
+		AuthType:     "token",
+		Capabilities: []string{"incremental", "hierarchical", "deletion_sync", CapabilityFullSyncReconcile},
+	},
 	types.ConnectorTypeGoogleDrive: {
 		Type:         types.ConnectorTypeGoogleDrive,
 		Name:         "Google Drive",
@@ -404,7 +412,7 @@ const AllConnectorTypes = "all"
 
 // DefaultConnectorTypes are the types offered when ConnectorTypesEnv is unset or blank.
 var DefaultConnectorTypes = []string{
-	types.ConnectorTypeNotion, types.ConnectorTypeConfluence, types.ConnectorTypeGitHub,
+	types.ConnectorTypeNotion, types.ConnectorTypeConfluence, types.ConnectorTypeGitHub, types.ConnectorTypeBitbucket,
 }
 
 var unknownConnectorTypeWarning sync.Once

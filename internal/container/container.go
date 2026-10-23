@@ -58,6 +58,7 @@ import (
 	"github.com/jrmatherly/ai-kb/internal/config"
 	"github.com/jrmatherly/ai-kb/internal/database"
 	"github.com/jrmatherly/ai-kb/internal/datasource"
+	bitbucketConnector "github.com/jrmatherly/ai-kb/internal/datasource/connector/bitbucket"
 	confluenceConnector "github.com/jrmatherly/ai-kb/internal/datasource/connector/confluence"
 	dingtalkConnector "github.com/jrmatherly/ai-kb/internal/datasource/connector/dingtalk"
 	"github.com/jrmatherly/ai-kb/internal/datasource/connector/feishu/core"
@@ -1901,6 +1902,9 @@ func initConnectorRegistry() (*datasource.ConnectorRegistry, error) {
 	}
 	if err := registry.Register(githubConnector.NewConnector()); err != nil {
 		errs = errors.Join(errs, fmt.Errorf("register github connector: %w", err))
+	}
+	if err := registry.Register(bitbucketConnector.NewConnector()); err != nil {
+		errs = errors.Join(errs, fmt.Errorf("register bitbucket connector: %w", err))
 	}
 	if err := registry.Register(seafileConnector.NewConnector()); err != nil {
 		errs = errors.Join(errs, fmt.Errorf("register seafile connector: %w", err))

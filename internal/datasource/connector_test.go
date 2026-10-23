@@ -8,22 +8,25 @@ import (
 )
 
 // The connectors that set types.SyncCursor.CompleteListing, and only they,
-// declare CapabilityFullSyncReconcile; all but Seafile and GitHub record the
-// selected resource an item was listed under. GitHub keeps its selection in
-// settings.repositories, not in the resource IDs the deselection count reads.
+// declare CapabilityFullSyncReconcile; all but Seafile, GitHub and Bitbucket
+// record the selected resource an item was listed under. GitHub and Bitbucket
+// keep their selection in settings.repositories, not in the resource IDs the
+// deselection count reads.
 func TestReconcileCapabilitiesMatchConnectors(t *testing.T) {
 	reconciles := map[string]bool{
 		types.ConnectorTypeFeishu: true, types.ConnectorTypeLark: true,
 		types.ConnectorTypeFeishuDrive: true, types.ConnectorTypeLarkDrive: true,
 		types.ConnectorTypeConfluence: true, types.ConnectorTypeSeafile: true,
 		types.ConnectorTypeDingTalk: true, types.ConnectorTypeGitHub: true,
+		types.ConnectorTypeBitbucket: true,
 	}
 	for connectorType := range ConnectorMetadataRegistry {
 		if got := HasCapability(connectorType, CapabilityFullSyncReconcile); got != reconciles[connectorType] {
 			t.Errorf("full_sync_reconcile(%q) = %v, want %v", connectorType, got, reconciles[connectorType])
 		}
 		tracks := reconciles[connectorType] &&
-			connectorType != types.ConnectorTypeSeafile && connectorType != types.ConnectorTypeGitHub
+			connectorType != types.ConnectorTypeSeafile && connectorType != types.ConnectorTypeGitHub &&
+			connectorType != types.ConnectorTypeBitbucket
 		if got := HasCapability(connectorType, CapabilitySelectionTracksSource); got != tracks {
 			t.Errorf("selection_tracks_source(%q) = %v, want %v", connectorType, got, tracks)
 		}
@@ -59,8 +62,8 @@ func TestListAvailableConnectorsMarksAllowList(t *testing.T) {
 		return got
 	}
 	t.Setenv(ConnectorTypesEnv, "")
-	if got := enabled(); !slices.Equal(got, []string{"notion", "confluence", "github"}) {
-		t.Fatalf("blank allow-list enabled %v, want [notion confluence github]", got)
+	if got := enabled(); !slices.Equal(got, []string{"notion", "confluence", "bitbucket", "github"}) {
+		t.Fatalf("blank allow-list enabled %v, want [notion confluence bitbucket github]", got)
 	}
 	t.Setenv(ConnectorTypesEnv, " ALL ")
 	if got := len(enabled()); got != len(ConnectorMetadataRegistry) {
@@ -81,9 +84,9 @@ func TestConnectorTypeEnabled(t *testing.T) {
 	for _, value := range []string{"", "  "} {
 		t.Setenv(ConnectorTypesEnv, value)
 		if !ConnectorTypeEnabled(types.ConnectorTypeNotion) || !ConnectorTypeEnabled(types.ConnectorTypeConfluence) ||
-			!ConnectorTypeEnabled(types.ConnectorTypeGitHub) ||
+			!ConnectorTypeEnabled(types.ConnectorTypeGitHub) || !ConnectorTypeEnabled(types.ConnectorTypeBitbucket) ||
 			ConnectorTypeEnabled(types.ConnectorTypeFeishu) || ConnectorTypeEnabled("fake") {
-			t.Fatalf("allow-list %q must admit only notion, confluence and github", value)
+			t.Fatalf("allow-list %q must admit only notion, confluence, github and bitbucket", value)
 		}
 	}
 	for _, value := range []string{"all", " All "} {
