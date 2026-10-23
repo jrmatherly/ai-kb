@@ -225,6 +225,12 @@ test('the GitHub and GitLab form label groups have the same members', () => {
   assert.deepEqual(Object.keys(en.datasource.github).sort(), [...Object.keys(en.datasource.gitlab), "baseUrlHint"].sort())
 })
 
+test('the Bitbucket form label group matches GitLab plus its own credential keys', () => {
+  const en = LOCALE_BUNDLES["en-US"] as any
+  const gitlab = Object.keys(en.datasource.gitlab).filter(key => key !== 'baseUrl')
+  assert.deepEqual(Object.keys(en.datasource.bitbucket).sort(), [...gitlab, 'username', 'usernameHint', 'accessTokenHint'].sort())
+})
+
 test('DingTalk configuration texts are localized', () => {
   const keys = [
     'connector.dingtalk', 'connectorDesc.dingtalk',

@@ -801,6 +801,7 @@ export default {
     channelYuque: 'Yuque',
     channelGitLab: 'GitLab',
     channelGitHub: 'GitHub',
+    channelBitbucket: 'Bitbucket',
     channelSeafile: 'Seafile',
     channelIma: 'Tencent IMA',
     channelUpload: 'Upload',
@@ -6779,6 +6780,18 @@ export default {
       paths: 'Directories', pathsPlaceholder: 'One directory per line; leave empty to sync the whole repository',
       addProject: 'Add repository', projectRequired: 'Add at least one GitHub repository',
     },
+    bitbucket: {
+      username: 'Atlassian account email',
+      usernameHint: 'Fill in the email for an API token; leave empty for a workspace, project or repository access token.',
+      accessToken: 'API token or access token',
+      accessTokenHint: 'An API token needs the read:repository:bitbucket scope, plus read:workspace:bitbucket to browse repositories.',
+      projects: 'Bitbucket repositories',
+      projectsHint: 'Enter a repository as workspace/repository, with optional branch and directories.',
+      project: 'Repository', projectId: 'Repository', projectIdPlaceholder: 'For example: workspace/repository',
+      ref: 'Branch', refPlaceholder: 'Leave empty to use the main branch',
+      paths: 'Directories', pathsPlaceholder: 'One directory per line; leave empty to sync the whole repository',
+      addProject: 'Add repository', projectRequired: 'Add at least one Bitbucket repository',
+    },
     seafile: {
       baseUrl: 'Seafile URL', apiToken: 'API token',
       apiTokenHint: 'Generate it under "Settings → Web API token" in Seafile; the account only needs read access to the libraries you select, and the token is never sent with file downloads.',
@@ -6866,6 +6879,7 @@ export default {
       ima: 'Tencent IMA',
       gitlab: 'GitLab',
       github: 'GitHub',
+      bitbucket: 'Bitbucket',
       seafile: 'Seafile'
     },
     connectorDesc: {
@@ -6881,6 +6895,7 @@ export default {
       ima: 'Sync documents, notes and files from Tencent IMA knowledge bases (AI sessions and video parses are not supported)',
       gitlab: 'Sync files from GitLab projects',
       github: 'Sync files from GitHub repositories',
+      bitbucket: 'Sync files from Bitbucket Cloud repositories',
       seafile: 'Sync folders and files from Seafile libraries'
     },
     drive: {
@@ -7046,6 +7061,8 @@ export default {
       seafile_ssrf_blocked: 'The Seafile download URL was blocked by the SSRF policy; add the fileserver host to SSRF_WHITELIST.',
       seafile_fetch_failed: 'Failed to fetch the file from Seafile; the next sync retries it.',
       github_file_too_large: 'The GitHub file exceeds the 100 MB API limit; GitHub does not serve larger blobs.',
+      bitbucket_file_too_large: 'The Bitbucket file exceeds the 100 MB import cap.',
+      bitbucket_lfs_unsupported: 'The Bitbucket file is stored in Git LFS; AI KB imports repository files only.',
       deletion_guard_tripped: 'Deletions held back: {count} item(s), {percent}% of the {owned} this data source owns ({deselected} from resources removed from the selection). If this is expected, use "Sync and apply deletions".',
       reconcile_listing_empty: 'Deletions held back: the source listed nothing while this data source owns {owned} item(s), which usually means lost access. If the source really is empty, use "Sync and apply deletions".',
       reconcile_listing_incomplete: 'Deletions were not reconciled: the connector could not confirm a complete listing (a resumed or partial run). Deletions the connector reports itself still apply.'

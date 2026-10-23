@@ -1,5 +1,6 @@
 import feishuIcon from '@/assets/img/datasource-feishu.ico'
 import githubIcon from '@/assets/img/datasource-github.svg'
+import bitbucketIcon from '@/assets/img/datasource-bitbucket.svg'
 import gitlabIcon from '@/assets/img/datasource-gitlab.png'
 import larkIcon from '@/assets/img/datasource-lark.svg'
 import notionIcon from '@/assets/img/datasource-notion.ico'
@@ -23,6 +24,7 @@ export const datasourceIconMap: Record<string, string> = {
   confluence: confluenceIcon,
   gitlab: gitlabIcon,
   github: githubIcon,
+  bitbucket: bitbucketIcon,
   ima: imaIcon,
   seafile: seafileIcon,
 }

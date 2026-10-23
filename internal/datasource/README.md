@@ -4,7 +4,7 @@
 
 The data source sync framework enables AI KB to automatically import and synchronize content from external platforms (Feishu, Notion, Confluence, etc.) into knowledge bases. This is the foundational layer upon which all specific connectors are built.
 
-Implemented connectors, registered in `initConnectorRegistry()` (`internal/container/container.go`): Feishu, Lark, Feishu Drive, Lark Drive, Notion, Confluence, Yuque, DingTalk, IMA, RSS, GitHub, GitLab and Seafile. Google Drive, OneDrive, Web Crawler, Slack and IMAP have metadata entries in `connector.go` only, so `GET /api/v1/datasource/types` lists them but they cannot sync yet.
+Implemented connectors, registered in `initConnectorRegistry()` (`internal/container/container.go`): Feishu, Lark, Feishu Drive, Lark Drive, Notion, Confluence, Yuque, DingTalk, IMA, RSS, GitHub, Bitbucket, GitLab and Seafile. Google Drive, OneDrive, Web Crawler, Slack and IMAP have metadata entries in `connector.go` only, so `GET /api/v1/datasource/types` lists them but they cannot sync yet.
 
 ## Architecture
 

@@ -20,6 +20,7 @@ import SettingDrawer from '@/components/settings/SettingDrawer.vue'
 import DataSourceTypeIcon from './DataSourceTypeIcon.vue'
 import { getDatasourceIconUrl } from './datasourceIcons'
 import { fetchConnectorTypes } from './connectorTypes'
+import { GIT_CONNECTOR_KEYS, isGitConnector, type GitConnectorType } from './gitConnectorKeys'
 
 const props = defineProps<{
   kbId: string
@@ -266,7 +267,6 @@ const driveFolderToken = ref('')
 const driveFolderTokenError = ref('')
 const driveRootLoaded = ref(false)
 const isDriveConnector = (type: string) => type === 'feishu_drive' || type === 'lark_drive'
-const isGitConnector = (type: string) => type === 'gitlab' || type === 'github'
 // Seafile resource IDs are "<repo_id>:<path>"; one data source syncs one
 // library, so the picker refuses a selection that spans two libraries.
 const isSeafileConnector = (type: string) => type === 'seafile'
@@ -280,12 +280,13 @@ function seafileWithin(id: string, parent: string): boolean {
     (parentPath === '/' || path === parentPath || path.startsWith(parentPath + '/'))
 }
 
-// GitLab and GitHub share one row form; only the settings keys and labels differ.
+// The git connectors share one row form; only the settings keys and labels differ.
 interface GitProjectInput { project_id: string; ref: string; pathsText: string }
 const gitProjects = ref<GitProjectInput[]>([])
-const gitSettingsKey = computed(() => form.value.type === 'github' ? 'repositories' : 'projects')
-const gitItemKey = computed(() => form.value.type === 'github' ? 'repository' : 'project_id')
-const gitLabelsKey = computed(() => form.value.type === 'github' ? 'datasource.github' : 'datasource.gitlab')
+const gitKeys = computed(() => GIT_CONNECTOR_KEYS[form.value.type as GitConnectorType])
+const gitSettingsKey = computed(() => gitKeys.value?.settings)
+const gitItemKey = computed(() => gitKeys.value?.item)
+const gitLabelsKey = computed(() => gitKeys.value?.labels)
 function syncGitProjectsToSettings() {
   if (!isGitConnector(form.value.type)) return
   form.value.config.settings[gitSettingsKey.value] = gitProjects.value
@@ -752,6 +753,15 @@ const connectorDefs = computed<ConnectorDef[]>(() => [
     fields: [
       { key: 'base_url', labelKey: 'datasource.github.baseUrl', placeholder: 'https://api.github.com', optional: true, hintKey: 'datasource.github.baseUrlHint' },
       { key: 'access_token', labelKey: 'datasource.github.accessToken', placeholder: '', secret: true },
+    ],
+  },
+  {
+    type: 'bitbucket', available: true,
+    docUrl: 'https://support.atlassian.com/bitbucket-cloud/docs/api-tokens/',
+    permissionDocUrl: '', permissionPageUrl: '', requiredPermissions: [],
+    fields: [
+      { key: 'username', labelKey: 'datasource.bitbucket.username', placeholder: 'you@example.com', optional: true, hintKey: 'datasource.bitbucket.usernameHint' },
+      { key: 'access_token', labelKey: 'datasource.bitbucket.accessToken', placeholder: '', secret: true, hintKey: 'datasource.bitbucket.accessTokenHint' },
     ],
   },
   {

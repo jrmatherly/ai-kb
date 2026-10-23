@@ -306,11 +306,11 @@ External content connectors (Feishu, Notion, Yuque and others) whose sync jobs w
 
 Errors from the connected service (validating a connection or credentials, listing resources, resolving ancestors) keep the connector's cause in the message: 400 when it rejects the configuration or credentials, denies access or cannot find a selected resource, 502 (code 1011) when it fails or cannot be reached. `details.code` classifies the cause as `permission_denied`, `auth_failed`, `not_found`, `invalid_config` or `upstream_error`. A database or queue failure returns the generic 500.
 
-13 connector types are registered: feishu, lark, feishu_drive, lark_drive, notion, confluence, yuque, dingtalk, ima, rss, gitlab, github and seafile. The credentials, resource selection and sync limits of each connector are in [Data sources](../03-features/10-datasource.md). With `sync_deletions` on, knowledge items that belong to the data source and were deleted at the source are really deleted; `source_created_at` and `source_updated_at` are stored in the knowledge item metadata.
+14 connector types are registered: feishu, lark, feishu_drive, lark_drive, notion, confluence, yuque, dingtalk, ima, rss, gitlab, github, bitbucket and seafile. The credentials, resource selection and sync limits of each connector are in [Data sources](../03-features/10-datasource.md). With `sync_deletions` on, knowledge items that belong to the data source and were deleted at the source are really deleted; `source_created_at` and `source_updated_at` are stored in the knowledge item metadata.
 
 ### GET /api/v1/datasource/types
 
-Purpose: the whole connector catalog, sorted by `priority`. `enabled` is false for a type `AIKB_DATASOURCE_TYPES` excludes (unset enables Notion, Confluence and GitHub only, `all` enables every type); excluded types stay listed so the capabilities of saved sources of that type remain known. `POST /datasource` answers 400 for an excluded type; existing sources of that type keep syncing, can be edited and can have their credentials replaced. Permission: Viewer+.
+Purpose: the whole connector catalog, sorted by `priority`. `enabled` is false for a type `AIKB_DATASOURCE_TYPES` excludes (unset enables Notion, Confluence, GitHub and Bitbucket only, `all` enables every type); excluded types stay listed so the capabilities of saved sources of that type remain known. `POST /datasource` answers 400 for an excluded type; existing sources of that type keep syncing, can be edited and can have their credentials replaced. Permission: Viewer+.
 
 Response: 200 `[{type,name,description,icon,priority,auth_type,capabilities,enabled}]`
 
