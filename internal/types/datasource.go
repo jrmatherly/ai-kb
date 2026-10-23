@@ -30,6 +30,7 @@ const (
 	ConnectorTypeConfluence  = "confluence"
 	ConnectorTypeYuque       = "yuque"
 	ConnectorTypeGitHub      = "github"
+	ConnectorTypeBitbucket   = "bitbucket"
 	ConnectorTypeGoogleDrive = "google_drive"
 	ConnectorTypeOneDrive    = "onedrive"
 	ConnectorTypeDingTalk    = "dingtalk"

@@ -44,6 +44,7 @@ var (
 	errRateLimited = errors.New("bitbucket API rate limit exhausted")
 	errTimedOut    = errors.New("bitbucket API timed out")
 	errLFSRedirect = errors.New("bitbucket file is served by redirect")
+	errTooLarge    = errors.New("response exceeds maximum size")
 )
 
 var fullHash = regexp.MustCompile(`^[0-9a-fA-F]{40}$`)
@@ -161,7 +162,7 @@ func readCapped(body io.Reader, limit int64) ([]byte, error) {
 		return nil, err
 	}
 	if int64(len(data)) > limit {
-		return nil, fmt.Errorf("response exceeds maximum size (%d bytes)", limit)
+		return nil, fmt.Errorf("%w (%d bytes)", errTooLarge, limit)
 	}
 	return data, nil
 }
