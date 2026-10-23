@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Changes
+
+- **NEW**: **Microsoft OneDrive (work or school) and Microsoft SharePoint data sources**: sync folders from a user's OneDrive for work or school, or document libraries and folders from a SharePoint Online site, with a Microsoft Entra app registration (client credentials). Incremental sync uses the Graph delta query, so only changed files are fetched; renames and moves keep their identity; folder deletions remove their files; a transient download failure is retried on the next run; an expired delta position re-enumerates and removes what vanished; a full-mode sync re-fetches every file and resumes from its checkpoint after a timeout. Offered by default next to Notion, Confluence, GitHub and Bitbucket: `onedrive` and `sharepoint` join the `AIKB_DATASOURCE_TYPES` default, so a deployment that sets the variable must list them to keep them. Personal Microsoft accounts are not supported.
+- **CHANGED**: The data source editor mirrors a connector's public settings (Confluence edition, URL and username; OneDrive user; SharePoint site URL) through one table instead of Confluence-only code.
+
 ## [2026.10.23] - 2026-10-23
 
 ### Bug Fixes

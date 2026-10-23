@@ -48,7 +48,7 @@ Use RAG to look things up, the agent for multi-step tasks, and the wiki to organ
 Beyond the three modes:
 
 - **Memory and curation**: cross-session long-term memory keeps the profile, preferences and facts a user has confirmed. Folder uploads keep their directory tree, and retrieval chunks can be edited, diffed and rolled back.
-- **Data sources and formats**: auto-sync from Feishu wiki / Feishu Drive / Confluence / GitLab / GitHub / Bitbucket / Tencent IMA / Notion / Yuque / DingTalk Docs / Seafile / RSS, with more on the way. 10+ document formats including PDF, Word, images, Excel and XMind; Office files are parsed in-process by anydoc.
+- **Data sources and formats**: auto-sync from Feishu wiki / Feishu Drive / Confluence / GitLab / GitHub / Bitbucket / Tencent IMA / Notion / Yuque / DingTalk Docs / Seafile / OneDrive / SharePoint / RSS, with more on the way. 10+ document formats including PDF, Word, images, Excel and XMind; Office files are parsed in-process by anydoc.
 - **Channels and integrations**: Q&A in WeCom, Feishu, Slack, Telegram and other IM apps; an embed widget for external websites; a built-in MCP Server for Cursor, Claude and other AI tools; scoped API keys with a principal model for programmatic access.
 - **Models**: 30 built-in provider definitions (WeKnoraCloud among them, opt-in with `AIKB_WEKNORACLOUD_ENABLED=true`) with a generated model catalog, including OpenAI, Anthropic, DeepSeek, Qwen (Alibaba Cloud), Zhipu, Hunyuan, Gemini, MiniMax, NVIDIA and LiteLLM, plus Ollama for local models.
 - **Permissions and operations**: multi-workspace RBAC (four roles, per-resource ownership, per-workspace audit log), several storage instances per workspace, a runtime task-queue dashboard with worker-pool governance, and Langfuse tracing for agent steps, token usage and pipelines.
@@ -230,7 +230,7 @@ A modular pipeline from document parsing, vectorization and retrieval to LLM inf
 | Vector databases | PostgreSQL (pgvector) / Elasticsearch / OpenSearch / Milvus / Weaviate / Qdrant / Apache Doris / Tencent VectorDB |
 | [Object storage](https://ai-kb.matherly.net/docs/03-features/19-storage-backends) | Local / Tencent Cloud COS / MinIO / AWS S3 / Volcengine TOS / Alibaba Cloud OSS / Kingsoft Cloud KS3 / Huawei Cloud OBS |
 | [Document formats](https://ai-kb.matherly.net/docs/03-features/03-document-parsing) | PDF / Word / PPT / Excel / CSV / TXT / Markdown / MDX / HTML / EPUB / MHTML / JSON / XMind / images |
-| [Data sources](https://ai-kb.matherly.net/docs/03-features/10-datasource) | Feishu wiki / Feishu Drive / Lark / Confluence / GitLab / GitHub / Bitbucket / Tencent IMA / Notion / Yuque / DingTalk Docs / Seafile / RSS |
+| [Data sources](https://ai-kb.matherly.net/docs/03-features/10-datasource) | Feishu wiki / Feishu Drive / Lark / Confluence / GitLab / GitHub / Bitbucket / Tencent IMA / Notion / Yuque / DingTalk Docs / Seafile / OneDrive / SharePoint / RSS |
 | [IM channels](https://ai-kb.matherly.net/docs/03-features/12-im-integration) | WeCom / Feishu / Lark / QQBot / Slack / Telegram / DingTalk / Mattermost / WeChat / Yunzhijia |
 | [Web search](https://ai-kb.matherly.net/docs/03-features/11-web-search) | DuckDuckGo / Bing / Google / Brave / Tavily / Baidu / Ollama / SearXNG / Keenable / Zhipu AI / Exa / Metaso / Bocha / Serply |
 | Deployment | Docker Compose / Kubernetes (Helm) / Lite single binary / desktop app; offline and private-cloud installs; English UI |
