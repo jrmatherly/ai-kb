@@ -241,6 +241,14 @@ test('DingTalk configuration texts are localized', () => {
   assertLocalized(keys)
 })
 
+test('OneDrive and SharePoint setup guide texts are localized', () => {
+  const keys = ['onedrive', 'sharepoint'].flatMap(type => [
+    `prereqBarText_${type}`, `prereqOpenConsole_${type}`,
+    ...[1, 2, 3].flatMap(step => [`prereqStep${step}Brief_${type}`, `prereqStep${step}Desc_${type}`]),
+  ]).map(key => `datasource.${key}`)
+  assertLocalized(keys)
+})
+
 const SRC_ROOT = fileURLToPath(new URL('..', import.meta.url))
 
 function listSourceFiles(dir: string): string[] {

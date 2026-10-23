@@ -6804,7 +6804,7 @@ export default {
     sharepoint: {
       tenantId: 'Directory (tenant) ID', tenantIdHint: 'The Directory (tenant) ID or primary domain, from the app registration overview in Microsoft Entra.',
       clientId: 'Application (client) ID',
-      clientSecret: 'Client secret', clientSecretHint: 'A client secret of the app registration. Grant Sites.Selected and give the app read access to the site (least privilege), or grant Sites.Read.All.',
+      clientSecret: 'Client secret', clientSecretHint: 'A client secret of the app registration. Grant Sites.Selected and give the app read access to the site (least privilege), or grant Sites.Read.All. The site grant is not made in the Entra portal: an admin or app holding Sites.FullControl.All calls Microsoft Graph POST /sites/{\'{\'}site-id{\'}\'}/permissions with role read, as the Selected permissions guide describes.',
       siteUrl: 'Site URL', siteUrlHint: 'The SharePoint site to sync, such as https://contoso.sharepoint.com/sites/hr. A sub-site is its own data source.',
     },
     seafile: {
@@ -7023,7 +7023,7 @@ export default {
     prereqStep1Brief_sharepoint: 'Register an app in Microsoft Entra',
     prereqStep1Desc_sharepoint: 'In the Microsoft Entra admin center, open App registrations, create a registration, and copy its Directory (tenant) ID and Application (client) ID.',
     prereqStep2Brief_sharepoint: 'Grant the Graph application permission',
-    prereqStep2Desc_sharepoint: 'Add Sites.Selected and give the app read access to the site (least privilege), or add Sites.Read.All; then grant admin consent.',
+    prereqStep2Desc_sharepoint: 'Add Sites.Selected and give the app read access to the site (least privilege), or add Sites.Read.All; then grant admin consent. The site grant is a Microsoft Graph call, POST /sites/{\'{\'}site-id{\'}\'}/permissions with role read, made by an admin or app holding Sites.FullControl.All; the Selected permissions guide describes it.',
     prereqStep3Brief_sharepoint: 'Create a client secret',
     prereqStep3Desc_sharepoint: 'Under Certificates & secrets, create a client secret and copy its value; it is shown only once.',
     prereqOpenConsole_sharepoint: 'Open Microsoft Entra app registrations',

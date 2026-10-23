@@ -292,6 +292,11 @@ test('Confluence public fields still round-trip through the table', async () => 
     assert.equal(f.vm.form.config.credentials.base_url, 'https://c.atlassian.net')
     assert.equal(f.vm.form.config.credentials.edition, 'cloud')
   } finally { f.close() }
+  const bare = await fixture({ type: 'confluence', settings: { base_url: 'https://wiki.example.com' } })
+  try {
+    bare.vm.enterReplaceCredentials()
+    assert.equal(bare.vm.form.config.credentials.edition, 'server')
+  } finally { bare.close() }
 })
 
 test('switching the git connector type resets the repository rows', async () => {

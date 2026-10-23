@@ -171,8 +171,8 @@ const PUBLIC_SETTINGS_FIELDS: Record<string, { key: string; fallback: string }[]
 }
 
 function hydratePublicFieldsFromSettings() {
+  if (!Object.hasOwn(PUBLIC_SETTINGS_FIELDS, form.value.type)) return
   const fields = PUBLIC_SETTINGS_FIELDS[form.value.type]
-  if (!fields) return
   const settings = form.value.config.settings || {}
   const creds = form.value.config.credentials || {}
   const hydrated: Record<string, any> = { ...creds }
@@ -183,8 +183,8 @@ function hydratePublicFieldsFromSettings() {
 }
 
 function syncPublicFieldsToSettings() {
+  if (!Object.hasOwn(PUBLIC_SETTINGS_FIELDS, form.value.type)) return
   const fields = PUBLIC_SETTINGS_FIELDS[form.value.type]
-  if (!fields) return
   const creds = form.value.config.credentials || {}
   const mirrored: Record<string, any> = {}
   for (const { key } of fields) {
