@@ -193,6 +193,14 @@ const CapabilityFullSyncReconcile = "full_sync_reconcile"
 // stores the library root while the selection may name folders inside it.
 const CapabilitySelectionTracksSource = "selection_tracks_source"
 
+// CapabilitySourceIdentityDedup marks a connector whose items may carry the
+// same bytes at different paths (README templates in a repository, copied
+// Confluence pages), so the create path scopes its duplicate check to
+// datasource_id + external_id instead of the whole knowledge base. The create
+// path looks it up by the item's channel, so a connector that declares it
+// emits its own type as metadata["channel"], or no channel at all.
+const CapabilitySourceIdentityDedup = "source_identity_dedup"
+
 // HasCapability reports whether a connector type declares capability.
 func HasCapability(connectorType, capability string) bool {
 	return slices.Contains(ConnectorMetadataRegistry[connectorType].Capabilities, capability)
@@ -274,6 +282,7 @@ var ConnectorMetadataRegistry = map[string]ConnectorMetadata{
 		AuthType:    "api_key",
 		Capabilities: []string{
 			"incremental", "deletion_sync", CapabilityFullSyncReconcile, CapabilitySelectionTracksSource,
+			CapabilitySourceIdentityDedup,
 		},
 	},
 	types.ConnectorTypeYuque: {
@@ -293,20 +302,24 @@ var ConnectorMetadataRegistry = map[string]ConnectorMetadata{
 		Capabilities: []string{"incremental", "deletion_sync"},
 	},
 	types.ConnectorTypeGitHub: {
-		Type:         types.ConnectorTypeGitHub,
-		Name:         "GitHub",
-		Description:  "Sync files from GitHub repositories",
-		Priority:     4,
-		AuthType:     "token",
-		Capabilities: []string{"incremental", "hierarchical", "deletion_sync", CapabilityFullSyncReconcile},
+		Type:        types.ConnectorTypeGitHub,
+		Name:        "GitHub",
+		Description: "Sync files from GitHub repositories",
+		Priority:    4,
+		AuthType:    "token",
+		Capabilities: []string{
+			"incremental", "hierarchical", "deletion_sync", CapabilityFullSyncReconcile, CapabilitySourceIdentityDedup,
+		},
 	},
 	types.ConnectorTypeBitbucket: {
-		Type:         types.ConnectorTypeBitbucket,
-		Name:         "Bitbucket",
-		Description:  "Sync files from Bitbucket Cloud repositories",
-		Priority:     5,
-		AuthType:     "token",
-		Capabilities: []string{"incremental", "hierarchical", "deletion_sync", CapabilityFullSyncReconcile},
+		Type:        types.ConnectorTypeBitbucket,
+		Name:        "Bitbucket",
+		Description: "Sync files from Bitbucket Cloud repositories",
+		Priority:    5,
+		AuthType:    "token",
+		Capabilities: []string{
+			"incremental", "hierarchical", "deletion_sync", CapabilityFullSyncReconcile, CapabilitySourceIdentityDedup,
+		},
 	},
 	types.ConnectorTypeGoogleDrive: {
 		Type:         types.ConnectorTypeGoogleDrive,
@@ -372,15 +385,17 @@ var ConnectorMetadataRegistry = map[string]ConnectorMetadata{
 		Description:  "Sync files from GitLab projects",
 		Priority:     8,
 		AuthType:     "token",
-		Capabilities: []string{"incremental", "hierarchical"},
+		Capabilities: []string{"incremental", "hierarchical", CapabilitySourceIdentityDedup},
 	},
 	types.ConnectorTypeSeafile: {
-		Type:         types.ConnectorTypeSeafile,
-		Name:         "Seafile",
-		Description:  "Sync folders and files from Seafile libraries",
-		Priority:     13,
-		AuthType:     "token",
-		Capabilities: []string{"incremental", "hierarchical", "deletion_sync", CapabilityFullSyncReconcile},
+		Type:        types.ConnectorTypeSeafile,
+		Name:        "Seafile",
+		Description: "Sync folders and files from Seafile libraries",
+		Priority:    13,
+		AuthType:    "token",
+		Capabilities: []string{
+			"incremental", "hierarchical", "deletion_sync", CapabilityFullSyncReconcile, CapabilitySourceIdentityDedup,
+		},
 	},
 }
 

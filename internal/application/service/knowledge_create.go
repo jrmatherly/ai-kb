@@ -12,6 +12,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/hibiken/asynq"
+	"github.com/jrmatherly/ai-kb/internal/datasource"
 	werrors "github.com/jrmatherly/ai-kb/internal/errors"
 	"github.com/jrmatherly/ai-kb/internal/infrastructure/chunker"
 	"github.com/jrmatherly/ai-kb/internal/infrastructure/docparser"
@@ -103,7 +104,7 @@ func (s *knowledgeService) CreateKnowledgeFromFile(ctx context.Context,
 	// Same-bytes files from different source identities are still distinct
 	// documents (GitLab README templates, copied Confluence pages). Scope the
 	// hash check to datasource_id + external_id so retries stay idempotent.
-	if usesSourceIdentityDuplicateCheck(channel) {
+	if datasource.HasCapability(channel, datasource.CapabilitySourceIdentityDedup) {
 		checkParams.DataSourceID = metadata["datasource_id"]
 		checkParams.ExternalID = metadata["external_id"]
 	}
@@ -1149,16 +1150,6 @@ func (s *knowledgeService) markKnowledgeEnqueueFailed(ctx context.Context, knowl
 	knowledge.ErrorMessage = "Failed to enqueue processing task"
 	if err := s.repo.UpdateKnowledge(ctx, knowledge); err != nil {
 		logger.Errorf(ctx, "Failed to mark knowledge as failed after enqueue error: %v", err)
-	}
-}
-
-func usesSourceIdentityDuplicateCheck(channel string) bool {
-	switch channel {
-	case types.ConnectorTypeGitHub, types.ConnectorTypeBitbucket, types.ConnectorTypeGitLab, types.ChannelConfluence,
-		types.ChannelSeafile:
-		return true
-	default:
-		return false
 	}
 }
 

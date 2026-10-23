@@ -413,7 +413,7 @@ var ConnectorMetadataRegistry = map[string]ConnectorMetadata{
 }
 ```
 
-Two capability values change behavior. `full_sync_reconcile` (`CapabilityFullSyncReconcile`) says the connector can set `types.SyncCursor.CompleteListing`, so a full sync with deletion sync on deletes knowledge items missing from a complete listing. `selection_tracks_source` (`CapabilitySelectionTracksSource`) says each item's `source_resource_id` is the selected resource it was listed under, so items of a deselected resource can be found. `incremental`, `deletion_sync` and `hierarchical` only describe the connector to API clients.
+Three capability values change behavior. `full_sync_reconcile` (`CapabilityFullSyncReconcile`) says the connector can set `types.SyncCursor.CompleteListing`, so a full sync with deletion sync on deletes knowledge items missing from a complete listing. `selection_tracks_source` (`CapabilitySelectionTracksSource`) says each item's `source_resource_id` is the selected resource it was listed under, so items of a deselected resource can be found. `source_identity_dedup` (`CapabilitySourceIdentityDedup`) says two items of the connector may carry the same bytes at different paths, so the create path scopes its duplicate check to `datasource_id` + `external_id`; declare it for any connector that syncs files from a tree, and have such a connector emit its own type as `metadata["channel"]` (or none), since the create path looks the capability up by channel. `incremental`, `deletion_sync` and `hierarchical` only describe the connector to API clients.
 
 ## Step 8: Sync Reason Codes
 

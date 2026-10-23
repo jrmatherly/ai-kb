@@ -349,7 +349,7 @@ func TestProcessSync_SeafileSameContentDifferentPathsStayIndependent(t *testing.
 		assert.Equal(t, types.ChannelSeafile, created.channel)
 		assert.Equal(t, h.ds.ID, created.metadata["datasource_id"])
 		assert.Equal(t, seafileTestRepo+":/", created.metadata["source_resource_id"])
-		assert.True(t, usesSourceIdentityDuplicateCheck(created.channel))
+		assert.True(t, datasource.HasCapability(created.channel, datasource.CapabilitySourceIdentityDedup))
 	}
 	assert.NotEqual(t, h.knowledge.created[0].metadata["external_id"], h.knowledge.created[1].metadata["external_id"])
 	assert.Len(t, h.cursorFiles(t), 2)
