@@ -114,7 +114,7 @@ func (c *cursor) path(id string) string {
 		return ""
 	}
 	segments := []string{it.Name}
-	for parent := it.Parent; parent != ""; {
+	for parent, seen := it.Parent, 0; parent != "" && seen < len(c.Folders)+1; seen++ {
 		f, ok := c.Folders[parent]
 		if !ok {
 			break
@@ -198,7 +198,9 @@ func (c *cursor) dropSubtree(folderID string) {
 }
 
 // fingerprint identifies a file version plus its place and name: a content
-// change, a rename or a move re-emits, a sharing or metadata change does not.
+// change, a rename or a move re-emits. The version is the content hash when
+// Graph reports one, else the eTag, which also moves on sharing and metadata
+// changes, so those re-emit only for files without a hash.
 func fingerprint(it driveItem) string {
 	content := "etag:" + it.ETag
 	if it.File != nil && it.File.Hashes != nil {

@@ -130,3 +130,11 @@ func TestCursorUnderRootCoversDriveOrFolderSubtree(t *testing.T) {
 	require.True(t, c.underRoot("b!abc:01A", "b!abc:01SUB", folder))
 	require.False(t, c.underRoot("b!abc:01Z", "b!abc:top", folder))
 }
+
+func TestCursorPathTerminatesOnAParentCycle(t *testing.T) {
+	c, _ := decodeCursor(nil)
+	c.Folders["d:A"] = folderState{Parent: "d:B", Name: "A", Root: "d"}
+	c.Folders["d:B"] = folderState{Parent: "d:A", Name: "B", Root: "d"}
+	c.Items["d:x"] = itemState{FP: "x", Parent: "d:A", Name: "x.pdf", Root: "d"}
+	require.NotEmpty(t, c.path("d:x"))
+}
