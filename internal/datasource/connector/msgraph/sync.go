@@ -87,11 +87,15 @@ func (c *Connector) stream(
 	}
 	// Every selected root has a state before the retry pass, which may fetch
 	// under a root that is new this run (an item re-homed by dropDeselected).
+	fullFromScratch := full // no root was already mid-way through an earlier full attempt
 	for _, id := range r.rootIDs {
 		st := r.cur.Roots[id]
 		if st == nil {
 			st = &rootState{}
 			r.cur.Roots[id] = st
+		}
+		if full && st.Full {
+			fullFromScratch = false
 		}
 		if full && !st.Full {
 			st.Delta, st.Next, st.Resync, st.Full = "", "", true, true
@@ -109,8 +113,12 @@ func (c *Connector) stream(
 		}
 		cur.Drives[rt.DriveID] = d.Name
 	}
-	if err := r.retryFailed(ctx); err != nil {
-		return nil, err
+	// A full run re-enumerates and re-fetches every root, so the retry pass
+	// would only fetch a failed file twice.
+	if !full {
+		if err := r.retryFailed(ctx); err != nil {
+			return nil, err
+		}
 	}
 	for _, id := range r.rootIDs {
 		if err := r.walkRoot(ctx, r.roots[id]); err != nil {
@@ -118,7 +126,9 @@ func (c *Connector) stream(
 		}
 	}
 	out := cur.toSyncCursor()
-	out.CompleteListing = r.fresh && !r.resumed && !r.resynced
+	// A complete full attempt emitted every live file, so the service's sweep
+	// deletes exactly what tombstoneUnseen tombstoned.
+	out.CompleteListing = !r.resumed && (fullFromScratch || r.fresh && !r.resynced)
 	return out, nil
 }
 
@@ -202,7 +212,8 @@ func (r *run) emitTombstone(ctx context.Context, id string) error {
 // retryFailed re-fetches items whose last download failed for a transient
 // reason; delta will not re-send an unchanged item, so this pass is the only
 // retry they get. A deterministic failure (Failed set) waits for a change,
-// and a per-item refusal of the item itself (403, for example) becomes one.
+// and a 403 on the item itself becomes one; any other per-item error leaves
+// the entry transient for the next run.
 func (r *run) retryFailed(ctx context.Context) error {
 	var failed []string
 	for id, it := range r.cur.Items {
@@ -224,9 +235,11 @@ func (r *run) retryFailed(ctx context.Context) error {
 		case err != nil && !r.perItem(err):
 			return err
 		case err != nil:
-			st.Failed = downloadReason(err)
-			r.cur.Items[id] = st
-			if err := r.emit(ctx, r.c.errorItem(id, st.Name, r.cur.path(id), st.Failed)); err != nil {
+			if errors.Is(err, datasource.ErrPermissionDenied) {
+				st.Failed = reasonPermissionDenied
+				r.cur.Items[id] = st
+			}
+			if err := r.emit(ctx, r.c.errorItem(id, st.Name, r.cur.path(id), downloadReason(err))); err != nil {
 				return err
 			}
 			continue

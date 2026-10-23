@@ -360,13 +360,22 @@ func TestFetchStreamRetriesFailedDownloadsBeforeDelta(t *testing.T) {
 	cur, err := c.FetchStream(context.Background(), importsAll(), nil, first)
 	require.NoError(t, err)
 	require.Equal(t, []string{"!msgraph_fetch_failed:a.docx"}, first.names())
-	// Next run: delta has no changes, but the failed item is re-fetched by id.
+	// Next run: delta has no changes, the failed item is re-fetched by id, and a 502 there keeps it transient
+	// (a 503 is a rate limit in this client and ends the run instead).
+	f.json("GET /drives/b!docs/items/01A", http.StatusBadGateway, map[string]any{"error": "upstream"})
+	second := &recorder{}
+	cur, err = c.FetchStream(context.Background(), importsAll(), cur, second)
+	require.NoError(t, err)
+	require.Equal(t, []string{"!msgraph_fetch_failed:a.docx"}, second.names())
+	mid, _ := decodeCursor(cur)
+	require.Equal(t, itemState{}, itemState{FP: mid.Items["b!docs:01A"].FP, Failed: mid.Items["b!docs:01A"].Failed})
+	// The run after that succeeds.
 	f.json("GET /drives/b!docs/items/01A", http.StatusOK, file("01A", "a.docx", "01ROOT", "AAAA", "qa"))
 	serveFile(f, "b!docs", "01A", "AAAA")
-	second := &recorder{}
-	_, err = c.FetchStream(context.Background(), importsAll(), cur, second)
+	third := &recorder{}
+	_, err = c.FetchStream(context.Background(), importsAll(), cur, third)
 	require.NoError(t, err)
-	require.Equal(t, []string{"Documents/a.docx"}, second.names())
+	require.Equal(t, []string{"Documents/a.docx"}, third.names())
 }
 
 func TestFetchStreamResyncTombstonesUnseen(t *testing.T) {
@@ -669,6 +678,8 @@ func TestFetchStreamRetryPassTurnsAForbiddenItemIntoAnErrorItem(t *testing.T) {
 	require.NoError(t, err, "one unreadable file does not stop the delta walk")
 	require.Equal(t, []string{"!msgraph_permission_denied:a.docx"}, rec.names())
 	// The refusal is recorded: the next run neither re-reports nor re-fetches the item.
+	recorded, _ := decodeCursor(next)
+	require.Equal(t, reasonPermissionDenied, recorded.Items["b!docs:01A"].Failed)
 	third := &recorder{}
 	_, err = c.FetchStream(context.Background(), importsAll(), next, third)
 	require.NoError(t, err)
@@ -813,7 +824,7 @@ func TestFetchFullStreamReemitsUnchangedAndTombstonesUnseen(t *testing.T) {
 	next, err := c.FetchFullStream(context.Background(), importsAll(), cur, rec)
 	require.NoError(t, err)
 	require.Equal(t, []string{"Documents/a.docx", "-b!docs:01B"}, rec.names())
-	require.False(t, next.CompleteListing)
+	require.True(t, next.CompleteListing, "a full attempt that ran to the end listed every live file")
 	after, _ := decodeCursor(next)
 	require.False(t, after.Roots["b!docs"].Full)
 	require.False(t, after.Roots["b!docs"].Resync)
@@ -869,6 +880,7 @@ func TestFetchFullStreamResumesWithoutReemittingTheFirstPage(t *testing.T) {
 	require.Equal(
 		t, []string{"Documents/b.pdf", "-b!docs:01C"}, second.names(), "a.docx was re-emitted by the first attempt",
 	)
+	require.False(t, next.CompleteListing, "a resumed full attempt did not emit the first page")
 	after, _ := decodeCursor(next)
 	require.False(t, after.Roots["b!docs"].Full)
 	require.Contains(t, after.Items, "b!docs:01A")
