@@ -47,7 +47,7 @@ Knowledge bases organize material, workspaces manage members and resource permis
 | FAQ | A question-and-answer entry with a standard question, similar questions, negative examples and the answer. See [FAQ](../03-features/17-faq.md) |
 | WikiPage | A topic page generated from documents, with source citations and page links; editable and versioned |
 | Knowledge graph (Entity / Relationship) | Entities and relationships extracted from documents, stored in Neo4j, used to retrieve related content |
-| DataSource | A connection that keeps syncing external material. Supports Feishu/Lark (wiki and drive), Notion, Confluence, Yuque, DingTalk Docs, Tencent IMA, GitLab, GitHub, RSS and Seafile. See [Data source import](../03-features/10-datasource.md) |
+| DataSource | A connection that keeps syncing external material. Supports Feishu/Lark (wiki and drive), Notion, Confluence, Yuque, DingTalk Docs, Tencent IMA, GitLab, GitHub, Bitbucket, RSS and Seafile. See [Data source import](../03-features/10-datasource.md) |
 | RetrievalConfig | Controls candidate counts, match thresholds, fusion weights and rerank output. See [Retrieval engines](../03-features/05-retrieval-engines.md) |
 
 ### Conversations and agents
@@ -107,7 +107,7 @@ flowchart TB
 
 ## Feature list
 
-- **Document ingestion**: file upload (PDF, Word, PPT, Excel, Markdown, MDX, HTML, EPUB, XMind, images, audio and more), URL capture, hand-written Markdown, whole-folder upload, and scheduled sync from Feishu / Lark / Notion / Confluence / Yuque / DingTalk / IMA / GitLab / GitHub / RSS / Seafile.
+- **Document ingestion**: file upload (PDF, Word, PPT, Excel, Markdown, MDX, HTML, EPUB, XMind, images, audio and more), URL capture, hand-written Markdown, whole-folder upload, and scheduled sync from Feishu / Lark / Notion / Confluence / Yuque / DingTalk / IMA / GitLab / GitHub / Bitbucket / RSS / Seafile.
 - **Document understanding**: layout analysis, OCR for scans, table extraction, multimodal image description (VLM), audio transcription (ASR), and a parsing engine chosen per file type (`ParserEngineRules`, with MinerU / OpenDataLoader as options).
 - **Indexing pipeline**: configurable chunking (including parent-child chunks and adaptive strategies), vector index, keyword full-text index, FAQ index, Wiki generation, knowledge graph extraction, and pre-generated questions.
 - **Retrieval**: hybrid vector + BM25 retrieval, RRF fusion, reranking, query rewriting and expansion, intent recognition (greeting, chitchat, web_search and others; see `config/prompt_templates/intent_prompts.yaml`).

@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changes
 
+- **NEW**: **Bitbucket data source**: sync document files from the directories of Bitbucket Cloud repositories with an API token (plus the Atlassian account email) or a workspace, project or repository access token. Incremental sync asks Bitbucket for the files changed between two commits, so a force-push is handled; progress resumes after the hourly rate limit; files over 100 MB are reported per item, and Git LFS files are not imported. Offered by default next to Notion, Confluence and GitHub: `bitbucket` joins the `AIKB_DATASOURCE_TYPES` default, so a deployment that sets the variable must list it to keep it.
 - **NEW**: **MDX import**: `.mdx` files (Markdown with JSX, as written for Docusaurus, Nextra, Mintlify and Fumadocs) import through upload, URL import and every data-source sync. docreader strips imports, exports and expressions, unwraps components keeping their text and titles, and converts admonitions before the Markdown pipeline runs.
 - **CHANGED**: Data-source syncs fetch only what the knowledge base can ingest. GitHub, GitLab and Seafile skip images when the knowledge base has no vision model and audio when it has no speech model, instead of downloading them and failing; the picker hides them too. A file skipped on ingest is counted as skipped and never replaces an existing item. Configuring a model later makes the next sync of each streaming data source on that knowledge base restart from the beginning, so the skipped files are fetched.
 

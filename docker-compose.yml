@@ -114,7 +114,7 @@ services:
       # - APP_EXTERNAL_URL=${APP_EXTERNAL_URL:-}
       # IM platforms offered to workspaces (allow-list; empty means all ten, see .env.example for the values).
       - AIKB_IM_PLATFORMS=${AIKB_IM_PLATFORMS:-}
-      # Data source connector types offered (allow-list; empty means notion,confluence,github, all means every type, see .env.example)
+      # Data source connector types offered (allow-list; empty means notion,confluence,github,bitbucket, all means every type, see .env.example)
       - AIKB_DATASOURCE_TYPES=${AIKB_DATASOURCE_TYPES:-}
       # Documentation base URL the UI links to; empty uses https://ai-kb.matherly.net/docs/
       - AIKB_DOCS_URL=${AIKB_DOCS_URL:-}

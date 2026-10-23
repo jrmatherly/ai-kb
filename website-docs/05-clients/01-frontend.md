@@ -191,7 +191,7 @@ Many settings are **not in the settings center but in the knowledge base edit di
 | --- | --- | --- |
 | Basic | `basic`, `models`, `vectorStore`, `faq` | Name, type, chat/embedding/summary models. `vectorStore` cannot change once bound. `faq` appears only for FAQ knowledge bases |
 | Processing | `parser`, `chunking`, `multimodal`, `asr`, `graph`, `advanced` | Parsing engine and first-row table headers, chunking parameters, image understanding, speech-to-text, knowledge graph, advanced options. Not shown for FAQ knowledge bases |
-| Data | `storage`, `datasource` | `datasource` appears **only in edit mode** and not for FAQ knowledge bases. Sync from Feishu / Lark (wiki and drive), Notion, Confluence, Yuque, DingTalk Docs, Tencent IMA, RSS / Atom, GitLab, GitHub and Seafile is configured here, not in the global settings (connector definitions in `views/knowledge/settings/DataSourceEditorDialog.vue`) |
+| Data | `storage`, `datasource` | `datasource` appears **only in edit mode** and not for FAQ knowledge bases. Sync from Feishu / Lark (wiki and drive), Notion, Confluence, Yuque, DingTalk Docs, Tencent IMA, RSS / Atom, GitLab, GitHub, Bitbucket and Seafile is configured here, not in the global settings (connector definitions in `views/knowledge/settings/DataSourceEditorDialog.vue`) |
 | Integration | `share` | Share to an organization. Edit mode only, hidden in Lite |
 | Management | `activity` | Activity stream. Edit mode only, for the knowledge base owner or a workspace `admin`, and only in the knowledge base's own workspace |
 
