@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"sort"
+	"strings"
 
 	"github.com/jrmatherly/ai-kb/internal/datasource"
 	"github.com/jrmatherly/ai-kb/internal/types"
@@ -157,8 +158,11 @@ func (c *Connector) ResolveResourceAncestors(
 		if err != nil {
 			return nil, err
 		}
-		for it.ParentReference != nil && it.ParentReference.ID != "" {
+		for hops := 0; hops < maxPaginationHops && it.ParentReference != nil && it.ParentReference.ID != ""; hops++ {
 			parent, err := cl.item(ctx, r.DriveID, it.ParentReference.ID)
+			if errors.Is(err, datasource.ErrResourceNotFound) {
+				break
+			}
 			if err != nil {
 				return nil, err
 			}
@@ -212,11 +216,11 @@ func (c *Connector) FetchStream(
 }
 
 func (c *Connector) metadata(id, p string) map[string]string {
-	driveID := driveOf(id)
+	driveID, itemID, _ := strings.Cut(id, ":")
 	return map[string]string{
 		"channel":          c.Type(),
 		"msgraph_drive_id": driveID,
-		"msgraph_item_id":  id[len(driveID)+1:],
+		"msgraph_item_id":  itemID,
 		"msgraph_path":     p,
 	}
 }

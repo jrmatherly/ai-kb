@@ -172,3 +172,29 @@ func TestErrorItemAndTombstoneCarryTheItemMetadata(t *testing.T) {
 		},
 	}, c.tombstone("b!docs:01A", "big.pdf", "Finance/big.pdf"))
 }
+
+func TestMetadataForADriveOnlyID(t *testing.T) {
+	m := NewConnector(KindOneDrive).tombstone("b!alice", "OneDrive", "").Metadata
+	require.Equal(t, "b!alice", m["msgraph_drive_id"])
+	require.Empty(t, m["msgraph_item_id"])
+}
+
+func TestResolveResourceAncestorsSkipsAVanishedParent(t *testing.T) {
+	f := newFakeGraph(t)
+	f.json("GET /drives/b!docs/items/01ORPHAN", http.StatusOK, map[string]any{
+		"id": "01ORPHAN", "name": "o", "folder": map[string]any{},
+		"parentReference": map[string]any{"driveId": "b!docs", "id": "01GONE"},
+	})
+	f.json("GET /drives/b!pol/items/01A", http.StatusOK, map[string]any{
+		"id": "01A", "name": "a", "folder": map[string]any{},
+		"parentReference": map[string]any{"driveId": "b!pol", "id": "01ROOT"},
+	})
+	f.json("GET /drives/b!pol/items/01ROOT", http.StatusOK, map[string]any{
+		"id": "01ROOT", "name": "root", "root": map[string]any{}, "folder": map[string]any{},
+		"parentReference": map[string]any{"driveId": "b!pol"},
+	})
+	got, err := testConnector(f, KindSharePoint).ResolveResourceAncestors(
+		context.Background(), sharePointConfig(), []string{"b!docs:01ORPHAN", "b!pol:01A"})
+	require.NoError(t, err)
+	require.Equal(t, []string{"b!pol"}, got)
+}
