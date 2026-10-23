@@ -67,6 +67,7 @@ import (
 	githubConnector "github.com/jrmatherly/ai-kb/internal/datasource/connector/github"
 	gitlabConnector "github.com/jrmatherly/ai-kb/internal/datasource/connector/gitlab"
 	imaConnector "github.com/jrmatherly/ai-kb/internal/datasource/connector/ima"
+	msgraphConnector "github.com/jrmatherly/ai-kb/internal/datasource/connector/msgraph"
 	notionConnector "github.com/jrmatherly/ai-kb/internal/datasource/connector/notion"
 	rssConnector "github.com/jrmatherly/ai-kb/internal/datasource/connector/rss"
 	seafileConnector "github.com/jrmatherly/ai-kb/internal/datasource/connector/seafile"
@@ -1908,6 +1909,12 @@ func initConnectorRegistry() (*datasource.ConnectorRegistry, error) {
 	}
 	if err := registry.Register(seafileConnector.NewConnector()); err != nil {
 		errs = errors.Join(errs, fmt.Errorf("register seafile connector: %w", err))
+	}
+	if err := registry.Register(msgraphConnector.NewConnector(msgraphConnector.KindOneDrive)); err != nil {
+		errs = errors.Join(errs, fmt.Errorf("register onedrive connector: %w", err))
+	}
+	if err := registry.Register(msgraphConnector.NewConnector(msgraphConnector.KindSharePoint)); err != nil {
+		errs = errors.Join(errs, fmt.Errorf("register sharepoint connector: %w", err))
 	}
 
 	if errs != nil {
