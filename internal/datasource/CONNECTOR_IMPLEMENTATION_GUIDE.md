@@ -413,7 +413,7 @@ var ConnectorMetadataRegistry = map[string]ConnectorMetadata{
 }
 ```
 
-Two capability values change behavior. `full_sync_reconcile` (`CapabilityFullSyncReconcile`) says the connector can set `types.SyncCursor.CompleteListing`, so a full sync with deletion sync on deletes knowledge items missing from a complete listing. `selection_tracks_source` (`CapabilitySelectionTracksSource`) says each item's `source_resource_id` is the selected resource it was listed under, so items of a deselected resource can be found. `incremental`, `deletion_sync` and `hierarchical` only describe the connector to API clients.
+Three capability values change behavior. `full_sync_reconcile` (`CapabilityFullSyncReconcile`) says the connector can set `types.SyncCursor.CompleteListing`, so a full sync with deletion sync on deletes knowledge items missing from a complete listing. `selection_tracks_source` (`CapabilitySelectionTracksSource`) says each item's `source_resource_id` is the selected resource it was listed under, so items of a deselected resource can be found. `source_identity_dedup` (`CapabilitySourceIdentityDedup`) says two items of the connector may carry the same bytes at different paths, so the create path scopes its duplicate check to `datasource_id` + `external_id`. The git connectors, Confluence and Seafile declare it. Such a connector emits its own type as `metadata["channel"]` (or none), since the create path looks the capability up by channel. `incremental`, `deletion_sync` and `hierarchical` only describe the connector to API clients.
 
 ## Step 8: Sync Reason Codes
 
@@ -423,6 +423,7 @@ A per-item failure is a `types.FetchedItem` with no content and `error_reason_co
 
 - Add an entry to `connectorDefs` in `frontend/src/views/knowledge/settings/DataSourceEditorDialog.vue` with the type, doc links and one field per credential key (`labelKey`, `placeholder`, `secret: true` for secrets), and add the label keys to `en-US.ts`.
 - Add the icon under `frontend/src/assets/img/` and map the type to it in `frontend/src/views/knowledge/settings/datasourceIcons.ts`.
+- Add the connector's channel to `CHANNEL_LABEL_KEYS` in `frontend/src/utils/channelLabel.ts`, in the position the source filter should list it, with a `knowledgeBase.channel*` key in `en-US.ts`; `channelLabel.test.ts` fails while a `types.Channel*` constant, or a `types.ConnectorType*` constant that documents carry as their channel, has no label.
 
 ## Optional Interfaces
 

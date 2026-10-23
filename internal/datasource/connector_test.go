@@ -7,28 +7,61 @@ import (
 	"github.com/jrmatherly/ai-kb/internal/types"
 )
 
-// The connectors that set types.SyncCursor.CompleteListing, and only they,
-// declare CapabilityFullSyncReconcile; all but Seafile, GitHub and Bitbucket
-// record the selected resource an item was listed under. GitHub and Bitbucket
-// keep their selection in settings.repositories, not in the resource IDs the
-// deselection count reads.
-func TestReconcileCapabilitiesMatchConnectors(t *testing.T) {
-	reconciles := map[string]bool{
-		types.ConnectorTypeFeishu: true, types.ConnectorTypeLark: true,
-		types.ConnectorTypeFeishuDrive: true, types.ConnectorTypeLarkDrive: true,
-		types.ConnectorTypeConfluence: true, types.ConnectorTypeSeafile: true,
-		types.ConnectorTypeDingTalk: true, types.ConnectorTypeGitHub: true,
-		types.ConnectorTypeBitbucket: true,
+// The truth table of the behavior-changing capabilities. A new connector type
+// needs a row here. GitHub and Bitbucket reconcile but do not track their
+// selection: they keep it in settings.repositories, not in the resource IDs
+// the deselection count reads; Seafile stores the library root while the
+// selection may name folders inside it.
+func TestCapabilityTableMatchesRegistry(t *testing.T) {
+	type row struct{ reconcile, tracksSource, sourceIdentityDedup bool }
+	want := map[string]row{
+		types.ConnectorTypeFeishu:      {reconcile: true, tracksSource: true},
+		types.ConnectorTypeLark:        {reconcile: true, tracksSource: true},
+		types.ConnectorTypeFeishuDrive: {reconcile: true, tracksSource: true},
+		types.ConnectorTypeLarkDrive:   {reconcile: true, tracksSource: true},
+		types.ConnectorTypeDingTalk:    {reconcile: true, tracksSource: true},
+		types.ConnectorTypeConfluence:  {reconcile: true, tracksSource: true, sourceIdentityDedup: true},
+		types.ConnectorTypeSeafile:     {reconcile: true, sourceIdentityDedup: true},
+		types.ConnectorTypeGitHub:      {reconcile: true, sourceIdentityDedup: true},
+		types.ConnectorTypeBitbucket:   {reconcile: true, sourceIdentityDedup: true},
+		types.ConnectorTypeGitLab:      {sourceIdentityDedup: true},
+		types.ConnectorTypeNotion:      {},
+		types.ConnectorTypeYuque:       {},
+		types.ConnectorTypeIMA:         {},
+		types.ConnectorTypeGoogleDrive: {},
+		types.ConnectorTypeOneDrive:    {},
+		types.ConnectorTypeWebCrawler:  {},
+		types.ConnectorTypeSlack:       {},
+		types.ConnectorTypeIMAP:        {},
+		types.ConnectorTypeRSS:         {},
 	}
 	for connectorType := range ConnectorMetadataRegistry {
-		if got := HasCapability(connectorType, CapabilityFullSyncReconcile); got != reconciles[connectorType] {
-			t.Errorf("full_sync_reconcile(%q) = %v, want %v", connectorType, got, reconciles[connectorType])
+		r, ok := want[connectorType]
+		if !ok {
+			t.Errorf("%q has no row in the capability table", connectorType)
+			continue
 		}
-		tracks := reconciles[connectorType] &&
-			connectorType != types.ConnectorTypeSeafile && connectorType != types.ConnectorTypeGitHub &&
-			connectorType != types.ConnectorTypeBitbucket
-		if got := HasCapability(connectorType, CapabilitySelectionTracksSource); got != tracks {
-			t.Errorf("selection_tracks_source(%q) = %v, want %v", connectorType, got, tracks)
+		got := row{
+			reconcile:           HasCapability(connectorType, CapabilityFullSyncReconcile),
+			tracksSource:        HasCapability(connectorType, CapabilitySelectionTracksSource),
+			sourceIdentityDedup: HasCapability(connectorType, CapabilitySourceIdentityDedup),
+		}
+		if got != r {
+			t.Errorf("%q capabilities = %+v, want %+v", connectorType, got, r)
+		}
+	}
+	for connectorType := range want {
+		if _, ok := ConnectorMetadataRegistry[connectorType]; !ok {
+			t.Errorf("table row %q is not a registered connector type", connectorType)
+		}
+	}
+}
+
+func TestSelectionTracksSourceImpliesFullSyncReconcile(t *testing.T) {
+	for connectorType := range ConnectorMetadataRegistry {
+		if HasCapability(connectorType, CapabilitySelectionTracksSource) &&
+			!HasCapability(connectorType, CapabilityFullSyncReconcile) {
+			t.Errorf("%q tracks its selection but cannot reconcile a full sync", connectorType)
 		}
 	}
 }

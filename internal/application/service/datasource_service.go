@@ -1448,10 +1448,10 @@ func (s *DataSourceService) ingestItem(
 		}
 	}
 	// Channel decides the knowledge "source" label shown in the UI. Prefer the
-	// connector-supplied metadata["channel"] (e.g. Feishu Drive sets it to
-	// "feishu" so Drive docs share the wiki's "Feishu" label instead of showing
-	// "unknown" for the raw ds.Type "feishu_drive"). Fall back to ds.Type so
-	// connectors that don't set metadata.channel still get a meaningful label.
+	// connector-supplied metadata["channel"] (Feishu Drive sets "feishu_drive"
+	// or "lark_drive" so Drive documents get their own label, distinct from the
+	// wiki's "Feishu"). Fall back to ds.Type so connectors that don't set
+	// metadata.channel still get a meaningful label.
 	channel := ds.Type // e.g. "feishu", "notion"
 	if item.Metadata != nil {
 		if mc, ok := item.Metadata["channel"]; ok && mc != "" {
