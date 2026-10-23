@@ -1,7 +1,8 @@
 <template>
-    <div class="aside_box" :class="{ 'aside_box--collapsed': uiStore.sidebarCollapsed, 'aside_box--resizing': uiStore.sidebarResizing }">
+    <div class="aside_box" :class="{ 'aside_box--collapsed': uiStore.sidebarRail, 'aside_box--resizing': uiStore.sidebarResizing, 'aside_box--overlay': uiStore.sidebarOverlay, 'aside_box--open': uiStore.sidebarOverlayOpen }"
+        :inert="uiStore.sidebarOverlay && !uiStore.sidebarOverlayOpen">
         <!-- Expanded: logo + search/collapse buttons on one row -->
-        <div class="logo_row" v-if="!uiStore.sidebarCollapsed">
+        <div class="logo_row" v-if="!uiStore.sidebarRail">
             <div class="logo_box" @click="router.push('/platform/knowledge-bases')" style="cursor: pointer;">
                 <img class="logo logo--light" src="@/assets/img/aikb.png" alt="">
                 <img class="logo logo--dark" src="@/assets/img/aikb-dark.png" alt="">
@@ -20,7 +21,7 @@
                         <img class="header-icon-img" :src="getImgSrc('search.svg')" alt="">
                     </div>
                 </t-tooltip>
-                <div class="sidebar-toggle" @click="uiStore.toggleSidebar" :title="t('menu.collapseSidebar')">
+                <div class="sidebar-toggle" @click="uiStore.toggleSidebar" :title="uiStore.sidebarOverlay ? t('menu.closeSidebar') : t('menu.collapseSidebar')">
                     <svg viewBox="0 0 20 20" width="16" height="16" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <rect x="1.5" y="1.5" width="17" height="17" rx="3" stroke="currentColor" stroke-width="1.5" />
                         <line x1="7.5" y1="1.5" x2="7.5" y2="18.5" stroke="currentColor" stroke-width="1.5" />
@@ -51,10 +52,10 @@
         </t-tooltip>
 
         <!-- Space selector: shown only when the user can switch spaces -->
-        <TenantSelector v-if="canAccessAllTenants && !uiStore.sidebarCollapsed" />
+        <TenantSelector v-if="canAccessAllTenants && !uiStore.sidebarRail" />
 
         <!-- Drag the sidebar edge to resize; it collapses automatically when dragged narrow -->
-        <PanelResizeHandle edge="right" :label="t('knowledgeStages.resizeDrawer')"
+        <PanelResizeHandle v-if="!uiStore.sidebarOverlay" edge="right" :label="t('knowledgeStages.resizeDrawer')"
             :value="uiStore.sidebarDisplayWidth" :min="SIDEBAR_COLLAPSED_WIDTH" :max="SIDEBAR_MAX_WIDTH"
             @start="startSidebarResize" @resize="resizeSidebar" @end="uiStore.sidebarResizing = false" />
 
@@ -62,7 +63,7 @@
         <div class="menu_top" ref="scrollContainer" @scroll="handleScroll">
             <!-- Global search entry: opens the command palette (⌘K) on click. In the expanded state it moves to an icon button in the top logo_row;
                  in the collapsed state it stays here as an icon item + dark tooltip. -->
-            <div class="menu_box menu_box--cmdk" v-if="uiStore.sidebarCollapsed">
+            <div class="menu_box menu_box--cmdk" v-if="uiStore.sidebarRail">
                 <t-tooltip placement="right">
                     <template #content>
                         <span class="cmdk-tip">
@@ -79,9 +80,9 @@
                     </div>
                 </t-tooltip>
             </div>
-            <div class="menu_box" :class="{ 'menu_box--sticky': item.children && !uiStore.sidebarCollapsed }"
+            <div class="menu_box" :class="{ 'menu_box--sticky': item.children && !uiStore.sidebarRail }"
                 v-for="(item, index) in topMenuItems" :key="index">
-                <t-tooltip :content="item.title" placement="right" :disabled="!uiStore.sidebarCollapsed">
+                <t-tooltip :content="item.title" placement="right" :disabled="!uiStore.sidebarRail">
                     <div @click="handleMenuClick(item.path)" @mouseenter="mouseenteMenu(item.path)"
                         @mouseleave="mouseleaveMenu(item.path)" :data-guide="`nav-${item.path}`"
                         :class="['menu_item', item.childrenPath && item.childrenPath == currentpath ? 'menu_item_c_active' : isMenuItemActive(item.path) ? 'menu_item_active' : '']">
@@ -91,7 +92,7 @@
                                     :src="getImgSrc(item.icon == 'zhishiku' ? knowledgeIcon : item.icon == 'agent' ? agentIcon : item.icon == 'artifact' ? artifactIcon : item.icon == 'toolbox' ? toolboxIcon : item.icon == 'organization' ? organizationIcon : item.icon == 'logout' ? logoutIcon : item.icon == 'setting' ? settingIcon : prefixIcon)"
                                     alt="">
                             </div>
-                            <template v-if="!uiStore.sidebarCollapsed">
+                            <template v-if="!uiStore.sidebarRail">
                                 <span class="menu_title" :title="item.title">{{ item.title }}</span>
                                 <span v-if="item.path === 'organizations' && orgStore.totalPendingJoinRequestCount > 0"
                                     class="menu-pending-badge"
@@ -116,7 +117,7 @@
             </div>
 
             <!-- Chat history: filtered by source, then grouped by date -->
-            <div class="submenu" v-if="!uiStore.sidebarCollapsed">
+            <div class="submenu" v-if="!uiStore.sidebarRail">
                 <!-- Stable, always-mounted source filter: reserving its row here
                      (instead of embedding it in the first date group, which
                      appears/disappears while a bucket loads) prevents the
@@ -187,7 +188,7 @@
         </div>
 
         <!-- Bulk management action bar: pinned to the bottom of the sidebar, above the user avatar -->
-        <div v-if="batchMode && !uiStore.sidebarCollapsed" class="batch-inline-footer">
+        <div v-if="batchMode && !uiStore.sidebarRail" class="batch-inline-footer">
             <div class="batch-footer-left">
                 <t-checkbox :checked="isAllBatchSelected" :indeterminate="isBatchIndeterminate"
                     @change="toggleBatchSelectAll">
@@ -535,7 +536,7 @@ usemenuStore.$onAction(({ name, args, after }) => {
 watch(
     () => {
         const id = pendingForkRevealId.value;
-        return id && !uiStore.sidebarCollapsed && currentSecondpath.value === `chat/${id}`
+        return id && !uiStore.sidebarRail && currentSecondpath.value === `chat/${id}`
             && filteredGroupedSessions.value.some((group) => group.items.some((item) => item.id === id))
             ? id : '';
     },
@@ -1158,6 +1159,7 @@ const getIcon = (path: string) => {
 }
 getIcon(typeof route.name === 'string' ? route.name as string : (route.name ? String(route.name) : ''))
 const handleMenuClick = async (path: string) => {
+    uiStore.sidebarOverlayOpen = false
     if (path === 'knowledge-bases') {
         // Knowledge base menu item: inside a knowledge base, go to its file page; otherwise go to the knowledge base list
         const kbId = await getCurrentKbId()
@@ -1194,6 +1196,7 @@ const getCurrentKbId = async (): Promise<string | null> => {
 }
 
 const gotopage = async (path: string) => {
+    uiStore.sidebarOverlayOpen = false
     pathPrefix.value = path;
     // Handle logout
     if (path === 'logout') {
@@ -1286,6 +1289,25 @@ const resizeSidebar = (delta: number, keyboard: boolean) => {
 
     &--resizing {
         transition: none;
+    }
+
+    &.aside_box--overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 260px;
+        z-index: 999;
+        transform: translateX(-100%);
+        transition: transform 0.25s ease;
+
+        &.aside_box--open {
+            transform: none;
+            box-shadow: 2px 0 12px rgba(0, 0, 0, 0.15);
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            transition: none;
+        }
     }
 
     &.aside_box--collapsed {

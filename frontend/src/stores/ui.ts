@@ -25,10 +25,16 @@ export const useUIStore = defineStore('ui', {
     sidebarWidth: clampSidebarWidth(Number(localStorage.getItem('sidebar_width'))),
     sidebarResizing: false,
     sidebarBrowserStatus: localStorage.getItem('sidebar_browser_status') !== 'false',
+    sidebarOverlay: false,
+    sidebarOverlayOpen: false,
   }),
 
   getters: {
-    sidebarDisplayWidth: (state) => state.sidebarCollapsed ? SIDEBAR_COLLAPSED_WIDTH : state.sidebarWidth,
+    sidebarDisplayWidth: (state) => {
+      if (state.sidebarOverlay) return 0
+      return state.sidebarCollapsed ? SIDEBAR_COLLAPSED_WIDTH : state.sidebarWidth
+    },
+    sidebarRail: (state) => state.sidebarCollapsed && !state.sidebarOverlay,
   },
 
   actions: {
@@ -134,8 +140,17 @@ export const useUIStore = defineStore('ui', {
     },
 
     toggleSidebar() {
+      if (this.sidebarOverlay) {
+        this.sidebarOverlayOpen = !this.sidebarOverlayOpen
+        return
+      }
       this.sidebarCollapsed = !this.sidebarCollapsed
       localStorage.setItem('sidebar_collapsed', String(this.sidebarCollapsed))
+    },
+
+    setSidebarOverlay(on: boolean) {
+      this.sidebarOverlay = on
+      if (!on) this.sidebarOverlayOpen = false
     },
 
     resizeSidebar(width: number) {
@@ -150,11 +165,19 @@ export const useUIStore = defineStore('ui', {
     },
 
     collapseSidebar() {
+      if (this.sidebarOverlay) {
+        this.sidebarOverlayOpen = false
+        return
+      }
       this.sidebarCollapsed = true
       localStorage.setItem('sidebar_collapsed', 'true')
     },
 
     expandSidebar() {
+      if (this.sidebarOverlay) {
+        this.sidebarOverlayOpen = true
+        return
+      }
       this.sidebarCollapsed = false
       localStorage.setItem('sidebar_collapsed', 'false')
     }
