@@ -252,7 +252,6 @@ onUnmounted(() => {
     align-items: stretch;
     width: 100%;
     height: 100%;
-    min-width: 600px;
     min-height: 0;
     /* One page-wide background, so the left menu and the right content area read as one surface */
     background: var(--td-bg-color-container);
