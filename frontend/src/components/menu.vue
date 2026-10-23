@@ -1,6 +1,6 @@
 <template>
     <div class="aside_box" :class="{ 'aside_box--collapsed': uiStore.sidebarRail, 'aside_box--resizing': uiStore.sidebarResizing, 'aside_box--overlay': uiStore.sidebarOverlay, 'aside_box--open': uiStore.sidebarOverlayOpen }"
-        :inert="uiStore.sidebarOverlay && !uiStore.sidebarOverlayOpen">
+        :inert="uiStore.sidebarOverlay && !uiStore.sidebarOverlayOpen" ref="asideBox" tabindex="-1">
         <!-- Expanded: logo + search/collapse buttons on one row -->
         <div class="logo_row" v-if="!uiStore.sidebarRail">
             <div class="logo_box" @click="router.push('/platform/knowledge-bases')" style="cursor: pointer;">
@@ -350,6 +350,12 @@ let bucketRequestToken = 0;
 const sessionListBooting = ref(false);
 const currentSecondpath = ref('');
 const scrollContainer = ref<HTMLElement | null>(null);
+const asideBox = ref<HTMLElement | null>(null);
+// Keyboard and screen-reader users land in the phone drawer when it opens; closed, it is inert.
+// Post-flush, so inert is already cleared when focus() runs.
+watch(() => uiStore.sidebarOverlayOpen, (open) => {
+    if (open) asideBox.value?.focus({ preventScroll: true })
+}, { flush: 'post' })
 const imPlatforms = ref<string[]>([]);
 const embedChannelNames = ref<Record<string, string>>({});
 const activeSessionBucketKey = ref(DEFAULT_SESSION_BUCKET_KEY);
@@ -1303,6 +1309,10 @@ const resizeSidebar = (delta: number, keyboard: boolean) => {
         &.aside_box--open {
             transform: none;
             box-shadow: 2px 0 12px rgba(0, 0, 0, 0.15);
+        }
+
+        &:focus {
+            outline: none;
         }
 
         @media (prefers-reduced-motion: reduce) {
