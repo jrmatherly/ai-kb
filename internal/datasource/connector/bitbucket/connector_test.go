@@ -147,6 +147,9 @@ func fakeBitbucket(t *testing.T, repo fakeRepo) *fakeServer {
 		p := r.URL.EscapedPath()
 		for key, status := range repo.status {
 			if p == "/repositories/"+key || strings.HasPrefix(p, "/repositories/"+key+"/") {
+				if status == http.StatusTooManyRequests {
+					w.Header().Set("x-ratelimit-reset", "3600")
+				}
 				w.WriteHeader(status)
 				return
 			}
@@ -621,6 +624,70 @@ func TestFetchStreamPathsChangeTombstonesLostRootAndEmitsGainedRoot(t *testing.T
 	})
 }
 
+func TestFetchStreamModifiedFileThatLeftTheListingIsTombstoned(t *testing.T) {
+	server := fakeBitbucket(t, fakeRepo{
+		commits: map[string]map[string]string{
+			"c1": {"docs/a.md": "a", "docs/b.md": "b"},
+			"c2": {"docs/a.md": "a2", "docs/b.md": "b"},
+		},
+		attributes: map[string]map[string][]string{"c2": {"docs/a.md": {"lfs"}}},
+		refs:       map[string]string{"main": "c2"},
+	})
+	old := oldCursor(map[string]repositoryCursor{"ws/r": {Head: "c1", Ref: "main", Paths: docs}})
+
+	h := &streamRecorder{}
+	next, err := stream(t, server, old, h, selection("ws/r", "main", "docs"))
+	require.NoError(t, err)
+	require.Equal(t, []string{"-ws/r:main:docs/a.md"}, summary(server.URL, h.items))
+	require.Empty(t, server.rawRequests())
+	require.Equal(t, map[string]repositoryCursor{"ws/r": {Head: "c2", Ref: "main", Paths: docs}}, repositories(t, next))
+}
+
+func TestFetchStreamNarrowingAndWideningARoot(t *testing.T) {
+	files := map[string]string{"docs/a.md": "a", "docs/sub/b.md": "b"}
+	sub := []string{"docs/sub"}
+	t.Run("narrowed", func(t *testing.T) {
+		server := fakeBitbucket(t, fakeRepo{commits: map[string]map[string]string{"c1": files}})
+		old := oldCursor(map[string]repositoryCursor{"ws/r": {Head: "c1", Ref: "main", Paths: docs}})
+
+		h := &streamRecorder{}
+		next, err := stream(t, server, old, h, selection("ws/r", "main", "docs/sub"))
+		require.NoError(t, err)
+		require.Equal(t, []string{"-ws/r:main:docs/a.md"}, summary(server.URL, h.items))
+		require.Equal(t, map[string]repositoryCursor{"ws/r": {Head: "c1", Ref: "main", Paths: sub}},
+			repositories(t, next))
+	})
+	t.Run("widened", func(t *testing.T) {
+		server := fakeBitbucket(t, fakeRepo{commits: map[string]map[string]string{"c1": files}})
+		old := oldCursor(map[string]repositoryCursor{"ws/r": {Head: "c1", Ref: "main", Paths: sub}})
+
+		h := &streamRecorder{}
+		next, err := stream(t, server, old, h, selection("ws/r", "main", "docs"))
+		require.NoError(t, err)
+		require.Equal(t, []string{"+ws/r:main:docs/a.md=a"}, summary(server.URL, h.items))
+		require.Equal(t, map[string]repositoryCursor{"ws/r": {Head: "c1", Ref: "main", Paths: docs}},
+			repositories(t, next))
+	})
+}
+
+// The service persists ConnectorCursor as JSON and hands it back as generic
+// maps; readCursor must recover what bitbucketCursor wrote, a pending with nil
+// paths included.
+func TestCursorRoundTripsThroughPersistedJSON(t *testing.T) {
+	value := cursor{Repositories: map[string]repositoryCursor{
+		"ws/r": {Head: "c1", Ref: "main", Pending: &pendingCursor{Head: "c2", Ref: "release", Done: 7}},
+		"ws/x": {Head: "c3", Ref: "main", Paths: docs},
+	}}
+	raw, err := json.Marshal(bitbucketCursor(value, false).ConnectorCursor)
+	require.NoError(t, err)
+	var persisted map[string]interface{}
+	require.NoError(t, json.Unmarshal(raw, &persisted))
+
+	got := readCursor(&types.SyncCursor{ConnectorCursor: persisted})
+	require.Equal(t, value.Repositories, got.Repositories)
+	require.Contains(t, persisted["raw"], `"pending":{"head":"c2","ref":"release","paths":null,"done":7}`)
+}
+
 func TestFetchStreamUnknownChangeSetAfterDiffstatTimeout(t *testing.T) {
 	commits := map[string]map[string]string{
 		"c1": {"docs/a.md": "a", "docs/old.md": "o"},
@@ -956,7 +1023,10 @@ func TestRemovedRepositoryIsTombstonedOrDropped(t *testing.T) {
 		require.Empty(t, h.items)
 		require.Equal(t, kept, repositories(t, next))
 	})
-	transient := map[string]int{"server error": http.StatusInternalServerError, "timeout": statusTimedOut}
+	transient := map[string]int{
+		"server error": http.StatusInternalServerError, "timeout": statusTimedOut,
+		"rate limited": http.StatusTooManyRequests,
+	}
 	for name, status := range transient {
 		t.Run(name, func(t *testing.T) {
 			server := fakeBitbucket(t, fakeRepo{
@@ -965,7 +1035,11 @@ func TestRemovedRepositoryIsTombstonedOrDropped(t *testing.T) {
 
 			h := &streamRecorder{}
 			next, err := stream(t, server, cursor(), h, selection("ws/r", "main", "docs"))
-			require.ErrorContains(t, err, "status "+strconv.Itoa(status))
+			if status == http.StatusTooManyRequests {
+				require.ErrorIs(t, err, errRateLimited)
+			} else {
+				require.ErrorContains(t, err, "status "+strconv.Itoa(status))
+			}
 			require.Nil(t, next)
 			require.Empty(t, h.items)
 			require.Equal(t, gone, repositories(t, h.checkpoints[len(h.checkpoints)-1])["ws/gone"])

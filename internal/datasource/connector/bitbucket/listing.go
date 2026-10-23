@@ -201,16 +201,21 @@ func (c *Connector) changeList(
 		}
 		clear(items)
 		for _, e := range entries {
-			switch {
-			case e.Status == "removed" && e.Old != nil:
-				p := e.Old.Path
-				if _, ok := next[p]; !ok && repofile.InScope(p, base.Paths) && c.importable(p) {
-					tombstones[p] = true
-				}
-			case (e.Status == "added" || e.Status == "modified") && e.New != nil:
+			if e.New != nil && (e.Status == "added" || e.Status == "modified") {
 				if _, ok := next[e.New.Path]; ok {
 					items[e.New.Path] = true
+					continue
 				}
+			}
+			// A removed file, or a modified one the new listing no longer
+			// offers (it gained the lfs or link attribute, or its extension
+			// stopped being importable), leaves the index.
+			if e.Old == nil || (e.Status != "removed" && e.Status != "modified") {
+				continue
+			}
+			p := e.Old.Path
+			if _, ok := next[p]; !ok && repofile.InScope(p, base.Paths) && c.importable(p) {
+				tombstones[p] = true
 			}
 		}
 		for p := range prev {
