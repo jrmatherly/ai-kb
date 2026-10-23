@@ -208,13 +208,6 @@ func (c *Connector) FetchIncremental(
 	return h.items, next, nil
 }
 
-// FetchStream is implemented in sync.go.
-func (c *Connector) FetchStream(
-	context.Context, *types.DataSourceConfig, *types.SyncCursor, datasource.StreamHandler,
-) (*types.SyncCursor, error) {
-	return nil, errors.New("msgraph: FetchStream not implemented")
-}
-
 func (c *Connector) metadata(id, p string) map[string]string {
 	driveID, itemID, _ := strings.Cut(id, ":")
 	return map[string]string{
