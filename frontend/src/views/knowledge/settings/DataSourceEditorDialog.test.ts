@@ -18,6 +18,10 @@ const script = compileScript(descriptor, { id: 'datasource-editor-test' }).conte
 const compiled = ts.transpileModule(script, {
   compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
 }).outputText
+const gitConnectorKeysModule = ts.transpileModule(
+  readFileSync(fileURLToPath(new URL('./gitConnectorKeys.ts', import.meta.url)), 'utf8'),
+  { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } },
+).outputText
 const connectorTypesModule = ts.transpileModule(
   readFileSync(fileURLToPath(new URL('./connectorTypes.ts', import.meta.url)), 'utf8'),
   { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } },
@@ -135,6 +139,11 @@ async function fixture({
         runInNewContext(connectorTypesModule, { exports: cache, require: () => api })
         return cache
       }
+      if (name === './gitConnectorKeys') {
+        const keys: any = {}
+        runInNewContext(gitConnectorKeysModule, { exports: keys })
+        return keys
+      }
       return { default: {} }
     },
     URL, console,
@@ -246,6 +255,16 @@ test('saved GitHub repositories hydrate the shared git form', async () => {
     assert.deepEqual(plain(f.vm.gitProjects), [{ project_id: 'o/r', ref: 'main', pathsText: 'docs' }])
     f.vm.syncGitProjectsToSettings()
     assert.deepEqual(plain(f.vm.form.config.settings), { repositories: [{ repository: 'o/r', ref: 'main', paths: ['docs'] }] })
+  } finally { f.close() }
+})
+
+test('saved Bitbucket repositories hydrate the shared git form', async () => {
+  const f = await fixture({ type: 'bitbucket', settings: { repositories: [{ repository: 'ws/r', ref: 'main', paths: ['docs'] }] } })
+  try {
+    assert.deepEqual(plain(f.vm.gitProjects), [{ project_id: 'ws/r', ref: 'main', pathsText: 'docs' }])
+    f.vm.syncGitProjectsToSettings()
+    assert.deepEqual(plain(f.vm.form.config.settings), { repositories: [{ repository: 'ws/r', ref: 'main', paths: ['docs'] }] })
+    assert.equal(f.vm.gitLabelsKey, 'datasource.bitbucket')
   } finally { f.close() }
 })
 
