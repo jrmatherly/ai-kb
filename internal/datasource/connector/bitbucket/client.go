@@ -196,10 +196,12 @@ func (c *client) do(ctx context.Context, hc *http.Client, rawURL, accept string)
 		}
 		c.waited = true
 		logger.Warnf(ctx, "[Bitbucket] rate limit exhausted; waiting %s before one retry", limited.reset)
+		timer := time.NewTimer(limited.reset)
 		select {
 		case <-ctx.Done():
+			timer.Stop()
 			return nil, ctx.Err()
-		case <-time.After(limited.reset):
+		case <-timer.C:
 		}
 	}
 }
@@ -366,7 +368,8 @@ func (c *client) listing(ctx context.Context, key, commit, dir string, depth int
 }
 
 func (c *client) diffstat(ctx context.Context, key, newHead, oldHead string) ([]diffEntry, error) {
-	first := fmt.Sprintf("%s%s/diffstat/%s..%s?topic=false&renames=false&pagelen=%d",
+	first := fmt.Sprintf("%s%s/diffstat/%s..%s?topic=false&renames=false&pagelen=%d"+
+		"&fields=values.status,values.old.path,values.new.path,next",
 		c.baseURL, repoPath(key), url.PathEscape(newHead), url.PathEscape(oldHead), pageLen)
 	return collect[diffEntry](ctx, c, first)
 }

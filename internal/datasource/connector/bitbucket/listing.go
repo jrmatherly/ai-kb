@@ -147,11 +147,14 @@ func leadsToRoot(dir string, roots []string) bool {
 // recorded path (under the recorded ref) is a tombstone and every new path an
 // item. A diffstat that times out or whose commits are gone makes the change set
 // unknown: every new path is an item and the recorded listing, where readable,
-// supplies the tombstones. baselineGone reports a recorded head that no longer
-// exists, so a resumed pending run restarts at zero.
+// supplies the tombstones. forceUnknown builds that list without asking for the
+// diffstat, and unknown reports which way the list was built. baselineGone
+// reports a recorded head that no longer exists, so a resumed pending run
+// restarts at zero.
 func (c *Connector) changeList(
 	ctx context.Context, key string, base repositoryCursor, head, ref string, roots []string, next files,
-) (list []change, baselineGone bool, err error) {
+	forceUnknown bool,
+) (list []change, baselineGone, unknown bool, err error) {
 	tombstones, items := map[string]bool{}, map[string]bool{}
 	for p := range next {
 		items[p] = true
@@ -169,23 +172,26 @@ func (c *Connector) changeList(
 	case base.Ref != ref:
 		prev, err := baseline()
 		if err != nil {
-			return nil, false, err
+			return nil, false, false, err
 		}
 		baselineGone = prev == nil
 		for p := range prev {
 			tombstones[p] = true
 		}
 	default:
-		entries, err := c.client.diffstat(ctx, key, head, base.Head)
-		unknown := errors.Is(err, errTimedOut) || errors.Is(err, datasource.ErrResourceNotFound)
+		var entries []diffEntry
+		if !forceUnknown {
+			entries, err = c.client.diffstat(ctx, key, head, base.Head)
+		}
+		unknown = forceUnknown || errors.Is(err, errTimedOut) || errors.Is(err, datasource.ErrResourceNotFound)
 		if err != nil && !unknown {
-			return nil, false, err
+			return nil, false, false, err
 		}
 		baselineGone = errors.Is(err, datasource.ErrResourceNotFound)
 		var prev files
 		if (unknown && !baselineGone) || !slices.Equal(base.Paths, roots) {
 			if prev, err = baseline(); err != nil {
-				return nil, false, err
+				return nil, false, false, err
 			}
 			if prev == nil {
 				baselineGone, unknown = true, true
@@ -236,5 +242,5 @@ func (c *Connector) changeList(
 	for _, p := range slices.Sorted(maps.Keys(items)) {
 		list = append(list, change{Path: p})
 	}
-	return list, baselineGone, nil
+	return list, baselineGone, unknown, nil
 }

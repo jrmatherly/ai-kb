@@ -196,11 +196,15 @@ type repositoryCursor struct {
 // interrupted run emitted is left without its tombstone. If the baseline
 // commit is gone when the run resumes, the list's definition changed, so the
 // resume restarts at zero: re-emitting is idempotent, skipping is not.
+// Unknown records that the list was built without a diffstat (it timed out or
+// its commits were gone), because a diffstat timeout is transient: the drain
+// must build the list the same way or Done indexes a different list.
 type pendingCursor struct {
-	Head  string   `json:"head"`
-	Ref   string   `json:"ref"`
-	Paths []string `json:"paths"`
-	Done  int      `json:"done"`
+	Head    string   `json:"head"`
+	Ref     string   `json:"ref"`
+	Paths   []string `json:"paths"`
+	Done    int      `json:"done"`
+	Unknown bool     `json:"unknown,omitempty"`
 }
 
 type cursor struct {
@@ -316,16 +320,21 @@ func (c *Connector) streamRepository(
 		case err != nil:
 			return err
 		default:
-			list, gone, err := c.changeList(ctx, key, rc, p.Head, p.Ref, p.Paths, pendingFiles)
+			list, gone, unknown, err := c.changeList(ctx, key, rc, p.Head, p.Ref, p.Paths, pendingFiles, p.Unknown)
 			if err != nil {
 				return err
 			}
 			start := p.Done
-			if gone {
+			switch {
+			case gone:
+				start = 0
+			case unknown && !p.Unknown:
+				logger.Infof(ctx, "[Bitbucket] %s: the diffstat of the interrupted run timed out this time, "+
+					"restarting it over the whole listing", key)
 				start = 0
 			}
 			err = c.emit(ctx, repo, key, p.Ref, p.Head, rc.Ref, list, pendingFiles, start, h, func(n int) error {
-				return checkpoint(&pendingCursor{Head: p.Head, Ref: p.Ref, Paths: p.Paths, Done: n})
+				return checkpoint(&pendingCursor{Head: p.Head, Ref: p.Ref, Paths: p.Paths, Done: n, Unknown: unknown})
 			})
 			if err != nil {
 				return err
@@ -345,12 +354,12 @@ func (c *Connector) streamRepository(
 			return err
 		}
 	}
-	list, _, err := c.changeList(ctx, key, rc, head, ref, roots, nextFiles)
+	list, _, unknown, err := c.changeList(ctx, key, rc, head, ref, roots, nextFiles, false)
 	if err != nil {
 		return err
 	}
 	err = c.emit(ctx, repo, key, ref, head, rc.Ref, list, nextFiles, 0, h, func(n int) error {
-		return checkpoint(&pendingCursor{Head: head, Ref: ref, Paths: roots, Done: n})
+		return checkpoint(&pendingCursor{Head: head, Ref: ref, Paths: roots, Done: n, Unknown: unknown})
 	})
 	if err != nil {
 		return err

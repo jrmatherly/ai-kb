@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -21,6 +22,9 @@ import (
 )
 
 const goodToken = "per-source-token"
+
+// diffstatQuery is the query string of every diffstat request.
+const diffstatQuery = "?topic=false&renames=false&pagelen=100&fields=values.status,values.old.path,values.new.path,next"
 
 // fakeRepo is the content of the fake's one repository, ws/R (key ws/r).
 type fakeRepo struct {
@@ -554,7 +558,7 @@ func TestFetchStreamIncrementalUsesDiffstatDirection(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, []string{"-ws/r:main:docs/b.md", "+ws/r:main:docs/a.md=v2", "+ws/r:main:docs/c.md=c"},
 		summary(server.URL, h.items))
-	require.Equal(t, []string{"/repositories/ws/r/diffstat/c2..c1?topic=false&renames=false&pagelen=100"},
+	require.Equal(t, []string{"/repositories/ws/r/diffstat/c2..c1" + diffstatQuery},
 		server.requestsMatching("/diffstat/"))
 	require.False(t, next.CompleteListing)
 	require.Equal(t, map[string]repositoryCursor{"ws/r": {Head: "c2", Ref: "main", Paths: docs}}, repositories(t, next))
@@ -675,7 +679,7 @@ func TestFetchStreamNarrowingAndWideningARoot(t *testing.T) {
 // paths included.
 func TestCursorRoundTripsThroughPersistedJSON(t *testing.T) {
 	value := cursor{Repositories: map[string]repositoryCursor{
-		"ws/r": {Head: "c1", Ref: "main", Pending: &pendingCursor{Head: "c2", Ref: "release", Done: 7}},
+		"ws/r": {Head: "c1", Ref: "main", Pending: &pendingCursor{Head: "c2", Ref: "release", Done: 7, Unknown: true}},
 		"ws/x": {Head: "c3", Ref: "main", Paths: docs},
 	}}
 	raw, err := json.Marshal(bitbucketCursor(value, false).ConnectorCursor)
@@ -685,7 +689,8 @@ func TestCursorRoundTripsThroughPersistedJSON(t *testing.T) {
 
 	got := readCursor(&types.SyncCursor{ConnectorCursor: persisted})
 	require.Equal(t, value.Repositories, got.Repositories)
-	require.Contains(t, persisted["raw"], `"pending":{"head":"c2","ref":"release","paths":null,"done":7}`)
+	require.Contains(t, persisted["raw"],
+		`"pending":{"head":"c2","ref":"release","paths":null,"done":7,"unknown":true}`)
 }
 
 func TestFetchStreamUnknownChangeSetAfterDiffstatTimeout(t *testing.T) {
@@ -871,8 +876,8 @@ func TestFetchStreamDrainsPendingBeforeMovedHead(t *testing.T) {
 		repositories(t, h.checkpoints[0]))
 	require.Equal(t, map[string]repositoryCursor{"ws/r": {Head: "c3", Ref: "main", Paths: docs}}, repositories(t, next))
 	require.Equal(t, []string{
-		"/repositories/ws/r/diffstat/c2..c1?topic=false&renames=false&pagelen=100",
-		"/repositories/ws/r/diffstat/c3..c2?topic=false&renames=false&pagelen=100",
+		"/repositories/ws/r/diffstat/c2..c1" + diffstatQuery,
+		"/repositories/ws/r/diffstat/c3..c2" + diffstatQuery,
 	}, server.requestsMatching("/diffstat/"))
 }
 
@@ -888,6 +893,119 @@ func TestFetchStreamPendingWithGoneBaselineRestartsAtZero(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, numberedSummary(60), summary(server.URL, h.items))
 	require.Equal(t, map[string]repositoryCursor{"ws/r": {Head: "c2", Ref: "main", Paths: docs}}, repositories(t, next))
+}
+
+// Run A's diffstat timed out, so its list was every file of the c2 listing and
+// the cut fell at 50; the drain must keep that list even though the diffstat
+// now answers, or the changed files after position 50 are never fetched.
+func TestFetchStreamPendingUnknownListIsKeptWhenDiffstatRecovers(t *testing.T) {
+	c1 := numberedDocs(60)
+	for i := 41; i <= 60; i++ {
+		c1[fmt.Sprintf("docs/f%03d.md", i)] = "old"
+	}
+	commits := map[string]map[string]string{"c1": c1, "c2": numberedDocs(60)}
+	refs := map[string]string{"main": "c2"}
+	old := oldCursor(map[string]repositoryCursor{"ws/r": {Head: "c1", Ref: "main", Paths: docs}})
+
+	runA := fakeBitbucket(t, fakeRepo{commits: commits, refs: refs, timeout: map[string]bool{"c1": true}})
+	h := &streamRecorder{failAt: 51}
+	_, err := stream(t, runA, old, h, selection("ws/r", "main", "docs"))
+	require.EqualError(t, err, "ingest failed")
+	require.Equal(t, numberedSummary(60)[:50], summary(runA.URL, h.items))
+	require.Equal(t, map[string]repositoryCursor{"ws/r": {
+		Head: "c1", Ref: "main", Paths: docs,
+		Pending: &pendingCursor{Head: "c2", Ref: "main", Paths: docs, Done: 50, Unknown: true},
+	}}, repositories(t, h.checkpoints[len(h.checkpoints)-1]))
+
+	runB := fakeBitbucket(t, fakeRepo{commits: commits, refs: refs})
+	resumed := &streamRecorder{}
+	next, err := stream(t, runB, h.checkpoints[len(h.checkpoints)-1], resumed, selection("ws/r", "main", "docs"))
+	require.NoError(t, err)
+	require.Equal(t, numberedSummary(60)[50:], summary(runB.URL, resumed.items))
+	require.Empty(t, runB.requestsMatching("/diffstat/"))
+	require.Equal(t, map[string]repositoryCursor{"ws/r": {Head: "c2", Ref: "main", Paths: docs}}, repositories(t, next))
+}
+
+// Run A's list was the 60 diffstat entries; a drain whose diffstat times out
+// builds the longer unknown list, where offset 50 points elsewhere, so it
+// restarts at zero.
+func TestFetchStreamPendingDiffstatListRestartsWhenDiffstatTimesOut(t *testing.T) {
+	c1 := numberedDocs(120)
+	for i := 61; i <= 120; i++ {
+		c1[fmt.Sprintf("docs/f%03d.md", i)] = "old"
+	}
+	commits := map[string]map[string]string{"c1": c1, "c2": numberedDocs(120)}
+	refs := map[string]string{"main": "c2"}
+	old := oldCursor(map[string]repositoryCursor{"ws/r": {Head: "c1", Ref: "main", Paths: docs}})
+
+	runA := fakeBitbucket(t, fakeRepo{commits: commits, refs: refs})
+	h := &streamRecorder{failAt: 51}
+	_, err := stream(t, runA, old, h, selection("ws/r", "main", "docs"))
+	require.EqualError(t, err, "ingest failed")
+	require.Equal(t, numberedSummary(120)[60:110], summary(runA.URL, h.items))
+	require.Equal(t, map[string]repositoryCursor{"ws/r": {
+		Head: "c1", Ref: "main", Paths: docs,
+		Pending: &pendingCursor{Head: "c2", Ref: "main", Paths: docs, Done: 50},
+	}}, repositories(t, h.checkpoints[len(h.checkpoints)-1]))
+
+	runB := fakeBitbucket(t, fakeRepo{commits: commits, refs: refs, timeout: map[string]bool{"c1": true}})
+	resumed := &streamRecorder{}
+	next, err := stream(t, runB, h.checkpoints[len(h.checkpoints)-1], resumed, selection("ws/r", "main", "docs"))
+	require.NoError(t, err)
+	require.Equal(t, numberedSummary(120), summary(runB.URL, resumed.items))
+	require.Equal(t, map[string]repositoryCursor{"ws/r": {Head: "c2", Ref: "main", Paths: docs}}, repositories(t, next))
+}
+
+// The pending list is the 50 modified files then docs/f051.md and docs/f052.md;
+// done 50 leaves the two additions, drained under main before the new
+// selection is reconciled against c2.
+func TestFetchStreamDrainsPendingBeforeChangedSelection(t *testing.T) {
+	c1 := map[string]string{}
+	for p := range numberedDocs(50) {
+		c1[p] = "old"
+	}
+	c2 := numberedDocs(52)
+	c2["guides/h.md"] = "h"
+	commits := map[string]map[string]string{"c1": c1, "c2": c2, "c3": {"docs/g.md": "g"}}
+	refs := map[string]string{"main": "c2", "release": "c3"}
+	old := oldCursor(map[string]repositoryCursor{"ws/r": {
+		Head: "c1", Ref: "main", Paths: docs,
+		Pending: &pendingCursor{Head: "c2", Ref: "main", Paths: docs, Done: 50},
+	}})
+	drained := []string{"+ws/r:main:docs/f051.md=51", "+ws/r:main:docs/f052.md=52"}
+	var tombstones []string
+	for i := 1; i <= 52; i++ {
+		tombstones = append(tombstones, fmt.Sprintf("-ws/r:main:docs/f%03d.md", i))
+	}
+	for _, tc := range []struct {
+		name string
+		sel  map[string]interface{}
+		want []string
+		next repositoryCursor
+	}{
+		{
+			name: "ref", sel: selection("ws/r", "release", "docs"),
+			want: append(slices.Concat(drained, tombstones), "+ws/r:release:docs/g.md=g"),
+			next: repositoryCursor{Head: "c3", Ref: "release", Paths: docs},
+		},
+		{
+			name: "paths", sel: selection("ws/r", "main", "guides"),
+			want: append(slices.Concat(drained, tombstones), "+ws/r:main:guides/h.md=h"),
+			next: repositoryCursor{Head: "c2", Ref: "main", Paths: []string{"guides"}},
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			server := fakeBitbucket(t, fakeRepo{commits: commits, refs: refs})
+
+			h := &streamRecorder{}
+			next, err := stream(t, server, old, h, tc.sel)
+			require.NoError(t, err)
+			require.Equal(t, tc.want, summary(server.URL, h.items))
+			require.Equal(t, map[string]repositoryCursor{"ws/r": {Head: "c2", Ref: "main", Paths: docs}},
+				repositories(t, h.checkpoints[0]))
+			require.Equal(t, map[string]repositoryCursor{"ws/r": tc.next}, repositories(t, next))
+		})
+	}
 }
 
 func TestFetchStreamGonePendingHeadIsDropped(t *testing.T) {
@@ -908,7 +1026,7 @@ func TestFetchStreamGonePendingHeadIsDropped(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, []string{"-ws/r:main:docs/b.md", "+ws/r:main:docs/a.md=a2", "+ws/r:main:docs/c.md=c"},
 		summary(server.URL, h.items))
-	require.Equal(t, []string{"/repositories/ws/r/diffstat/c3..c1?topic=false&renames=false&pagelen=100"},
+	require.Equal(t, []string{"/repositories/ws/r/diffstat/c3..c1" + diffstatQuery},
 		server.requestsMatching("/diffstat/"))
 	require.Equal(t, map[string]repositoryCursor{"ws/r": {Head: "c3", Ref: "main", Paths: docs}}, repositories(t, next))
 }

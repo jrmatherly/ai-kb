@@ -159,6 +159,25 @@ func TestRateLimitBeyondTheWaitEndsTheRun(t *testing.T) {
 	}
 }
 
+func TestRateLimitWaitStopsWhenTheContextIsCancelled(t *testing.T) {
+	var requests int64
+	server := newTestServer(t, func(w http.ResponseWriter, _ *http.Request) {
+		atomic.AddInt64(&requests, 1)
+		w.Header().Set("x-ratelimit-reset", "60")
+		w.WriteHeader(http.StatusTooManyRequests)
+	})
+	c := newTestClient(t, server, "")
+	ctx, cancel := context.WithCancel(context.Background())
+	time.AfterFunc(50*time.Millisecond, cancel)
+
+	start := time.Now()
+	err := c.ping(ctx)
+
+	require.ErrorIs(t, err, context.Canceled)
+	require.Less(t, time.Since(start), 5*time.Second)
+	require.Equal(t, int64(1), atomic.LoadInt64(&requests))
+}
+
 func TestPagesFollowNextOnly(t *testing.T) {
 	var rec recorder
 	var server *httptest.Server
@@ -378,7 +397,7 @@ func TestDiffstatSendsNewThenOld(t *testing.T) {
 
 	require.NoError(t, err)
 	require.Equal(t, []string{
-		"/repositories/ws/repo/diffstat/new..old?topic=false&renames=false&pagelen=100",
+		"/repositories/ws/repo/diffstat/new..old" + diffstatQuery,
 	}, rec.all())
 	require.Len(t, entries, 2)
 	require.Equal(t, "added", entries[0].Status)

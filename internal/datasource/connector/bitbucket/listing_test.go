@@ -21,19 +21,21 @@ func TestChangeListOrdersTombstonesThenItems(t *testing.T) {
 	require.Equal(t, files{"docs/a.md": 1, "docs/b.md": 2, "docs/m.md": 1, "docs/y.md": 1}, next)
 
 	base := repositoryCursor{Head: "c1", Ref: "main", Paths: docs}
-	list, gone, err := c.changeList(ctx, "ws/r", base, "c2", "main", docs, next)
+	list, gone, unknown, err := c.changeList(ctx, "ws/r", base, "c2", "main", docs, next, false)
 	require.NoError(t, err)
 	require.False(t, gone)
+	require.False(t, unknown)
 	require.Equal(t, []change{
 		{Path: "docs/z.md", Deleted: true}, {Path: "docs/a.md"}, {Path: "docs/b.md"}, {Path: "docs/y.md"},
 	}, list)
-	require.Equal(t, []string{"/repositories/ws/r/diffstat/c2..c1?topic=false&renames=false&pagelen=100"},
+	require.Equal(t, []string{"/repositories/ws/r/diffstat/c2..c1" + diffstatQuery},
 		server.requestsMatching("/diffstat/"))
 	require.Empty(t, server.requestsMatching("/src/c1/"))
 
-	list, gone, err = c.changeList(ctx, "ws/r", repositoryCursor{}, "c2", "main", docs, next)
+	list, gone, unknown, err = c.changeList(ctx, "ws/r", repositoryCursor{}, "c2", "main", docs, next, false)
 	require.NoError(t, err)
 	require.False(t, gone)
+	require.False(t, unknown)
 	require.Equal(t, []change{{Path: "docs/a.md"}, {Path: "docs/b.md"}, {Path: "docs/m.md"}, {Path: "docs/y.md"}}, list)
 }
 
