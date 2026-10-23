@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"maps"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -315,7 +316,7 @@ func (r fakeRepo) serveDiffstat(w http.ResponseWriter, req *http.Request, newHea
 		paths[p] = true
 	}
 	var values []any
-	for _, p := range sortedKeys(paths) {
+	for _, p := range slices.Sorted(maps.Keys(paths)) {
 		newBody, inNew := newFiles[p]
 		oldBody, inOld := oldFiles[p]
 		ref := map[string]string{"path": p}
@@ -329,15 +330,6 @@ func (r fakeRepo) serveDiffstat(w http.ResponseWriter, req *http.Request, newHea
 		}
 	}
 	page(w, req, values)
-}
-
-func sortedKeys[V any](m map[string]V) []string {
-	keys := make([]string, 0, len(m))
-	for k := range m {
-		keys = append(keys, k)
-	}
-	sort.Strings(keys)
-	return keys
 }
 
 type streamRecorder struct {
@@ -1004,6 +996,7 @@ func TestFetchStreamDrainsPendingBeforeChangedSelection(t *testing.T) {
 			require.Equal(t, map[string]repositoryCursor{"ws/r": {Head: "c2", Ref: "main", Paths: docs}},
 				repositories(t, h.checkpoints[0]))
 			require.Equal(t, map[string]repositoryCursor{"ws/r": tc.next}, repositories(t, next))
+			require.Len(t, server.requestsMatching("/src/c2/docs/?"), 1, "the drained listing is the next baseline")
 		})
 	}
 }

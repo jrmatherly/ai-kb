@@ -41,14 +41,14 @@ func parseConfig(ds *types.DataSourceConfig) (*config, error) {
 		}
 		value, _ := m["repository"].(string)
 		if strings.TrimSpace(value) == "" {
-			return nil, fmt.Errorf("%w: repository must be unique and non-empty", datasource.ErrInvalidConfig)
+			return nil, fmt.Errorf("%w: repository is required", datasource.ErrInvalidConfig)
 		}
 		repository, err := normalizeRepository(value)
 		if err != nil {
 			return nil, err
 		}
 		if seen[repository] {
-			return nil, fmt.Errorf("%w: repository must be unique and non-empty", datasource.ErrInvalidConfig)
+			return nil, fmt.Errorf("%w: repository must be unique", datasource.ErrInvalidConfig)
 		}
 		seen[repository] = true
 		ref, _ := m["ref"].(string)

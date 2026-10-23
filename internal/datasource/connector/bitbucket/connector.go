@@ -309,6 +309,8 @@ func (c *Connector) streamRepository(
 		next.Repositories[key] = rc
 		return h.Checkpoint(ctx, bitbucketCursor(next, false))
 	}
+	// A drained pending run's listing is the baseline of the run after it.
+	var drained files
 	if p := rc.Pending; p != nil {
 		pendingFiles, err := c.files(ctx, key, p.Head, p.Paths)
 		switch {
@@ -320,29 +322,11 @@ func (c *Connector) streamRepository(
 		case err != nil:
 			return err
 		default:
-			list, gone, unknown, err := c.changeList(ctx, key, rc, p.Head, p.Ref, p.Paths, pendingFiles, p.Unknown)
-			if err != nil {
+			if err := c.run(ctx, repo, key, &rc, p.Head, p.Ref, p.Paths, pendingFiles, nil, p.Done, p.Unknown,
+				h, checkpoint); err != nil {
 				return err
 			}
-			start := p.Done
-			switch {
-			case gone:
-				start = 0
-			case unknown && !p.Unknown:
-				logger.Infof(ctx, "[Bitbucket] %s: the diffstat of the interrupted run timed out this time, "+
-					"restarting it over the whole listing", key)
-				start = 0
-			}
-			err = c.emit(ctx, repo, key, p.Ref, p.Head, rc.Ref, list, pendingFiles, start, h, func(n int) error {
-				return checkpoint(&pendingCursor{Head: p.Head, Ref: p.Ref, Paths: p.Paths, Done: n, Unknown: unknown})
-			})
-			if err != nil {
-				return err
-			}
-			rc = repositoryCursor{Head: p.Head, Ref: p.Ref, Paths: p.Paths}
-			if err := checkpoint(nil); err != nil {
-				return err
-			}
+			drained = pendingFiles
 		}
 	}
 	if rc.Head == head && rc.Ref == ref && slices.Equal(rc.Paths, roots) {
@@ -354,17 +338,37 @@ func (c *Connector) streamRepository(
 			return err
 		}
 	}
-	list, _, unknown, err := c.changeList(ctx, key, rc, head, ref, roots, nextFiles, false)
+	return c.run(ctx, repo, key, &rc, head, ref, roots, nextFiles, drained, 0, false, h, checkpoint)
+}
+
+// run emits the change list from the baseline rc to head, ref and paths from
+// start on, then records them as the new baseline. recorded, when non-nil, is
+// the listing of rc, already fetched. A gone baseline, or a diffstat that a
+// resumed run built its list with but that timed out this time, restarts at 0.
+func (c *Connector) run(
+	ctx context.Context, repo *repository, key string, rc *repositoryCursor, head, ref string, paths []string,
+	next, recorded files, start int, forceUnknown bool, h datasource.StreamHandler,
+	checkpoint func(*pendingCursor) error,
+) error {
+	list, gone, unknown, err := c.changeList(ctx, key, *rc, head, ref, paths, next, recorded, forceUnknown)
 	if err != nil {
 		return err
 	}
-	err = c.emit(ctx, repo, key, ref, head, rc.Ref, list, nextFiles, 0, h, func(n int) error {
-		return checkpoint(&pendingCursor{Head: head, Ref: ref, Paths: roots, Done: n, Unknown: unknown})
+	switch {
+	case gone:
+		start = 0
+	case unknown && !forceUnknown && start > 0:
+		logger.Infof(ctx, "[Bitbucket] %s: the diffstat of the interrupted run timed out this time, "+
+			"restarting it over the whole listing", key)
+		start = 0
+	}
+	err = c.emit(ctx, repo, key, ref, head, rc.Ref, list, next, start, h, func(n int) error {
+		return checkpoint(&pendingCursor{Head: head, Ref: ref, Paths: paths, Done: n, Unknown: unknown})
 	})
 	if err != nil {
 		return err
 	}
-	rc = repositoryCursor{Head: head, Ref: ref, Paths: roots}
+	*rc = repositoryCursor{Head: head, Ref: ref, Paths: paths}
 	return checkpoint(nil)
 }
 

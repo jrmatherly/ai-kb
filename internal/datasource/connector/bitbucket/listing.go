@@ -35,8 +35,8 @@ var (
 	errDepthExceeded = errors.New("bitbucket listing reached its depth limit")
 )
 
-func (f files) add(e srcEntry, roots []string, importable func(string) bool) {
-	if e.Type == "commit_file" && repofile.InScope(e.Path, roots) && importable(e.Path) &&
+func (c *Connector) addFile(f files, e srcEntry, roots []string) {
+	if e.Type == "commit_file" && repofile.InScope(e.Path, roots) && c.importable(e.Path) &&
 		!e.has("link") && !e.has("subrepository") && !e.has("lfs") {
 		f[e.Path] = e.Size
 	}
@@ -90,7 +90,7 @@ func (c *Connector) files(ctx context.Context, key, commit string, roots []strin
 			if e.Type == "commit_directory" && depthBelow(e.Path, dir) >= listingDepth {
 				return nil, fmt.Errorf("%w: %s at %s, directory %q", errDepthExceeded, key, commit, e.Path)
 			}
-			out.add(e, roots, c.importable)
+			c.addFile(out, e, roots)
 		}
 	}
 	return out, nil
@@ -116,7 +116,7 @@ func (c *Connector) walk(ctx context.Context, key, commit, dir string, roots []s
 			}
 			continue
 		}
-		out.add(e, roots, c.importable)
+		c.addFile(out, e, roots)
 	}
 	return out, nil
 }
@@ -150,16 +150,17 @@ func leadsToRoot(dir string, roots []string) bool {
 // supplies the tombstones. forceUnknown builds that list without asking for the
 // diffstat, and unknown reports which way the list was built. baselineGone
 // reports a recorded head that no longer exists, so a resumed pending run
-// restarts at zero.
+// restarts at zero. recorded, when non-nil, is the listing of base, already
+// fetched.
 func (c *Connector) changeList(
-	ctx context.Context, key string, base repositoryCursor, head, ref string, roots []string, next files,
+	ctx context.Context, key string, base repositoryCursor, head, ref string, roots []string, next, recorded files,
 	forceUnknown bool,
 ) (list []change, baselineGone, unknown bool, err error) {
-	tombstones, items := map[string]bool{}, map[string]bool{}
-	for p := range next {
-		items[p] = true
-	}
+	tombstones, items := map[string]bool{}, files{}
 	baseline := func() (files, error) {
+		if recorded != nil {
+			return recorded, nil
+		}
 		prev, err := c.files(ctx, key, base.Head, base.Paths)
 		if errors.Is(err, errMissingCommit) {
 			logger.Infof(ctx, "[Bitbucket] %s: previous head %s is gone, emitting the whole listing", key, base.Head)
@@ -169,7 +170,9 @@ func (c *Connector) changeList(
 	}
 	switch {
 	case base.Head == "":
+		maps.Copy(items, next)
 	case base.Ref != ref:
+		maps.Copy(items, next)
 		prev, err := baseline()
 		if err != nil {
 			return nil, false, false, err
@@ -198,6 +201,7 @@ func (c *Connector) changeList(
 			}
 		}
 		if unknown {
+			maps.Copy(items, next)
 			for p := range prev {
 				if _, ok := next[p]; !ok {
 					tombstones[p] = true
@@ -205,11 +209,10 @@ func (c *Connector) changeList(
 			}
 			break
 		}
-		clear(items)
 		for _, e := range entries {
 			if e.New != nil && (e.Status == "added" || e.Status == "modified") {
-				if _, ok := next[e.New.Path]; ok {
-					items[e.New.Path] = true
+				if size, ok := next[e.New.Path]; ok {
+					items[e.New.Path] = size
 					continue
 				}
 			}
@@ -229,9 +232,9 @@ func (c *Connector) changeList(
 				tombstones[p] = true
 			}
 		}
-		for p := range next {
+		for p, size := range next {
 			if !repofile.InScope(p, base.Paths) {
-				items[p] = true
+				items[p] = size
 			}
 		}
 	}

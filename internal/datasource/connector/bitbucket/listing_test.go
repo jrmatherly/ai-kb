@@ -21,7 +21,7 @@ func TestChangeListOrdersTombstonesThenItems(t *testing.T) {
 	require.Equal(t, files{"docs/a.md": 1, "docs/b.md": 2, "docs/m.md": 1, "docs/y.md": 1}, next)
 
 	base := repositoryCursor{Head: "c1", Ref: "main", Paths: docs}
-	list, gone, unknown, err := c.changeList(ctx, "ws/r", base, "c2", "main", docs, next, false)
+	list, gone, unknown, err := c.changeList(ctx, "ws/r", base, "c2", "main", docs, next, nil, false)
 	require.NoError(t, err)
 	require.False(t, gone)
 	require.False(t, unknown)
@@ -32,7 +32,7 @@ func TestChangeListOrdersTombstonesThenItems(t *testing.T) {
 		server.requestsMatching("/diffstat/"))
 	require.Empty(t, server.requestsMatching("/src/c1/"))
 
-	list, gone, unknown, err = c.changeList(ctx, "ws/r", repositoryCursor{}, "c2", "main", docs, next, false)
+	list, gone, unknown, err = c.changeList(ctx, "ws/r", repositoryCursor{}, "c2", "main", docs, next, nil, false)
 	require.NoError(t, err)
 	require.False(t, gone)
 	require.False(t, unknown)

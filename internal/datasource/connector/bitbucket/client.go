@@ -3,7 +3,6 @@ package bitbucket
 
 import (
 	"context"
-	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -50,8 +49,8 @@ var (
 var fullHash = regexp.MustCompile(`^[0-9a-fA-F]{40}$`)
 
 type client struct {
-	baseURL, auth string
-	http, rawHTTP *http.Client
+	baseURL, username, token string
+	http, rawHTTP            *http.Client
 	// The limits are fields so tests can lower them; newClient always sets the
 	// production values.
 	jsonLimit, rawLimit int64
@@ -121,6 +120,10 @@ type srcEntry struct {
 
 func (e srcEntry) has(attribute string) bool { return slices.Contains(e.Attributes, attribute) }
 
+type commitRef struct {
+	Hash string `json:"hash"`
+}
+
 type diffEntry struct {
 	Status string `json:"status"`
 	Old    *struct {
@@ -135,17 +138,14 @@ func newClient(baseURL, username, token string) (*client, error) {
 	if strings.TrimSpace(token) == "" {
 		return nil, fmt.Errorf("%w: Bitbucket access token is missing", datasource.ErrInvalidConfig)
 	}
-	auth := "Bearer " + token
-	if username = strings.TrimSpace(username); username != "" {
-		auth = "Basic " + base64.StdEncoding.EncodeToString([]byte(username+":"+token))
-	}
 	raw := datasource.NewConnectorHTTPClient(30 * time.Second)
 	// An LFS file redirects to a media host; following it would send the
 	// token off the API host, so the caller sees errLFSRedirect instead.
 	raw.CheckRedirect = func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }
 	return &client{
 		baseURL:   strings.TrimRight(baseURL, "/"),
-		auth:      auth,
+		username:  strings.TrimSpace(username),
+		token:     token,
 		http:      datasource.NewConnectorHTTPClient(30 * time.Second),
 		rawHTTP:   raw,
 		jsonLimit: maxJSONResponseBytes,
@@ -175,7 +175,11 @@ func (c *client) do(ctx context.Context, hc *http.Client, rawURL, accept string)
 		if err != nil {
 			return nil, err
 		}
-		req.Header.Set("Authorization", c.auth)
+		if c.username != "" {
+			req.SetBasicAuth(c.username, c.token)
+		} else {
+			req.Header.Set("Authorization", "Bearer "+c.token)
+		}
 		if accept != "" {
 			req.Header.Set("Accept", accept)
 		}
@@ -284,10 +288,7 @@ func escapePath(p string) string {
 }
 
 func (c *client) ping(ctx context.Context) error {
-	var user struct {
-		UUID string `json:"uuid"`
-	}
-	return c.fetch(ctx, c.baseURL+"/user", &user)
+	return c.fetch(ctx, c.baseURL+"/user", &struct{}{})
 }
 
 func (c *client) workspaces(ctx context.Context) ([]string, error) {
@@ -322,9 +323,7 @@ func (c *client) repository(ctx context.Context, key string) (*repository, error
 // headCommit resolves ref as a branch, then a tag, then a full commit hash.
 func (c *client) headCommit(ctx context.Context, key, ref string) (string, error) {
 	var named struct {
-		Target struct {
-			Hash string `json:"hash"`
-		} `json:"target"`
+		Target commitRef `json:"target"`
 	}
 	escaped := url.PathEscape(ref)
 	err := c.fetch(ctx, c.baseURL+repoPath(key)+"/refs/branches/"+escaped, &named)
@@ -337,9 +336,7 @@ func (c *client) headCommit(ctx context.Context, key, ref string) (string, error
 	if !errors.Is(err, datasource.ErrResourceNotFound) || !fullHash.MatchString(ref) {
 		return "", err
 	}
-	var commit struct {
-		Hash string `json:"hash"`
-	}
+	var commit commitRef
 	if err := c.fetch(ctx, c.baseURL+repoPath(key)+"/commit/"+escaped, &commit); err != nil {
 		return "", err
 	}
@@ -347,9 +344,7 @@ func (c *client) headCommit(ctx context.Context, key, ref string) (string, error
 }
 
 func (c *client) commitExists(ctx context.Context, key, hash string) (bool, error) {
-	var commit struct {
-		Hash string `json:"hash"`
-	}
+	var commit commitRef
 	err := c.fetch(ctx, c.baseURL+repoPath(key)+"/commit/"+url.PathEscape(hash), &commit)
 	if errors.Is(err, datasource.ErrResourceNotFound) {
 		return false, nil

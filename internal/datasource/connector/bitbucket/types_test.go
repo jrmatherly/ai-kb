@@ -30,6 +30,8 @@ func TestParseConfigNormalisesRepository(t *testing.T) {
 	}
 	_, err := parseConfig(settings("https://bitbucket.org/ws/repo"))
 	require.EqualError(t, err, datasource.ErrInvalidConfig.Error()+": repository must be workspace/slug, not a URL")
+	_, err = parseConfig(settings(""))
+	require.EqualError(t, err, datasource.ErrInvalidConfig.Error()+": repository is required")
 	_, err = parseConfig(settings("ws/repo/extra"))
 	require.EqualError(t, err, datasource.ErrInvalidConfig.Error()+": repository must be workspace/slug")
 }
@@ -54,7 +56,7 @@ func TestParseConfigRejectsDuplicateRepositoryIgnoringCase(t *testing.T) {
 		},
 	}})
 	require.ErrorIs(t, err, datasource.ErrInvalidConfig)
-	require.EqualError(t, err, datasource.ErrInvalidConfig.Error()+": repository must be unique and non-empty")
+	require.EqualError(t, err, datasource.ErrInvalidConfig.Error()+": repository must be unique")
 }
 
 func TestParseConfigRequiresRepositories(t *testing.T) {
