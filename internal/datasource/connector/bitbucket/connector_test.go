@@ -24,7 +24,6 @@ import (
 
 const goodToken = "per-source-token"
 
-// diffstatQuery is the query string of every diffstat request.
 const diffstatQuery = "?topic=false&renames=false&pagelen=100&fields=values.status,values.old.path,values.new.path,next"
 
 // fakeRepo is the content of the fake's one repository, ws/R (key ws/r).

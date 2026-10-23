@@ -227,8 +227,6 @@ func (c *client) fetch(ctx context.Context, rawURL string, out any) error {
 	return json.Unmarshal(body, out)
 }
 
-// pages walks a paginated listing by its next links, handing each page's
-// values to each.
 func (c *client) pages(ctx context.Context, first string, each func(values json.RawMessage) error) error {
 	seen := make(map[string]struct{})
 	for next := first; next != ""; {
@@ -260,7 +258,6 @@ func (c *client) pages(ctx context.Context, first string, each func(values json.
 	return nil
 }
 
-// collect walks a paginated listing into one slice.
 func collect[T any](ctx context.Context, c *client, first string) ([]T, error) {
 	var all []T
 	err := c.pages(ctx, first, func(values json.RawMessage) error {

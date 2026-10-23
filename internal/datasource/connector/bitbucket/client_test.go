@@ -42,7 +42,6 @@ func newTestClient(t *testing.T, server *httptest.Server, username string) *clie
 	return c
 }
 
-// recorder notes the request URI of every request in arrival order.
 type recorder struct {
 	mu   sync.Mutex
 	uris []string

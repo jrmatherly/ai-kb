@@ -211,8 +211,7 @@ type cursor struct {
 	Repositories map[string]repositoryCursor `json:"repositories"`
 }
 
-// readCursor decodes the previous cursor. A repository value that is not an
-// object (an older cursor shape) counts as no previous head.
+// readCursor treats an unreadable repository entry as a first sync rather than failing the run.
 func readCursor(ctx context.Context, old *types.SyncCursor) cursor {
 	out := cursor{Repositories: map[string]repositoryCursor{}}
 	if old == nil {
@@ -374,8 +373,7 @@ func (c *Connector) run(
 	return checkpoint(nil)
 }
 
-// emit sends list[start:] and calls checkpoint after every checkpointEvery
-// entries. A tombstone is under prevRef, the ref its item was indexed under.
+// emit sends list[start:]. A tombstone goes under prevRef, the ref its item was indexed under.
 func (c *Connector) emit(
 	ctx context.Context, repo *repository, key, ref, head, prevRef string, list []change, sizes files,
 	start int, h datasource.StreamHandler, checkpoint func(done int) error,
