@@ -86,8 +86,12 @@ func TestChildFoldersFollowsNextLinkAndKeepsFoldersOnly(t *testing.T) {
 			_, _ = w.Write([]byte(`{"value":[{"id":"01C","name":"Archive","folder":{}}]}`))
 			return
 		}
+		require.Contains(t, r.URL.Query().Get("$select"), "remoteItem", "the shortcut filter needs its facet")
+		require.Contains(t, r.URL.Query().Get("$select"), "deleted")
 		_, _ = w.Write(
-			[]byte(`{"value":[{"id":"01A","name":"Policies","folder":{}},{"id":"01B","name":"note.txt","file":{}}],` +
+			[]byte(`{"value":[{"id":"01A","name":"Policies","folder":{}},{"id":"01B","name":"note.txt","file":{}},` +
+				`{"id":"01D","name":"Shared","folder":{},"remoteItem":{}},` +
+				`{"id":"01E","name":"Gone","folder":{},"deleted":{}}],` +
 				`"@odata.nextLink":"` + f.server.URL + `/drives/b!abc/items/01F/children?$skiptoken=2"}`),
 		)
 	})
@@ -222,6 +226,18 @@ func TestErrorsCarryNoQueryStringOrLink(t *testing.T) {
 	require.NotContains(t, err.Error(), "SECRET")
 	require.NotContains(t, err.Error(), "$select")
 	require.NotContains(t, (&resyncError{Location: "https://x/delta?token=SECRET"}).Error(), "SECRET")
+
+	f.handle("GET /drives/b!abc/root/delta", func(w http.ResponseWriter, _ *http.Request) {
+		conn, _, err := w.(http.Hijacker).Hijack()
+		require.NoError(t, err)
+		_ = conn.Close()
+	})
+	_, err = c.deltaPage(context.Background(), c.deltaStart("b!abc", "")+"&token=SECRET")
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "/drives/b!abc/root/delta", "a transport error names the path")
+	require.NotContains(t, err.Error(), "SECRET")
+	require.NotContains(t, err.Error(), "$select")
+	require.NotContains(t, err.Error(), f.server.URL)
 }
 
 func TestSiteDrivesUserDriveAndItem(t *testing.T) {

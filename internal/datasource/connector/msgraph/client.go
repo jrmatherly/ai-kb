@@ -262,7 +262,12 @@ func (c *client) do(ctx context.Context, hc *http.Client, rawURL string) (*http.
 		req.Header.Set("Accept", "application/json")
 		resp, err := hc.Do(req)
 		if err != nil {
-			return nil, err
+			// *url.Error prints the full URL, and its query carries delta and paging tokens.
+			cause := errors.Unwrap(err)
+			if cause == nil {
+				cause = err
+			}
+			return nil, fmt.Errorf("microsoft graph %s: %w", endpointLabel(rawURL), cause)
 		}
 		switch resp.StatusCode {
 		case http.StatusUnauthorized:
@@ -449,8 +454,10 @@ func (c *client) item(ctx context.Context, driveID, itemID string) (*driveItem, 
 
 // childFolders lists the direct child folders of a drive root or folder.
 func (c *client) childFolders(ctx context.Context, driveID, itemID string) ([]driveItem, error) {
-	first := fmt.Sprintf("%s/children?$select=id,name,folder,lastModifiedDateTime,webUrl&$top=%d",
-		c.itemPath(driveID, itemID), childrenPageSize)
+	first := fmt.Sprintf(
+		"%s/children?$select=id,name,folder,deleted,remoteItem,lastModifiedDateTime,webUrl&$top=%d",
+		c.itemPath(driveID, itemID), childrenPageSize,
+	)
 	all, err := collect[driveItem](ctx, c, first)
 	if err != nil {
 		return nil, err
