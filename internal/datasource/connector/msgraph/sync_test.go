@@ -3,6 +3,7 @@ package msgraph
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"io"
 	"net/http"
 	"testing"
@@ -126,6 +127,20 @@ func (r *recorder) names() []string {
 		}
 	}
 	return out
+}
+
+// failingRecorder refuses the item titled failOn, the way a handler whose
+// ingestion fails mid-page does.
+type failingRecorder struct {
+	recorder
+	failOn string
+}
+
+func (r *failingRecorder) Emit(ctx context.Context, item types.FetchedItem) error {
+	if item.Title == r.failOn {
+		return errors.New("handler refused " + item.Title)
+	}
+	return r.recorder.Emit(ctx, item)
 }
 
 func importsAll() *types.DataSourceConfig {
@@ -305,7 +320,7 @@ func TestFetchStreamResumesFromPageLink(t *testing.T) {
 	serveFile(f, "b!docs", "01A", "AAAA")
 	serveFile(f, "b!docs", "01B", "BB")
 	c := testConnector(f, KindSharePoint)
-	// Run 1 is cut after the first page: the second page's download fails the run.
+	// Run 1 walks both pages; the second page's download fails only b.pdf, which becomes an error item.
 	f.handle(
 		"GET /download/01B",
 		func(w http.ResponseWriter, _ *http.Request) { w.WriteHeader(http.StatusInternalServerError) },
@@ -569,7 +584,6 @@ func TestFetchStreamMoveBetweenRootsKeepsTheFile(t *testing.T) {
 	)
 	deltaScript(f, "/drives/b!docs/items/01B/delta", []map[string]any{folder("01B", "B", "01ROOT")})
 	f.json("GET /drives/b!docs", http.StatusOK, map[string]any{"id": "b!docs", "name": "Documents"})
-	f.json("GET /drives/b!docs/items/01ROOT", http.StatusOK, rootItem("01ROOT"))
 	serveFile(f, "b!docs", "01X", "AAAA")
 	c := testConnector(f, KindSharePoint)
 	both := sharePointConfig("b!docs:01A", "b!docs:01B")
@@ -651,9 +665,15 @@ func TestFetchStreamRetryPassTurnsAForbiddenItemIntoAnErrorItem(t *testing.T) {
 		map[string]any{"error": map[string]any{"code": "accessDenied"}},
 	)
 	rec := &recorder{}
-	_, err = c.FetchStream(context.Background(), importsAll(), cur, rec)
+	next, err := c.FetchStream(context.Background(), importsAll(), cur, rec)
 	require.NoError(t, err, "one unreadable file does not stop the delta walk")
 	require.Equal(t, []string{"!msgraph_permission_denied:a.docx"}, rec.names())
+	// The refusal is recorded: the next run neither re-reports nor re-fetches the item.
+	third := &recorder{}
+	_, err = c.FetchStream(context.Background(), importsAll(), next, third)
+	require.NoError(t, err)
+	require.Empty(t, third.names())
+	require.Equal(t, 1, f.seen("GET /drives/b!docs/items/01A?"))
 }
 
 func TestFetchStreamRotatedSecretFailsTheRunNotTheFile(t *testing.T) {
@@ -671,4 +691,185 @@ func TestFetchStreamRotatedSecretFailsTheRunNotTheFile(t *testing.T) {
 	})
 	_, err := testConnector(f, KindSharePoint).FetchStream(context.Background(), importsAll(), nil, &recorder{})
 	require.ErrorIs(t, err, datasource.ErrInvalidCredentials)
+}
+
+func TestFetchStreamReHomedTransientItemIsRetriedUnderTheNewRoot(t *testing.T) {
+	f := newFakeGraph(t)
+	serveSite(f)
+	deltaScript(
+		f,
+		"/drives/b!docs/items/01P/delta",
+		[]map[string]any{folder("01P", "Policies", "01ROOT"), file("01A", "a.docx", "01P", "AAAA", "qa")},
+	)
+	deltaScript(
+		f,
+		"/drives/b!docs/root/delta",
+		[]map[string]any{
+			rootItem("01ROOT"),
+			folder("01P", "Policies", "01ROOT"),
+			file("01A", "a.docx", "01P", "AAAA", "qa"),
+		},
+	)
+	f.json("GET /drives/b!docs", http.StatusOK, map[string]any{"id": "b!docs", "name": "Documents"})
+	f.handle(
+		"GET /drives/b!docs/items/01A/content",
+		func(w http.ResponseWriter, _ *http.Request) { w.WriteHeader(http.StatusInternalServerError) },
+	)
+	c := testConnector(f, KindSharePoint)
+	folderOnly := sharePointConfig("b!docs:01P")
+	folderOnly.Imports = secutilsAll()
+	first := &recorder{}
+	cur, err := c.FetchStream(context.Background(), folderOnly, nil, first)
+	require.NoError(t, err)
+	require.Equal(t, []string{"!msgraph_fetch_failed:a.docx"}, first.names())
+	// The folder leaves the selection and its drive enters it: the failed item moves to the drive root,
+	// which has no state yet when the retry pass fetches it.
+	f.json("GET /drives/b!docs/items/01A", http.StatusOK, file("01A", "a.docx", "01P", "AAAA", "qa"))
+	serveFile(f, "b!docs", "01A", "AAAA")
+	second := &recorder{}
+	next, err := c.FetchStream(context.Background(), importsAll(), cur, second)
+	require.NoError(t, err)
+	require.Equal(t, []string{"Documents/Policies/a.docx"}, second.names())
+	after, _ := decodeCursor(next)
+	require.Equal(t, "b!docs", after.Items["b!docs:01A"].Root)
+}
+
+func TestFetchStreamEmitFailureLeavesTheItemForTheRetry(t *testing.T) {
+	f := newFakeGraph(t)
+	serveSite(f)
+	deltaScript(f, "/drives/b!docs/root/delta",
+		[]map[string]any{rootItem("01ROOT"), file("01A", "a.docx", "01ROOT", "AAAA", "qa")},
+		[]map[string]any{file("01B", "b.pdf", "01ROOT", "BB", "qb"), file("01C", "c.pdf", "01ROOT", "CC", "qc")},
+	)
+	f.json("GET /drives/b!docs", http.StatusOK, map[string]any{"id": "b!docs", "name": "Documents"})
+	serveFile(f, "b!docs", "01A", "AAAA")
+	serveFile(f, "b!docs", "01B", "BB")
+	serveFile(f, "b!docs", "01C", "CC")
+	c := testConnector(f, KindSharePoint)
+	h := &failingRecorder{failOn: "c.pdf"}
+	_, err := c.FetchStream(context.Background(), importsAll(), nil, h)
+	require.ErrorContains(t, err, "handler refused c.pdf")
+	require.Equal(t, []string{"Documents/a.docx", "Documents/b.pdf"}, h.names())
+	// Only the page 1 checkpoint exists; nothing claims b.pdf or c.pdf were delivered.
+	require.Len(t, h.checkpoints, 1)
+	mid, err := decodeCursor(h.checkpoints[0])
+	require.NoError(t, err)
+	require.Contains(t, mid.Roots["b!docs"].Next, "page=1")
+	require.NotContains(t, mid.Items, "b!docs:01B")
+	require.NotContains(t, mid.Items, "b!docs:01C")
+	second := &recorder{}
+	_, err = c.FetchStream(context.Background(), importsAll(), h.checkpoints[0], second)
+	require.NoError(t, err)
+	require.Equal(t, []string{"Documents/b.pdf", "Documents/c.pdf"}, second.names())
+}
+
+func TestFetchStreamGrandparentOnLaterPageIsFetchedForThePath(t *testing.T) {
+	f := newFakeGraph(t)
+	serveSite(f)
+	// Policies is known when a.docx arrives, but its parent HR is only on the next page.
+	deltaScript(f, "/drives/b!docs/root/delta",
+		[]map[string]any{
+			rootItem("01ROOT"),
+			folder("01P", "Policies", "01Q"),
+			file("01A", "a.docx", "01P", "AAAA", "qa"),
+		},
+		[]map[string]any{folder("01Q", "HR", "01ROOT")},
+	)
+	f.json("GET /drives/b!docs", http.StatusOK, map[string]any{"id": "b!docs", "name": "Documents"})
+	f.json("GET /drives/b!docs/items/01Q", http.StatusOK, folder("01Q", "HR", "01ROOT"))
+	serveFile(f, "b!docs", "01A", "AAAA")
+	rec := &recorder{}
+	_, err := testConnector(f, KindSharePoint).FetchStream(context.Background(), importsAll(), nil, rec)
+	require.NoError(t, err)
+	require.Equal(t, []string{"Documents/HR/Policies/a.docx"}, rec.names())
+}
+
+func TestFetchFullStreamReemitsUnchangedAndTombstonesUnseen(t *testing.T) {
+	f := newFakeGraph(t)
+	serveSite(f)
+	deltaScript(
+		f,
+		"/drives/b!docs/root/delta",
+		[]map[string]any{
+			rootItem("01ROOT"),
+			file("01A", "a.docx", "01ROOT", "AAAA", "qa"),
+			file("01B", "b.pdf", "01ROOT", "BB", "qb"),
+		},
+	)
+	f.json("GET /drives/b!docs", http.StatusOK, map[string]any{"id": "b!docs", "name": "Documents"})
+	serveFile(f, "b!docs", "01A", "AAAA")
+	serveFile(f, "b!docs", "01B", "BB")
+	c := testConnector(f, KindSharePoint)
+	cur, err := c.FetchStream(context.Background(), importsAll(), nil, &recorder{})
+	require.NoError(t, err)
+	// The forced full run enumerates from the start; b.pdf is gone, a.docx is unchanged.
+	f.handle("GET /drives/b!docs/root/delta", func(w http.ResponseWriter, _ *http.Request) {
+		_ = jsonEncode(w, map[string]any{
+			"value":            []any{rootItem("01ROOT"), file("01A", "a.docx", "01ROOT", "AAAA", "qa")},
+			"@odata.deltaLink": f.server.URL + "/drives/b!docs/root/delta?token=done-9",
+		})
+	})
+	rec := &recorder{}
+	next, err := c.FetchFullStream(context.Background(), importsAll(), cur, rec)
+	require.NoError(t, err)
+	require.Equal(t, []string{"Documents/a.docx", "-b!docs:01B"}, rec.names())
+	require.False(t, next.CompleteListing)
+	after, _ := decodeCursor(next)
+	require.False(t, after.Roots["b!docs"].Full)
+	require.False(t, after.Roots["b!docs"].Resync)
+	require.Contains(t, after.Roots["b!docs"].Delta, "done-9")
+}
+
+func TestFetchFullStreamResumesWithoutReemittingTheFirstPage(t *testing.T) {
+	f := newFakeGraph(t)
+	serveSite(f)
+	deltaScript(
+		f,
+		"/drives/b!docs/root/delta",
+		[]map[string]any{
+			rootItem("01ROOT"),
+			file("01A", "a.docx", "01ROOT", "AAAA", "qa"),
+			file("01B", "b.pdf", "01ROOT", "BB", "qb"),
+			file("01C", "c.pdf", "01ROOT", "CC", "qc"),
+		},
+	)
+	f.json("GET /drives/b!docs", http.StatusOK, map[string]any{"id": "b!docs", "name": "Documents"})
+	serveFile(f, "b!docs", "01A", "AAAA")
+	serveFile(f, "b!docs", "01B", "BB")
+	serveFile(f, "b!docs", "01C", "CC")
+	c := testConnector(f, KindSharePoint)
+	cur, err := c.FetchStream(context.Background(), importsAll(), nil, &recorder{})
+	require.NoError(t, err)
+	// The full enumeration has two pages and no longer lists c.pdf.
+	f.handle("GET /drives/b!docs/root/delta", func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Query().Get("page") == "1" {
+			_ = jsonEncode(w, map[string]any{
+				"value":            []any{file("01B", "b.pdf", "01ROOT", "BB", "qb")},
+				"@odata.deltaLink": f.server.URL + "/drives/b!docs/root/delta?token=done-9",
+			})
+			return
+		}
+		_ = jsonEncode(w, map[string]any{
+			"value":           []any{rootItem("01ROOT"), file("01A", "a.docx", "01ROOT", "AAAA", "qa")},
+			"@odata.nextLink": f.server.URL + "/drives/b!docs/root/delta?page=1",
+		})
+	})
+	first := &failingRecorder{failOn: "b.pdf"}
+	_, err = c.FetchFullStream(context.Background(), importsAll(), cur, first)
+	require.ErrorContains(t, err, "handler refused b.pdf")
+	require.Equal(t, []string{"Documents/a.docx"}, first.names())
+	require.NotEmpty(t, first.checkpoints)
+	mid, _ := decodeCursor(first.checkpoints[len(first.checkpoints)-1])
+	require.True(t, mid.Roots["b!docs"].Full, "the checkpoint sits inside the full run")
+	require.Contains(t, mid.Roots["b!docs"].Next, "page=1")
+	second := &recorder{}
+	last := first.checkpoints[len(first.checkpoints)-1]
+	next, err := c.FetchFullStream(context.Background(), importsAll(), last, second)
+	require.NoError(t, err)
+	require.Equal(
+		t, []string{"Documents/b.pdf", "-b!docs:01C"}, second.names(), "a.docx was re-emitted by the first attempt",
+	)
+	after, _ := decodeCursor(next)
+	require.False(t, after.Roots["b!docs"].Full)
+	require.Contains(t, after.Items, "b!docs:01A")
 }

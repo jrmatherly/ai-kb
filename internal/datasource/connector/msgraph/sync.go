@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"sort"
+	"strings"
 
 	"github.com/jrmatherly/ai-kb/internal/datasource"
 	"github.com/jrmatherly/ai-kb/internal/logger"
@@ -23,6 +24,8 @@ type run struct {
 	ds       *types.DataSourceConfig
 	cur      *cursor
 	h        datasource.StreamHandler
+	roots    map[string]root // the selected roots by id
+	rootIDs  []string        // the selected root ids, sorted, so ties resolve the same way every run
 	limit    int64
 	emitted  int
 	fresh    bool // started from a nil cursor
@@ -35,6 +38,22 @@ type run struct {
 // and every 50 emits. See the design's decisions 5 to 11.
 func (c *Connector) FetchStream(
 	ctx context.Context, ds *types.DataSourceConfig, old *types.SyncCursor, h datasource.StreamHandler,
+) (*types.SyncCursor, error) {
+	return c.stream(ctx, ds, old, h, false)
+}
+
+// FetchFullStream re-fetches every file through the resync path: each root
+// restarts its enumeration with a new generation, unchanged fingerprints no
+// longer skip the download, and the end of the enumeration tombstones what
+// it did not list. A checkpoint taken inside the full run resumes it.
+func (c *Connector) FetchFullStream(
+	ctx context.Context, ds *types.DataSourceConfig, old *types.SyncCursor, h datasource.StreamHandler,
+) (*types.SyncCursor, error) {
+	return c.stream(ctx, ds, old, h, true)
+}
+
+func (c *Connector) stream(
+	ctx context.Context, ds *types.DataSourceConfig, old *types.SyncCursor, h datasource.StreamHandler, full bool,
 ) (*types.SyncCursor, error) {
 	cfg, err := parseConfig(c.kind, ds)
 	if err != nil {
@@ -54,16 +73,30 @@ func (c *Connector) FetchStream(
 		ds:    ds,
 		cur:   cur,
 		h:     h,
+		roots: map[string]root{},
 		limit: utils.GetMaxFileSize(),
 		fresh: old == nil,
 	}
-
-	selected := map[string]root{}
 	for _, rt := range cfg.Roots {
-		selected[rt.id()] = rt
+		r.roots[rt.id()] = rt
+		r.rootIDs = append(r.rootIDs, rt.id())
 	}
-	if err := r.dropDeselected(ctx, selected); err != nil {
+	sort.Strings(r.rootIDs)
+	if err := r.dropDeselected(ctx); err != nil {
 		return nil, err
+	}
+	// Every selected root has a state before the retry pass, which may fetch
+	// under a root that is new this run (an item re-homed by dropDeselected).
+	for _, id := range r.rootIDs {
+		st := r.cur.Roots[id]
+		if st == nil {
+			st = &rootState{}
+			r.cur.Roots[id] = st
+		}
+		if full && !st.Full {
+			st.Delta, st.Next, st.Resync, st.Full = "", "", true, true
+			st.Gen++
+		}
 	}
 	// Drive names for the knowledge path.
 	for _, rt := range cfg.Roots {
@@ -79,13 +112,8 @@ func (c *Connector) FetchStream(
 	if err := r.retryFailed(ctx); err != nil {
 		return nil, err
 	}
-	ids := make([]string, 0, len(cfg.Roots))
-	for _, rt := range cfg.Roots {
-		ids = append(ids, rt.id())
-	}
-	sort.Strings(ids)
-	for _, id := range ids {
-		if err := r.walkRoot(ctx, selected[id]); err != nil {
+	for _, id := range r.rootIDs {
+		if err := r.walkRoot(ctx, r.roots[id]); err != nil {
 			return nil, err
 		}
 	}
@@ -96,13 +124,13 @@ func (c *Connector) FetchStream(
 
 // dropDeselected tombstones what the roots that left the selection held,
 // except items another selected root still covers, and forgets those roots.
-func (r *run) dropDeselected(ctx context.Context, selected map[string]root) error {
+func (r *run) dropDeselected(ctx context.Context) error {
 	for id := range r.cur.Roots {
-		if _, ok := selected[id]; ok {
+		if _, ok := r.roots[id]; ok {
 			continue
 		}
 		for _, itemID := range r.cur.itemsUnderRoot(id) {
-			if other := r.coveringRoot(itemID, r.cur.Items[itemID].Parent, selected); other != "" {
+			if other := r.coveringRoot(itemID, r.cur.Items[itemID].Parent); other != "" {
 				st := r.cur.Items[itemID]
 				st.Root = other
 				r.cur.Items[itemID] = st
@@ -116,7 +144,7 @@ func (r *run) dropDeselected(ctx context.Context, selected map[string]root) erro
 			if f.Root != id {
 				continue
 			}
-			if other := r.coveringRoot(fid, f.Parent, selected); other != "" {
+			if other := r.coveringRoot(fid, f.Parent); other != "" {
 				f.Root = other
 				r.cur.Folders[fid] = f
 			} else {
@@ -131,10 +159,11 @@ func (r *run) dropDeselected(ctx context.Context, selected map[string]root) erro
 	return nil
 }
 
-// coveringRoot returns a selected root that still covers the entry, or "".
-func (r *run) coveringRoot(id, parent string, selected map[string]root) string {
-	for rootID, rt := range selected {
-		if r.cur.underRoot(id, parent, rt) {
+// coveringRoot returns the first selected root, in id order, that still
+// covers the entry, or "".
+func (r *run) coveringRoot(id, parent string) string {
+	for _, rootID := range r.rootIDs {
+		if r.cur.underRoot(id, parent, r.roots[rootID]) {
 			return rootID
 		}
 	}
@@ -172,7 +201,8 @@ func (r *run) emitTombstone(ctx context.Context, id string) error {
 
 // retryFailed re-fetches items whose last download failed for a transient
 // reason; delta will not re-send an unchanged item, so this pass is the only
-// retry they get. A deterministic failure (Failed set) waits for a change.
+// retry they get. A deterministic failure (Failed set) waits for a change,
+// and a per-item refusal of the item itself (403, for example) becomes one.
 func (r *run) retryFailed(ctx context.Context) error {
 	var failed []string
 	for id, it := range r.cur.Items {
@@ -183,7 +213,8 @@ func (r *run) retryFailed(ctx context.Context) error {
 	sort.Strings(failed)
 	for _, id := range failed {
 		st := r.cur.Items[id]
-		item, err := r.cl.item(ctx, driveOf(id), id[len(driveOf(id))+1:])
+		driveID, itemID, _ := strings.Cut(id, ":")
+		item, err := r.cl.item(ctx, driveID, itemID)
 		switch {
 		case errors.Is(err, datasource.ErrResourceNotFound):
 			if err := r.emitTombstone(ctx, id); err != nil {
@@ -193,7 +224,9 @@ func (r *run) retryFailed(ctx context.Context) error {
 		case err != nil && !r.perItem(err):
 			return err
 		case err != nil:
-			if err := r.emit(ctx, r.c.errorItem(id, st.Name, r.cur.path(id), downloadReason(err))); err != nil {
+			st.Failed = downloadReason(err)
+			r.cur.Items[id] = st
+			if err := r.emit(ctx, r.c.errorItem(id, st.Name, r.cur.path(id), st.Failed)); err != nil {
 				return err
 			}
 			continue
@@ -236,10 +269,6 @@ func (r *run) perItem(err error) bool {
 func (r *run) walkRoot(ctx context.Context, rt root) error {
 	id := rt.id()
 	st := r.cur.Roots[id]
-	if st == nil {
-		st = &rootState{}
-		r.cur.Roots[id] = st
-	}
 	link := st.Next
 	switch {
 	case link != "":
@@ -276,9 +305,9 @@ func (r *run) walkRoot(ctx context.Context, rt root) error {
 				datasource.ErrFetchFailed, id)
 		}
 		if err := r.applyPage(ctx, rt, st, page.Items); err != nil {
-			// Best effort: the fingerprints recorded so far survive, and st.Next
-			// still points at this page, so the retry re-walks it.
-			_ = r.checkpoint(ctx)
+			// No checkpoint here: item state is recorded before each emit, so a
+			// snapshot now could claim an item the handler never received. The
+			// last checkpoint's Next still points at this page.
 			return err
 		}
 		if page.Delta != "" {
@@ -286,7 +315,7 @@ func (r *run) walkRoot(ctx context.Context, rt root) error {
 				if err := r.tombstoneUnseen(ctx, id, st.Gen); err != nil {
 					return err
 				}
-				st.Resync = false
+				st.Resync, st.Full = false, false
 			}
 			st.Delta, st.Next = page.Delta, ""
 			link = ""
@@ -350,8 +379,10 @@ func (r *run) applyPage(ctx context.Context, rt root, st *rootState, items []dri
 				return err
 			}
 		default:
+			// A full sync re-fetches an unchanged file unless this run's
+			// enumeration already did (a resumed attempt).
 			known, ok := r.cur.Items[id]
-			if ok && known.FP != "" && known.FP == fingerprint(it) {
+			if ok && known.FP != "" && known.FP == fingerprint(it) && (!st.Full || known.Gen == st.Gen) {
 				known.Gen, known.Root = st.Gen, rootID
 				r.cur.Items[id] = known
 				continue
@@ -380,9 +411,11 @@ func (r *run) recordFolder(rt root, st *rootState, it driveItem) {
 	r.cur.Folders[externalID(rt.DriveID, it.ID)] = folderState{Parent: parent, Name: name, Root: rt.id(), Gen: st.Gen}
 }
 
-// ensureAncestors fetches the folders between a file and its root that no
-// delta page has delivered yet (a parent can arrive on a later page), so the
-// knowledge path is complete when the file is emitted.
+// ensureAncestors walks from a file up to its root through the folder map,
+// fetching every folder no delta page has delivered yet (a parent, or a
+// grandparent, can arrive on a later page), so the knowledge path is complete
+// when the file is emitted. The walk ends at the selected folder, whose own
+// name belongs in the path, or at the drive root.
 func (r *run) ensureAncestors(ctx context.Context, rt root, st *rootState, it driveItem) error {
 	if it.ParentReference == nil {
 		return nil
@@ -390,27 +423,19 @@ func (r *run) ensureAncestors(ctx context.Context, rt root, st *rootState, it dr
 	parentItem := it.ParentReference.ID
 	for hops := 0; parentItem != "" && hops < maxPaginationHops; hops++ {
 		parentID := externalID(rt.DriveID, parentItem)
-		if _, known := r.cur.Folders[parentID]; known {
-			return nil
-		}
-		if rt.ItemID != "" && parentItem == rt.ItemID {
-			// The selected folder itself; its own name belongs in the path.
+		f, known := r.cur.Folders[parentID]
+		if !known {
 			folder, err := r.cl.item(ctx, rt.DriveID, parentItem)
 			if err != nil {
 				return err
 			}
 			r.recordFolder(rt, st, *folder)
+			f = r.cur.Folders[parentID]
+		}
+		if parentItem == rt.ItemID || f.Parent == "" {
 			return nil
 		}
-		folder, err := r.cl.item(ctx, rt.DriveID, parentItem)
-		if err != nil {
-			return err
-		}
-		r.recordFolder(rt, st, *folder)
-		if folder.Root != nil || folder.ParentReference == nil {
-			return nil
-		}
-		parentItem = folder.ParentReference.ID
+		_, parentItem, _ = strings.Cut(f.Parent, ":")
 	}
 	return nil
 }

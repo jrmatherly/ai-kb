@@ -17,11 +17,14 @@ const cursorSchemaVersion = 1
 // incremental run; Resync marks an enumeration restarted after a 410. Gen
 // counts restarts: every item the restart lists is stamped with it, so a
 // restart interrupted by a checkpoint still knows what it has seen, and its
-// end tombstones every known item under the root with an older stamp.
+// end tombstones every known item under the root with an older stamp. Full
+// marks a forced full sync, a restart that also re-fetches files whose
+// fingerprint did not change.
 type rootState struct {
 	Delta  string `json:"delta,omitempty"`
 	Next   string `json:"next,omitempty"`
 	Resync bool   `json:"resync,omitempty"`
+	Full   bool   `json:"full,omitempty"`
 	Gen    int    `json:"gen,omitempty"`
 }
 

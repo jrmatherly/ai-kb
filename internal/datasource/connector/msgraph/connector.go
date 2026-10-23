@@ -11,7 +11,7 @@ import (
 	"github.com/jrmatherly/ai-kb/internal/types"
 )
 
-var _ datasource.StreamingConnector = (*Connector)(nil)
+var _ datasource.FullStreamingConnector = (*Connector)(nil)
 
 // Connector syncs files from Microsoft OneDrive or SharePoint; kind decides
 // which type it registers as and where the resource tree starts.
