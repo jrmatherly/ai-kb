@@ -1,5 +1,6 @@
 <template>
-    <div class="aside_box" :class="{ 'aside_box--collapsed': uiStore.sidebarRail, 'aside_box--resizing': uiStore.sidebarResizing, 'aside_box--overlay': uiStore.sidebarOverlay, 'aside_box--open': uiStore.sidebarOverlayOpen }">
+    <div class="aside_box" :class="{ 'aside_box--collapsed': uiStore.sidebarRail, 'aside_box--resizing': uiStore.sidebarResizing, 'aside_box--overlay': uiStore.sidebarOverlay, 'aside_box--open': uiStore.sidebarOverlayOpen }"
+        :inert="uiStore.sidebarOverlay && !uiStore.sidebarOverlayOpen">
         <!-- Expanded: logo + search/collapse buttons on one row -->
         <div class="logo_row" v-if="!uiStore.sidebarRail">
             <div class="logo_box" @click="router.push('/platform/knowledge-bases')" style="cursor: pointer;">
@@ -1158,6 +1159,7 @@ const getIcon = (path: string) => {
 }
 getIcon(typeof route.name === 'string' ? route.name as string : (route.name ? String(route.name) : ''))
 const handleMenuClick = async (path: string) => {
+    uiStore.sidebarOverlayOpen = false
     if (path === 'knowledge-bases') {
         // Knowledge base menu item: inside a knowledge base, go to its file page; otherwise go to the knowledge base list
         const kbId = await getCurrentKbId()
@@ -1194,6 +1196,7 @@ const getCurrentKbId = async (): Promise<string | null> => {
 }
 
 const gotopage = async (path: string) => {
+    uiStore.sidebarOverlayOpen = false
     pathPrefix.value = path;
     // Handle logout
     if (path === 'logout') {

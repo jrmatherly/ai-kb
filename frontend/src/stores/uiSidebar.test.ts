@@ -62,6 +62,11 @@ test('phone overlay keeps the docked preference and never persists', () => {
   try {
     setActivePinia(createPinia())
     const ui = useUIStore()
+    ui.setSidebarOverlay(true)
+    assert.equal(ui.sidebarDisplayWidth, 0, 'overlay from the expanded docked state gives the content the full width')
+    assert.equal(ui.sidebarRail, false)
+    ui.setSidebarOverlay(false)
+    assert.equal(ui.sidebarDisplayWidth, 260, 'leaving overlay restores the docked width')
     ui.collapseSidebar()
     ui.setSidebarOverlay(true)
     assert.equal(ui.sidebarDisplayWidth, 0, 'overlay gives the content the full width')
