@@ -323,8 +323,9 @@ func (c *Connector) streamRepository(
 		case err != nil:
 			return err
 		default:
-			if err := c.run(ctx, repo, key, &rc, p.Head, p.Ref, p.Paths, pendingFiles, nil, p.Done, p.Unknown,
-				h, checkpoint); err != nil {
+			target := repositoryCursor{Head: p.Head, Ref: p.Ref, Paths: p.Paths}
+			resumed := resume{start: p.Done, forceUnknown: p.Unknown}
+			if err := c.run(ctx, repo, key, &rc, target, pendingFiles, resumed, h, checkpoint); err != nil {
 				return err
 			}
 			drained = pendingFiles
@@ -339,26 +340,34 @@ func (c *Connector) streamRepository(
 			return err
 		}
 	}
-	return c.run(ctx, repo, key, &rc, head, ref, roots, nextFiles, drained, 0, false, h, checkpoint)
+	target := repositoryCursor{Head: head, Ref: ref, Paths: roots}
+	return c.run(ctx, repo, key, &rc, target, nextFiles, resume{recorded: drained}, h, checkpoint)
 }
 
-// run emits the change list from the baseline rc to head, ref and paths from
-// start on, then records them as the new baseline. recorded, when non-nil, is
-// the listing of rc, already fetched. A gone baseline, or a diffstat that a
-// resumed run built its list with but that timed out this time, restarts at 0.
+// resume says where an interrupted run continues and how its list was built.
+type resume struct {
+	start        int
+	forceUnknown bool
+	recorded     files // the baseline's listing when already fetched, else nil
+}
+
+// run emits the change list from the baseline rc to target, listed as next,
+// and records target as the new baseline. A gone baseline, or a diffstat the
+// resumed list was built with that timed out this time, restarts at 0.
 func (c *Connector) run(
-	ctx context.Context, repo *repository, key string, rc *repositoryCursor, head, ref string, paths []string,
-	next, recorded files, start int, forceUnknown bool, h datasource.StreamHandler,
-	checkpoint func(*pendingCursor) error,
+	ctx context.Context, repo *repository, key string, rc *repositoryCursor, target repositoryCursor, next files,
+	r resume, h datasource.StreamHandler, checkpoint func(*pendingCursor) error,
 ) error {
-	list, gone, unknown, err := c.changeList(ctx, key, *rc, head, ref, paths, next, recorded, forceUnknown)
+	head, ref, paths := target.Head, target.Ref, target.Paths
+	list, gone, unknown, err := c.changeList(ctx, key, *rc, head, ref, paths, next, r.recorded, r.forceUnknown)
 	if err != nil {
 		return err
 	}
+	start := r.start
 	switch {
 	case gone:
 		start = 0
-	case unknown && !forceUnknown && start > 0:
+	case unknown && !r.forceUnknown && start > 0:
 		logger.Infof(ctx, "[Bitbucket] %s: the diffstat of the interrupted run timed out this time, "+
 			"restarting it over the whole listing", key)
 		start = 0
@@ -369,7 +378,7 @@ func (c *Connector) run(
 	if err != nil {
 		return err
 	}
-	*rc = repositoryCursor{Head: head, Ref: ref, Paths: paths}
+	*rc = target
 	return checkpoint(nil)
 }
 
