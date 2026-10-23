@@ -304,7 +304,7 @@ var ConnectorMetadataRegistry = map[string]ConnectorMetadata{
 		Type:         types.ConnectorTypeBitbucket,
 		Name:         "Bitbucket",
 		Description:  "Sync files from Bitbucket Cloud repositories",
-		Priority:     4,
+		Priority:     5,
 		AuthType:     "token",
 		Capabilities: []string{"incremental", "hierarchical", "deletion_sync", CapabilityFullSyncReconcile},
 	},

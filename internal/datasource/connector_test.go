@@ -62,8 +62,8 @@ func TestListAvailableConnectorsMarksAllowList(t *testing.T) {
 		return got
 	}
 	t.Setenv(ConnectorTypesEnv, "")
-	if got := enabled(); !slices.Equal(got, []string{"notion", "confluence", "bitbucket", "github"}) {
-		t.Fatalf("blank allow-list enabled %v, want [notion confluence bitbucket github]", got)
+	if got := enabled(); !slices.Equal(got, []string{"notion", "confluence", "github", "bitbucket"}) {
+		t.Fatalf("blank allow-list enabled %v, want [notion confluence github bitbucket]", got)
 	}
 	t.Setenv(ConnectorTypesEnv, " ALL ")
 	if got := len(enabled()); got != len(ConnectorMetadataRegistry) {
