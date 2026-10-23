@@ -26,6 +26,8 @@ function withoutTechnicalTenantTokens(value: string): string {
     .replace(/\btenant_id\b/gi, '')
     .replace(/\btenantless\b/gi, '')
     .replace(/\bX-Tenant-ID\b/g, '')
+    // Microsoft Entra's own field label, which the OneDrive and SharePoint forms must match.
+    .replace(/\bDirectory \(tenant\) ID\b/g, '')
 }
 
 const localeChecks = [

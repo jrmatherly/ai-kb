@@ -268,6 +268,32 @@ test('saved Bitbucket repositories hydrate the shared git form', async () => {
   } finally { f.close() }
 })
 
+test('saved OneDrive and SharePoint public settings hydrate the credential form', async () => {
+  const od = await fixture({ type: 'onedrive', settings: { user: 'alice@contoso.com' } })
+  try {
+    od.vm.enterReplaceCredentials()
+    assert.equal(od.vm.form.config.credentials.user, 'alice@contoso.com')
+    od.vm.form.config.credentials.user = 'bob@contoso.com'
+    od.vm.syncPublicFieldsToSettings()
+    assert.equal(od.vm.form.config.settings.user, 'bob@contoso.com')
+  } finally { od.close() }
+  const sp = await fixture({ type: 'sharepoint', settings: { site_url: 'https://contoso.sharepoint.com/sites/hr' } })
+  try {
+    sp.vm.enterReplaceCredentials()
+    assert.equal(sp.vm.form.config.credentials.site_url, 'https://contoso.sharepoint.com/sites/hr')
+    assert.deepEqual([...sp.vm.currentDef.fields.map((f: any) => f.key)], ['tenant_id', 'client_id', 'client_secret', 'site_url'])
+  } finally { sp.close() }
+})
+
+test('Confluence public fields still round-trip through the table', async () => {
+  const f = await fixture({ type: 'confluence', settings: { edition: 'cloud', base_url: 'https://c.atlassian.net', username: 'u' } })
+  try {
+    f.vm.enterReplaceCredentials()
+    assert.equal(f.vm.form.config.credentials.base_url, 'https://c.atlassian.net')
+    assert.equal(f.vm.form.config.credentials.edition, 'cloud')
+  } finally { f.close() }
+})
+
 test('switching the git connector type resets the repository rows', async () => {
   const f = await fixture({ create: true })
   try {

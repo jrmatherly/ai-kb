@@ -6795,6 +6795,18 @@ export default {
       paths: 'Directories', pathsPlaceholder: 'One directory per line; leave empty to sync the whole repository',
       addProject: 'Add repository', projectRequired: 'Add at least one Bitbucket repository',
     },
+    onedrive: {
+      tenantId: 'Directory (tenant) ID', tenantIdHint: 'The Directory (tenant) ID or primary domain, from the app registration overview in Microsoft Entra.',
+      clientId: 'Application (client) ID',
+      clientSecret: 'Client secret', clientSecretHint: 'A client secret of the app registration. The app needs the Files.Read.All application permission with admin consent; it can read every drive in the organization, so use a dedicated app registration.',
+      user: 'OneDrive owner', userHint: 'The user principal name or object ID whose OneDrive is synced. Personal Microsoft accounts are not supported.',
+    },
+    sharepoint: {
+      tenantId: 'Directory (tenant) ID', tenantIdHint: 'The Directory (tenant) ID or primary domain, from the app registration overview in Microsoft Entra.',
+      clientId: 'Application (client) ID',
+      clientSecret: 'Client secret', clientSecretHint: 'A client secret of the app registration. Grant Sites.Selected and give the app read access to the site (least privilege), or grant Sites.Read.All.',
+      siteUrl: 'Site URL', siteUrlHint: 'The SharePoint site to sync, such as https://contoso.sharepoint.com/sites/hr. A sub-site is its own data source.',
+    },
     seafile: {
       baseUrl: 'Seafile URL', apiToken: 'API token',
       apiTokenHint: 'Generate it under "Settings → Web API token" in Seafile; the account only needs read access to the libraries you select, and the token is never sent with file downloads.',
@@ -6883,7 +6895,9 @@ export default {
       gitlab: 'GitLab',
       github: 'GitHub',
       bitbucket: 'Bitbucket',
-      seafile: 'Seafile'
+      seafile: 'Seafile',
+      onedrive: 'Microsoft OneDrive (work or school)',
+      sharepoint: 'Microsoft SharePoint'
     },
     connectorDesc: {
       feishu: 'Sync documents, spreadsheets and files from Feishu Wiki',
@@ -6899,7 +6913,9 @@ export default {
       gitlab: 'Sync files from GitLab projects',
       github: 'Sync files from GitHub repositories',
       bitbucket: 'Sync files from Bitbucket Cloud repositories',
-      seafile: 'Sync folders and files from Seafile libraries'
+      seafile: 'Sync folders and files from Seafile libraries',
+      onedrive: 'Sync folders and files from a user\'s OneDrive for work or school',
+      sharepoint: 'Sync document libraries and folders from a SharePoint site'
     },
     drive: {
       folderTokenLabel: 'Drive folder token',
@@ -6995,6 +7011,22 @@ export default {
     prereqStep3Brief_dingtalk: 'Enter the operator Union ID',
     prereqStep3Desc_dingtalk: 'Enter the Union ID of a DingTalk user who can access the target knowledge bases.',
     prereqOpenConsole_dingtalk: 'Open DingTalk Developer Console',
+    prereqBarText_onedrive: 'First time? Click to see the Microsoft Entra app setup guide',
+    prereqStep1Brief_onedrive: 'Register an app in Microsoft Entra',
+    prereqStep1Desc_onedrive: 'In the Microsoft Entra admin center, open App registrations, create a registration, and copy its Directory (tenant) ID and Application (client) ID.',
+    prereqStep2Brief_onedrive: 'Grant the Graph application permission',
+    prereqStep2Desc_onedrive: 'Under API permissions, add the Microsoft Graph application permission Files.Read.All and grant admin consent.',
+    prereqStep3Brief_onedrive: 'Create a client secret',
+    prereqStep3Desc_onedrive: 'Under Certificates & secrets, create a client secret and copy its value; it is shown only once.',
+    prereqOpenConsole_onedrive: 'Open Microsoft Entra app registrations',
+    prereqBarText_sharepoint: 'First time? Click to see the Microsoft Entra app setup guide',
+    prereqStep1Brief_sharepoint: 'Register an app in Microsoft Entra',
+    prereqStep1Desc_sharepoint: 'In the Microsoft Entra admin center, open App registrations, create a registration, and copy its Directory (tenant) ID and Application (client) ID.',
+    prereqStep2Brief_sharepoint: 'Grant the Graph application permission',
+    prereqStep2Desc_sharepoint: 'Add Sites.Selected and give the app read access to the site (least privilege), or add Sites.Read.All; then grant admin consent.',
+    prereqStep3Brief_sharepoint: 'Create a client secret',
+    prereqStep3Desc_sharepoint: 'Under Certificates & secrets, create a client secret and copy its value; it is shown only once.',
+    prereqOpenConsole_sharepoint: 'Open Microsoft Entra app registrations',
     prereqBarText_ima: 'First time? Click to see the Tencent IMA OpenAPI setup guide',
     prereqStep1Brief_ima: 'Enable IMA agent OpenAPI access',
     prereqStep1Desc_ima: 'Sign in to https://ima.qq.com/agent-interface and apply for OpenAPI access',
@@ -7070,7 +7102,7 @@ export default {
       msgraph_empty_file: 'The file is empty and was skipped.',
       msgraph_source_changed: 'The file changed while it was being fetched; the next sync retries it.',
       msgraph_fetch_failed: 'Failed to fetch the file from Microsoft Graph; the next sync retries it.',
-      msgraph_permission_denied: 'Access to the file was denied; check the app registration permissions and the site grant.',
+      msgraph_permission_denied: 'Access to the file was denied; check the app registration permissions (and, for SharePoint, the site grant).',
       msgraph_not_found: 'The file no longer exists or was moved; the next sync retries it.',
       msgraph_malware_detected: 'Microsoft flagged the file as malware; AI KB does not import it.',
       msgraph_invalid_response: 'Microsoft Graph returned a response that could not be used; the next sync retries it.',
