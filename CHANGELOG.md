@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Bug Fixes
 
-- **FIXED**: Documents synced from Notion, Yuque, Feishu Drive and Lark Drive show their source in the card hover, the document detail drawer and the chat document panel instead of "Unknown"; RSS documents are labelled "RSS" everywhere; Lark Drive and RSS appear in the knowledge base source filter. Every view now reads one channel table, which a test holds to the backend's channel constants.
+- **FIXED**: Documents synced from Notion, Yuque, Feishu Drive and Lark Drive show their source in the card hover and the chat document panel, and Notion and Yuque documents in the document detail drawer, instead of "Unknown"; RSS documents are labelled "RSS" everywhere; Lark Drive and RSS appear in the knowledge base source filter. Every view now reads one channel table, which a test holds to the backend's channel constants.
 
 ### Changes
 

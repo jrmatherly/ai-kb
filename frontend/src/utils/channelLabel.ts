@@ -1,5 +1,6 @@
 // Mirrors types.Channel* in internal/types/knowledge.go plus the connector
 // types documents carry as a channel; channelLabel.test.ts fails when they drift.
+// Key order is the source filter order.
 export const UPLOAD_CHANNELS: ReadonlySet<string> = new Set(['web', 'api', 'browser_extension']);
 
 export const CHANNEL_LABEL_KEYS: Record<string, string> = {
