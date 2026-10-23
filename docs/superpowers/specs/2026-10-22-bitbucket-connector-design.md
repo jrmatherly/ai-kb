@@ -84,7 +84,7 @@ Docs and config: `website-docs/03-features/10-datasource.md` (connector table, `
 - A forced full sync that the hourly limit cuts and a later run resumes never reconciles deletions (decision 8); the next forced full sync that completes in one attempt does.
 - A diffstat or listing that times out (555) is recovered by re-fetching every in-scope file of the new listing (decision 1), one request per file.
 - Every supported token sits in the 1,000 requests per hour group, so a first sync of more than about a thousand files spans several runs (decision 6), and a tree whose per-directory fallback listing alone exceeds the hour cannot reach its first emit.
-- An LFS file is reported as a failed item, not imported (decision 4).
+- A file the listing flags as LFS is skipped without a request; only an LFS redirect the listing did not flag is reported as a failed item (decision 4).
 - A renamed repository is a removed plus an added selection (decision 3); the old key's items are tombstoned only while its recorded commit is still readable.
 - A pending run whose head commit is gone leaves the paths it added that the new head lacks until a full-mode sync with deletion sync on (decision 2).
 - Items of a ref or directory that is no longer selected are removed by the next sync while the source is synced, or by a forced full sync if the selection changed while the source was paused, as for GitHub.
