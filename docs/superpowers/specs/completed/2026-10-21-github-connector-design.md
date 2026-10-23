@@ -1,6 +1,6 @@
 # GitHub data source connector: design
 
-Date: 2026-10-21, revised after review the same day. Status: implemented on `feat/github-datasource` (2026-10-21). Companion plan: `../plans/2026-10-21-github-connector.md`.
+Date: 2026-10-21, revised after review the same day. Status: shipped, merged to `main` in jrmatherly/ai-kb#13 (2026-10-21). Companion plan: `../../plans/completed/2026-10-21-github-connector.md`.
 
 ## Goal
 

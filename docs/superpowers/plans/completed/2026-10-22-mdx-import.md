@@ -8,7 +8,7 @@
 
 **Tech Stack:** Python 3.14 (docreader, `uv`, `unittest`), Go 1.26 (testify), TypeScript (`node:test` via `tsx --test`).
 
-**Spec:** `docs/superpowers/specs/2026-10-22-sync-import-capabilities-and-mdx.md`, Part 2. Revised 2026-10-22 after a three-model plan review.
+**Spec:** `docs/superpowers/specs/completed/2026-10-22-sync-import-capabilities-and-mdx.md`, Part 2. Revised 2026-10-22 after a three-model plan review.
 
 ## Global Constraints
 

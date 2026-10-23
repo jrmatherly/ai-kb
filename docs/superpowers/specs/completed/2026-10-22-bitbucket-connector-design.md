@@ -1,6 +1,6 @@
 # Bitbucket Cloud data source connector: design
 
-Date: 2026-10-22, revised the same day after a three-model adversarial review (fable, opus, sonnet). Status: proposed, awaiting review before any code. Companion plan: none yet; it follows review.
+Date: 2026-10-22, revised the same day after a three-model adversarial review (fable, opus, sonnet). Status: shipped, merged to `main` in jrmatherly/ai-kb#17 (2026-10-22); the live check against a real Bitbucket API token is still pending. Companion plan: `../../plans/completed/2026-10-22-bitbucket-connector.md`.
 
 ## Goal
 

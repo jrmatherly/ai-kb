@@ -8,7 +8,7 @@
 
 **Tech Stack:** Go 1.26 (`GOTOOLCHAIN=go1.26.10` to match CI), `net/http/httptest` and `testify` for tests; Vue 3 + TypeScript, vue-i18n, node test runner via tsx (`npm --prefix frontend test`), vue-tsc (`npm --prefix frontend run type-check`).
 
-**Spec:** `docs/superpowers/specs/2026-10-21-github-connector-design.md`
+**Spec:** `docs/superpowers/specs/completed/2026-10-21-github-connector-design.md`
 
 ## Global Constraints
 

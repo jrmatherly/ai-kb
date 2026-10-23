@@ -8,7 +8,7 @@
 
 **Tech Stack:** Go 1.26, testify, the connectors' fake HTTP servers.
 
-**Spec:** `docs/superpowers/specs/2026-10-22-sync-import-capabilities-and-mdx.md`, Part 1. Revised 2026-10-22 after a three-model plan review; the spec's decisions 1, 3, 5 and 6 are amended in the same commit (predicates instead of exported sets, the wizard's knowledge base id, a capability-only precheck on content items, a pointer cursor field).
+**Spec:** `docs/superpowers/specs/completed/2026-10-22-sync-import-capabilities-and-mdx.md`, Part 1. Revised 2026-10-22 after a three-model plan review; the spec's decisions 1, 3, 5 and 6 are amended in the same commit (predicates instead of exported sets, the wizard's knowledge base id, a capability-only precheck on content items, a pointer cursor field).
 
 ## Global Constraints
 
@@ -319,8 +319,8 @@ git commit -m "feat(connectors): filter repository and Seafile files by the know
 
 - Modify: `website-docs/03-features/10-datasource.md` (after the deletion-detection sentence at `:147`: a paragraph on what a sync skips, the skipped count, the forced full sync on a gained model, that it re-imports every document of every streaming data source on that knowledge base once, and removal of now-unimportable items only by a full-mode sync with deletion sync on)
 - Modify: `internal/datasource/CONNECTOR_IMPLEMENTATION_GUIDE.md` (a new paragraph in the fetch guidance: filter candidate files through `ds.Importable`, never a private extension list)
-- Modify: `docs/superpowers/specs/2026-10-22-bitbucket-connector-design.md:38` ("have a supported extension" becomes "pass `ds.Importable`") and `:12` (`IsSupported` dropped from the repofile list)
-- Modify: `docs/superpowers/specs/2026-10-22-sync-import-capabilities-and-mdx.md` decisions 1, 3, 5 and 6 as this plan's header states
+- Modify: `docs/superpowers/specs/completed/2026-10-22-bitbucket-connector-design.md:38` ("have a supported extension" becomes "pass `ds.Importable`") and `:12` (`IsSupported` dropped from the repofile list)
+- Modify: `docs/superpowers/specs/completed/2026-10-22-sync-import-capabilities-and-mdx.md` decisions 1, 3, 5 and 6 as this plan's header states
 - Modify: `CHANGELOG.md` under `## [Unreleased]` `### Changes` (the heading exists once the MDX plan has landed)
 
 - [ ] **Step 1: Write the docs, the spec amendments and the changelog entry**

@@ -1,6 +1,6 @@
 # Capability-aware sync filtering and MDX import: design
 
-Date: 2026-10-22. Status: approved 2026-10-22; implementation plan follows. Follows the `repofile` filter refactor (commit `04ad93f64`) and precedes the Bitbucket connector, which inherits both.
+Date: 2026-10-22. Status: shipped, merged to `main` in jrmatherly/ai-kb#16 (2026-10-22). Companion plans: `../../plans/completed/2026-10-22-sync-import-capabilities.md` (Part 1) and `../../plans/completed/2026-10-22-mdx-import.md` (Part 2). Follows the `repofile` filter refactor (commit `04ad93f64`) and precedes the Bitbucket connector, which inherits both.
 
 ## Goal
 
