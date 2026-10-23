@@ -56,6 +56,17 @@ type cursor struct {
 	Drives        map[string]string      `json:"drives"`
 }
 
+// fullRun reports whether a forced full sync is still in progress: it sets
+// Full on every root at the start and each root clears it at its deltaLink.
+func (c *cursor) fullRun() bool {
+	for _, st := range c.Roots {
+		if st.Full {
+			return true
+		}
+	}
+	return false
+}
+
 func decodeCursor(old *types.SyncCursor) (*cursor, error) {
 	c := &cursor{SchemaVersion: cursorSchemaVersion}
 	if old != nil && len(old.ConnectorCursor) > 0 {

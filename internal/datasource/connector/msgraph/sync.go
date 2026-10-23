@@ -85,19 +85,19 @@ func (c *Connector) stream(
 	if err := r.dropDeselected(ctx); err != nil {
 		return nil, err
 	}
+	// A resumed full attempt leaves every root alone: the finished ones keep
+	// their cleared Full, the cut one keeps its Next and Gen. Resetting the
+	// finished roots again would re-download them on every retry.
+	fullFromScratch := full && !cur.fullRun()
 	// Every selected root has a state before the retry pass, which may fetch
 	// under a root that is new this run (an item re-homed by dropDeselected).
-	fullFromScratch := full // no root was already mid-way through an earlier full attempt
 	for _, id := range r.rootIDs {
 		st := r.cur.Roots[id]
 		if st == nil {
 			st = &rootState{}
 			r.cur.Roots[id] = st
 		}
-		if full && st.Full {
-			fullFromScratch = false
-		}
-		if full && !st.Full {
+		if fullFromScratch {
 			st.Delta, st.Next, st.Resync, st.Full = "", "", true, true
 			st.Gen++
 		}
@@ -113,9 +113,9 @@ func (c *Connector) stream(
 		}
 		cur.Drives[rt.DriveID] = d.Name
 	}
-	// A full run re-enumerates and re-fetches every root, so the retry pass
-	// would only fetch a failed file twice.
-	if !full {
+	// A from-scratch full run re-fetches every file anyway; a resumed one walks
+	// only the cut root, so failures elsewhere still need the pass.
+	if !fullFromScratch {
 		if err := r.retryFailed(ctx); err != nil {
 			return nil, err
 		}
@@ -128,7 +128,7 @@ func (c *Connector) stream(
 	out := cur.toSyncCursor()
 	// Only an uninterrupted first run or from-scratch full run emitted every live
 	// file, so only then may the service delete what it did not receive.
-	out.CompleteListing = !r.resumed && (fullFromScratch || r.fresh && !r.resynced)
+	out.CompleteListing = !r.resumed && (fullFromScratch || (r.fresh && !r.resynced))
 	return out, nil
 }
 
@@ -245,7 +245,11 @@ func (r *run) retryFailed(ctx context.Context) error {
 			continue
 		}
 		if !item.isFile() || !r.ds.Importable(item.Name) {
-			delete(r.cur.Items, id)
+			// An earlier version may be in the knowledge base; the service skips
+			// a tombstone for an item it does not own.
+			if err := r.emitTombstone(ctx, id); err != nil {
+				return err
+			}
 			continue
 		}
 		if err := r.fetchFile(ctx, *item, st.Root); err != nil {
