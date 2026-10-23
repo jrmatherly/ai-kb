@@ -1,3 +1,4 @@
+// Package datasource runs external data source connectors and their sync schedule.
 package datasource
 
 import (
