@@ -320,7 +320,6 @@ func TestFetchStreamResumesFromPageLink(t *testing.T) {
 	serveFile(f, "b!docs", "01A", "AAAA")
 	serveFile(f, "b!docs", "01B", "BB")
 	c := testConnector(f, KindSharePoint)
-	// Run 1 walks both pages; the second page's download fails only b.pdf, which becomes an error item.
 	f.handle(
 		"GET /download/01B",
 		func(w http.ResponseWriter, _ *http.Request) { w.WriteHeader(http.StatusInternalServerError) },
@@ -329,11 +328,9 @@ func TestFetchStreamResumesFromPageLink(t *testing.T) {
 	_, err := c.FetchStream(context.Background(), importsAll(), nil, first)
 	require.NoError(t, err, "a download failure is a per-item error item, not a run failure")
 	require.Equal(t, []string{"Documents/a.docx", "!msgraph_fetch_failed:b.pdf"}, first.names())
-	// The checkpoint after page 1 points at page 2.
 	mid, err := decodeCursor(first.checkpoints[0])
 	require.NoError(t, err)
 	require.Contains(t, mid.Roots["b!docs"].Next, "page=1")
-	// Resume from that checkpoint: page 2 is re-walked, a.docx is not re-emitted, b.pdf succeeds now.
 	serveFile(f, "b!docs", "01B", "BB")
 	second := &recorder{}
 	next, err := c.FetchStream(context.Background(), importsAll(), first.checkpoints[0], second)
@@ -360,8 +357,7 @@ func TestFetchStreamRetriesFailedDownloadsBeforeDelta(t *testing.T) {
 	cur, err := c.FetchStream(context.Background(), importsAll(), nil, first)
 	require.NoError(t, err)
 	require.Equal(t, []string{"!msgraph_fetch_failed:a.docx"}, first.names())
-	// Next run: delta has no changes, the failed item is re-fetched by id, and a 502 there keeps it transient
-	// (a 503 is a rate limit in this client and ends the run instead).
+	// A 502, not a 503: this client treats a 503 as a rate limit that ends the run.
 	f.json("GET /drives/b!docs/items/01A", http.StatusBadGateway, map[string]any{"error": "upstream"})
 	second := &recorder{}
 	cur, err = c.FetchStream(context.Background(), importsAll(), cur, second)
@@ -369,7 +365,6 @@ func TestFetchStreamRetriesFailedDownloadsBeforeDelta(t *testing.T) {
 	require.Equal(t, []string{"!msgraph_fetch_failed:a.docx"}, second.names())
 	mid, _ := decodeCursor(cur)
 	require.Equal(t, itemState{}, itemState{FP: mid.Items["b!docs:01A"].FP, Failed: mid.Items["b!docs:01A"].Failed})
-	// The run after that succeeds.
 	f.json("GET /drives/b!docs/items/01A", http.StatusOK, file("01A", "a.docx", "01ROOT", "AAAA", "qa"))
 	serveFile(f, "b!docs", "01A", "AAAA")
 	third := &recorder{}
@@ -677,7 +672,6 @@ func TestFetchStreamRetryPassTurnsAForbiddenItemIntoAnErrorItem(t *testing.T) {
 	next, err := c.FetchStream(context.Background(), importsAll(), cur, rec)
 	require.NoError(t, err, "one unreadable file does not stop the delta walk")
 	require.Equal(t, []string{"!msgraph_permission_denied:a.docx"}, rec.names())
-	// The refusal is recorded: the next run neither re-reports nor re-fetches the item.
 	recorded, _ := decodeCursor(next)
 	require.Equal(t, reasonPermissionDenied, recorded.Items["b!docs:01A"].Failed)
 	third := &recorder{}
@@ -761,7 +755,6 @@ func TestFetchStreamEmitFailureLeavesTheItemForTheRetry(t *testing.T) {
 	_, err := c.FetchStream(context.Background(), importsAll(), nil, h)
 	require.ErrorContains(t, err, "handler refused c.pdf")
 	require.Equal(t, []string{"Documents/a.docx", "Documents/b.pdf"}, h.names())
-	// Only the page 1 checkpoint exists; nothing claims b.pdf or c.pdf were delivered.
 	require.Len(t, h.checkpoints, 1)
 	mid, err := decodeCursor(h.checkpoints[0])
 	require.NoError(t, err)

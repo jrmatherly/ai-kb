@@ -245,7 +245,7 @@ func (c *client) invalidateToken(rejected string) {
 }
 
 // do GETs rawURL with the bearer token through hc. A 401 re-mints the token
-// once; a 429 or 503 with a short Retry-After is sat out once per client.
+// once; a 429 or 503 is sat out within the limits above, or ends the call.
 func (c *client) do(ctx context.Context, hc *http.Client, rawURL string) (*http.Response, error) {
 	reminted := false
 	backoffs := 0
@@ -344,9 +344,8 @@ func (c *client) getJSON(ctx context.Context, rawURL string, out any) error {
 
 func (c *client) onGraphHost(link string) bool { return strings.HasPrefix(link, c.graphBaseURL+"/") }
 
-// pages walks a Graph collection by its nextLink with the git connectors'
-// guards; the token goes with every request, so a link may only point back at
-// the Graph host.
+// pages walks a Graph collection by its nextLink, refusing a repeated link and
+// any link off the Graph host, since the bearer token goes with every request.
 func (c *client) pages(ctx context.Context, first string, each func(values json.RawMessage) error) error {
 	seen := map[string]struct{}{}
 	for next := first; next != ""; {

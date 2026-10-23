@@ -65,8 +65,8 @@ func (c *Connector) rootDrives(ctx context.Context, cl *client, cfg *config) ([]
 	return []driveInfo{*d}, nil
 }
 
-// Validate mints a token with the credentials alone, and resolves the site or
-// drive when the public setting is present (the call every sync opens with).
+// Validate mints a token and, once the user or site URL is set, resolves the
+// drive or site too, so a connection test also catches a wrong target.
 func (c *Connector) Validate(ctx context.Context, ds *types.DataSourceConfig) error {
 	cfg, err := parseConfig(c.kind, ds)
 	if err != nil {

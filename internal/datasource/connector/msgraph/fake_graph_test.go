@@ -19,9 +19,8 @@ func allowLocalServer(t *testing.T) {
 	t.Cleanup(secutils.ResetSSRFWhitelistForTest)
 }
 
-// fakeGraph serves the token endpoint and a map of Graph paths. Handlers are
-// keyed by "METHOD path" without the query string; "GET /drives/b!abc/root/delta"
-// and the download host live on the same server.
+// fakeGraph serves the token endpoint, the Graph paths and the download host
+// from one server. Handlers are keyed by "METHOD path" without the query string.
 type fakeGraph struct {
 	t        *testing.T
 	server   *httptest.Server

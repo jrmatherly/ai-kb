@@ -35,7 +35,7 @@ type run struct {
 
 // FetchStream walks every selected root's delta stream, emitting changed
 // files, tombstones and per-file failures, and checkpoints after every page
-// and every 50 emits. See the design's decisions 5 to 11.
+// and every checkpointEvery emits.
 func (c *Connector) FetchStream(
 	ctx context.Context, ds *types.DataSourceConfig, old *types.SyncCursor, h datasource.StreamHandler,
 ) (*types.SyncCursor, error) {
@@ -126,8 +126,8 @@ func (c *Connector) stream(
 		}
 	}
 	out := cur.toSyncCursor()
-	// A complete full attempt emitted every live file, so the service's sweep
-	// deletes exactly what tombstoneUnseen tombstoned.
+	// Only an uninterrupted first run or from-scratch full run emitted every live
+	// file, so only then may the service delete what it did not receive.
 	out.CompleteListing = !r.resumed && (fullFromScratch || r.fresh && !r.resynced)
 	return out, nil
 }
@@ -472,10 +472,9 @@ func (r *run) tombstoneUnseen(ctx context.Context, rootID string, gen int) error
 	return nil
 }
 
-// fetchFile downloads one file and emits it, or emits an error item. Size and
-// malware checks happen before any request and are deterministic, so they are
-// recorded with the fingerprint and not retried until the file changes; a
-// transient failure leaves the entry empty for the retry pass.
+// fetchFile downloads one file and emits it, or emits an error item. A
+// deterministic failure (malware, too large, empty) keeps the fingerprint and
+// waits for the file to change; a transient one leaves FP empty for the retry pass.
 func (r *run) fetchFile(ctx context.Context, it driveItem, rootID string) error {
 	id := externalID(driveOf(rootID), it.ID)
 	parent := ""
