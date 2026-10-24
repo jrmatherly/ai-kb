@@ -40,7 +40,7 @@ run_checks
 cat > "$fixture/expected.log" <<'EOF'
 list ./...
 vet example/internal/agent/tools example/internal/application/service
-test -count=1 example/internal/agent/tools example/internal/application/service
+test -race -count=1 example/internal/agent/tools example/internal/application/service
 EOF
 diff -u "$fixture/expected.log" "$HOOK_TEST_LOG"
 

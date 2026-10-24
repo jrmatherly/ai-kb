@@ -163,7 +163,7 @@ jobs:
         run: |
           mapfile -t pkgs < <(go list ./... | grep -v '/docreader/')
           go vet "${pkgs[@]}"
-          go test "${pkgs[@]}"
+          go test -race "${pkgs[@]}"
           go test -tags desktop ./internal/container
 
       - name: 🔎 govulncheck

@@ -15,7 +15,6 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-	"sync"
 	"sync/atomic"
 	"time"
 	"unicode/utf8"
@@ -953,26 +952,13 @@ func SSRFSafeDialContext(ctx context.Context, network, addr string) (net.Conn, e
 //
 // Whitelisted entries bypass the normal SSRF checks performed by isSSRFSafeURL.
 
-var (
-	// ssrfWhitelistOnce protects the cold-start ENV-only path. Once
-	// SystemSettingService has called SetSSRFWhitelistFromRaw, the
-	// atomic pointer below takes over and this Once is never observed
-	// again - we keep it for tests (resetSSRFWhitelistForTest) and the
-	// rare deployment that runs without DB-backed system_settings.
-	ssrfWhitelistOnce sync.Once
-	ssrfWhitelist     *ssrfWhitelistConfig
-
-	// ssrfWhitelistAtomic is the runtime-tunable whitelist source.
-	// SystemSettingService writes here at preload, on every Update,
-	// and on every pubsub-driven reload (multi-replica fan-out). When
-	// non-nil, it takes precedence over the ENV-only Once-cached
-	// `ssrfWhitelist`. nil means "service hasn't pushed yet"; the
-	// loadSSRFWhitelist fallback then reads ENV directly.
-	//
-	// We use atomic.Pointer so reads on the SSRF hot path
-	// (ValidateURLForSSRF, called for every outgoing URL) are lock-free.
-	ssrfWhitelistAtomic atomic.Pointer[ssrfWhitelistConfig]
-)
+// ssrfWhitelistAtomic is the active whitelist. SystemSettingService writes
+// here at preload, on every Update, and on every pubsub-driven reload
+// (multi-replica fan-out); before that, or on a deployment without
+// DB-backed system_settings, loadSSRFWhitelist fills it from ENV. nil
+// means "nothing loaded yet". atomic.Pointer keeps reads on the SSRF hot
+// path (ValidateURLForSSRF, called for every outgoing URL) lock-free.
+var ssrfWhitelistAtomic atomic.Pointer[ssrfWhitelistConfig]
 
 type ssrfWhitelistConfig struct {
 	exactHosts  map[string]bool // lowercase exact hostnames / IPs
@@ -980,28 +966,24 @@ type ssrfWhitelistConfig struct {
 	cidrNets    []*net.IPNet    // CIDR ranges
 }
 
-// loadSSRFWhitelist returns the active whitelist config. Resolution
-// order:
-//  1. ssrfWhitelistAtomic - set by SystemSettingService whenever DB
-//     ssrf.whitelist changes. This is the runtime-tunable path.
-//  2. ENV fallback - sync.Once-cached parse of SSRF_WHITELIST and
-//     SSRF_WHITELIST_EXTRA. Used during the startup window before
-//     the service has finished its preload, and on deployments that
-//     don't run system_settings (lite mode).
+// loadSSRFWhitelist returns the active whitelist config: what
+// SystemSettingService last pushed, or, until it has pushed anything (the
+// startup window, and deployments that don't run system_settings), a parse
+// of SSRF_WHITELIST that is cached in the same atomic.
 func loadSSRFWhitelist() *ssrfWhitelistConfig {
 	if cur := ssrfWhitelistAtomic.Load(); cur != nil {
 		return cur
 	}
-	ssrfWhitelistOnce.Do(func() {
-		raw := os.Getenv("SSRF_WHITELIST")
-		// SSRF_WHITELIST_EXTRA is merged in addition to SSRF_WHITELIST so that
-		// deployment-managed defaults (e.g. docker-compose injected sidecar host
-		// names like "searxng") aren't accidentally clobbered when an operator
-		// overrides SSRF_WHITELIST in their .env.
-		extra := os.Getenv("SSRF_WHITELIST_EXTRA")
-		ssrfWhitelist = parseSSRFWhitelistRaw(mergeSSRFWhitelistRaws(raw, extra))
-	})
-	return ssrfWhitelist
+	raw := os.Getenv("SSRF_WHITELIST")
+	// SSRF_WHITELIST_EXTRA is merged in addition to SSRF_WHITELIST so that
+	// deployment-managed defaults (e.g. docker-compose injected sidecar host
+	// names like "searxng") aren't accidentally clobbered when an operator
+	// overrides SSRF_WHITELIST in their .env.
+	extra := os.Getenv("SSRF_WHITELIST_EXTRA")
+	env := parseSSRFWhitelistRaw(mergeSSRFWhitelistRaws(raw, extra))
+	// Ignore a lost CAS: the loser returns its own parse, at worst one stale read.
+	ssrfWhitelistAtomic.CompareAndSwap(nil, env)
+	return env
 }
 
 // SetSSRFWhitelistFromRaw atomically replaces the active SSRF whitelist
@@ -1014,7 +996,7 @@ func loadSSRFWhitelist() *ssrfWhitelistConfig {
 // after each pubsub-driven peer change. Empty `raw` clears the whitelist
 // (only built-in private-IP rejection remains in effect).
 //
-// Note: this replaces the ENV-only fallback completely. If you want
+// Note: this replaces whatever loadSSRFWhitelist seeded from ENV. If you want
 // SSRF_WHITELIST_EXTRA to keep being merged, the caller must do the
 // merge before calling this - see service.systemSettingService.
 // applySSRFWhitelist for the canonical merge logic.
@@ -1260,11 +1242,9 @@ func CheckDialWhitelistOnly(host string) error {
 // internal/utils - notably internal/infrastructure/web_search/searxng_test.go,
 // whose tests would otherwise see whatever whitelist an alphabetically-
 // earlier test in the same binary (e.g. proxy_test.go's TestValidateProxyURL)
-// cached via the first sync.Once.Do(). NOT for production use - the ForTest
+// cached on its first load. NOT for production use - the ForTest
 // suffix is the contract.
 func ResetSSRFWhitelistForTest() {
-	ssrfWhitelistOnce = sync.Once{}
-	ssrfWhitelist = nil
 	ssrfWhitelistAtomic.Store(nil)
 	invalidateSSRFOutboundValidationCache()
 }
