@@ -1,6 +1,6 @@
 # OneDrive and SharePoint data source connectors: design
 
-Date: 2026-10-23, revised the same day after a three-model adversarial review (fable, opus, sonnet) of the plan and a compile-and-test pass of the plan's code. Status: implemented on the branch `feat/microsoft-graph-datasources` (2026-10-23). Companion plan: `../plans/2026-10-23-microsoft-graph-connectors.md`.
+Date: 2026-10-23, revised the same day after a three-model adversarial review (fable, opus, sonnet) of the plan and a compile-and-test pass of the plan's code. Status: shipped, merged to `main` in jrmatherly/ai-kb#19 (2026-10-23); the shared connector helpers it leans on followed in jrmatherly/ai-kb#24. Companion plan: `../../plans/completed/2026-10-23-microsoft-graph-connectors.md`.
 
 Review added three things this design does not describe. The connector implements `datasource.FullStreamingConnector`, so a full sync runs through the resync path (every selected root restarts its enumeration with a new generation, unchanged files are re-fetched, and what the fresh enumeration does not list is tombstoned at the root's delta link), and a timed-out full attempt resumes from its checkpoint. `Validate` with credentials only mints a token, and when `user` or `site_url` is present it also resolves the drive or the site and its document libraries. `CompleteListing` is true for a fresh first run without a 410 and for a full run that started from scratch in that attempt, false for any resumed attempt (`stream()` in `internal/datasource/connector/msgraph/sync.go`).
 
