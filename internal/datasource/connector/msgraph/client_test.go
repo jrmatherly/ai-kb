@@ -267,3 +267,40 @@ func TestSiteDrivesUserDriveAndItem(t *testing.T) {
 	it.Package = &struct{}{}
 	require.False(t, it.isFile(), "a package such as a OneNote notebook is not a file to import")
 }
+
+func TestDownloadTransportErrorKeepsItsCause(t *testing.T) {
+	f := newFakeGraph(t)
+	f.handle("GET /drives/b!abc/items/01B/content", func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, f.server.URL+"/download/01B?tempauth=SECRET", http.StatusFound)
+	})
+	f.handle("GET /download/01B", func(w http.ResponseWriter, _ *http.Request) {
+		conn, _, err := w.(http.Hijacker).Hijack()
+		require.NoError(t, err)
+		_ = conn.Close()
+	})
+	c := f.client(t)
+	_, err := c.download(context.Background(), "b!abc", "01B", 3, 1<<20)
+	require.ErrorIs(t, err, datasource.ErrFetchFailed)
+	require.Contains(t, err.Error(), "EOF", "the transport cause survives")
+	require.NotContains(t, err.Error(), "SECRET", "the pre-authenticated URL does not")
+
+	ctx, cancel := context.WithCancel(context.Background())
+	f.handle("GET /download/01B", func(w http.ResponseWriter, _ *http.Request) {
+		cancel()
+		<-time.After(200 * time.Millisecond)
+		_, _ = w.Write([]byte("abc"))
+	})
+	_, err = c.download(ctx, "b!abc", "01B", 3, 1<<20)
+	require.ErrorIs(t, err, context.Canceled, "a cancelled download ends the run instead of failing one file")
+}
+
+func TestGraphErrorBodyCodeAndMessageSurvive(t *testing.T) {
+	f := newFakeGraph(t)
+	f.json("GET /drives/b!abc", http.StatusBadRequest, map[string]any{
+		"error": map[string]any{"code": "invalidRequest", "message": "Invalid hostname for this tenancy"},
+	})
+	_, err := f.client(t).drive(context.Background(), "b!abc")
+	require.ErrorContains(t, err, "status 400")
+	require.ErrorContains(t, err, "invalidRequest")
+	require.ErrorContains(t, err, "Invalid hostname for this tenancy")
+}
