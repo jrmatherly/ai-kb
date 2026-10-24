@@ -20,8 +20,6 @@ import (
 
 var _ datasource.StreamingConnector = (*Connector)(nil)
 
-const checkpointEvery = 50
-
 const maxPendingChain = 8
 
 const reasonFileTooLarge = "github_file_too_large"
@@ -443,7 +441,7 @@ func (c *Connector) streamRepository(
 		if err := h.Emit(ctx, item); err != nil {
 			return err
 		}
-		if n := i + 1; n%checkpointEvery == 0 {
+		if n := i + 1; n%datasource.CheckpointEvery == 0 {
 			rc.Pending = &pendingCursor{Head: head, Ref: ref, Paths: selection.Paths, Done: n, Base: base}
 			if rc.Pending.depth() > maxPendingChain {
 				logger.Warnf(ctx, "[GitHub] %s: pending chain at head %s exceeds %d links, resume state discarded",
