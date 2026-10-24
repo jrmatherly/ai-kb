@@ -115,10 +115,13 @@ func outboundSSRFCacheKey(rawURL string) (string, bool) {
 	return fmt.Sprintf("%d|%s", ssrfOutboundCacheGen.Load(), origin), true
 }
 
+// invalidateSSRFOutboundValidationCache retires every cached verdict. The
+// generation bump alone makes them unreachable (it is part of the cache key,
+// and of the singleflight key); Clear only frees them. Reassigning the map
+// would race with concurrent lookups.
 func invalidateSSRFOutboundValidationCache() {
 	ssrfOutboundCacheGen.Add(1)
-	ssrfOutboundCache = sync.Map{}
-	ssrfOutboundValidateGroup = singleflight.Group{}
+	ssrfOutboundCache.Clear()
 }
 
 // ResetSSRFOutboundValidationCacheForTest clears the outbound validation cache.
