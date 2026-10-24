@@ -40,7 +40,7 @@ var (
 	errSourceChanged     = errors.New("seafile file changed while it was being fetched")
 
 	// sleep performs every backoff wait; tests replace it to avoid real waits.
-	sleep = sleepCtx
+	sleep = datasource.SleepContext
 )
 
 // client talks to one Seafile deployment. API requests carry the token; the
@@ -340,15 +340,4 @@ func (c *client) download(ctx context.Context, link string, expectedSize, limit 
 		return nil, errSourceChanged
 	}
 	return body, nil
-}
-
-func sleepCtx(ctx context.Context, d time.Duration) error {
-	timer := time.NewTimer(d)
-	defer timer.Stop()
-	select {
-	case <-ctx.Done():
-		return ctx.Err()
-	case <-timer.C:
-		return nil
-	}
 }

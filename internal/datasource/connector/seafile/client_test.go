@@ -486,8 +486,8 @@ func TestCanceledContext(t *testing.T) {
 	if !errors.Is(err, context.Canceled) || f.count("ping") != 0 || len(*waits) != 0 {
 		t.Fatalf("canceled ping = %v, counts = %v", err, f.counts())
 	}
-	if err := sleepCtx(ctx, time.Hour); !errors.Is(err, context.Canceled) {
-		t.Fatalf("sleepCtx ignored cancellation: %v", err)
+	if err := datasource.SleepContext(ctx, time.Hour); !errors.Is(err, context.Canceled) {
+		t.Fatalf("datasource.SleepContext ignored cancellation: %v", err)
 	}
 }
 
