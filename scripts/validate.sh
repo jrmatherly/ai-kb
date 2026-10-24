@@ -27,6 +27,9 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 # shellcheck source=git-hooks/common.sh
 source "$ROOT/scripts/git-hooks/common.sh"
 cd "$ROOT"
+# Under the pre-push hook git exports GIT_DIR; in a linked worktree it is absolute, so a fixture's
+# `git init` below would re-initialize this repository as bare instead of creating the fixture.
+unset GIT_DIR GIT_WORK_TREE
 
 base=HEAD list=0 forced=()
 while [ $# -gt 0 ]; do
