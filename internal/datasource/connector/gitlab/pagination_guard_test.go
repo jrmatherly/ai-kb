@@ -11,6 +11,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/jrmatherly/ai-kb/internal/datasource"
 	"github.com/jrmatherly/ai-kb/internal/logger"
 	"github.com/stretchr/testify/require"
 )
@@ -104,7 +105,7 @@ func TestPaginationHopCapStopsWalk(t *testing.T) {
 			var requests int64
 			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				n := atomic.AddInt64(&requests, 1)
-				if n > maxPaginationHops+10 {
+				if n > datasource.MaxPaginationHops+10 {
 					http.Error(w, "hop cap missing: too many requests", http.StatusTooManyRequests)
 					return
 				}
@@ -130,7 +131,7 @@ func TestPaginationHopCapStopsWalk(t *testing.T) {
 			err = tc.walk(ctx, c)
 
 			require.EqualError(t, err, tc.want)
-			require.Equal(t, int64(maxPaginationHops), atomic.LoadInt64(&requests))
+			require.Equal(t, int64(datasource.MaxPaginationHops), atomic.LoadInt64(&requests))
 			require.Contains(t, logs.String(), "pagination exceeded 10000 pages",
 				"hitting the cap must leave a warning in the log")
 		})
