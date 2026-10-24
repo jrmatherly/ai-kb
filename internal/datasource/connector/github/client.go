@@ -24,16 +24,11 @@ const (
 	jsonMediaType  = "application/vnd.github+json"
 	rawMediaType   = "application/vnd.github.raw+json"
 
-	maxJSONResponseBytes int64 = 16 << 20
 	// A recursive tree runs about 238 bytes per entry and the API truncates
 	// it at 100,000 entries; a blob is capped by the API at 100 MB.
 	maxTreeResponseBytes int64 = 64 << 20
 	maxRawFileBytes      int64 = 100 << 20
 )
-
-// maxPaginationHops bounds a single paginated walk. The next page comes from
-// the Link header, so a broken server or proxy could advertise pages forever.
-const maxPaginationHops = 10000
 
 var errRateLimited = errors.New("github API rate limit exhausted")
 
@@ -125,24 +120,10 @@ func newClient(baseURL, token string) (*client, error) {
 		baseURL:   normalizeBaseURL(baseURL),
 		token:     token,
 		http:      datasource.NewConnectorHTTPClient(30 * time.Second),
-		jsonLimit: maxJSONResponseBytes,
+		jsonLimit: datasource.MaxJSONResponseBytes,
 		treeLimit: maxTreeResponseBytes,
 		rawLimit:  maxRawFileBytes,
 	}, nil
-}
-
-// readCapped reads a response body, refusing anything larger than limit instead
-// of buffering it. A truncated body would be indexed as if it were the whole
-// document.
-func readCapped(body io.Reader, limit int64) ([]byte, error) {
-	data, err := io.ReadAll(io.LimitReader(body, limit+1))
-	if err != nil {
-		return nil, err
-	}
-	if int64(len(data)) > limit {
-		return nil, fmt.Errorf("response exceeds maximum size (%d bytes)", limit)
-	}
-	return data, nil
 }
 
 // retryAfterMax is the longest secondary rate-limit wait fetch sits out
@@ -158,10 +139,8 @@ func (c *client) fetch(ctx context.Context, rawURL, accept string, limit int64) 
 	}
 	if wait, ok := shortRetryAfter(resp); ok {
 		_ = resp.Body.Close()
-		select {
-		case <-ctx.Done():
-			return nil, nil, ctx.Err()
-		case <-time.After(wait):
+		if err := datasource.SleepContext(ctx, wait); err != nil {
+			return nil, nil, err
 		}
 		if resp, err = c.send(ctx, rawURL, accept); err != nil {
 			return nil, nil, err
@@ -178,7 +157,7 @@ func (c *client) fetch(ctx context.Context, rawURL, accept string, limit int64) 
 		}
 		return nil, nil, err
 	}
-	body, err := readCapped(resp.Body, limit)
+	body, err := datasource.ReadCapped(resp.Body, limit)
 	if err != nil {
 		return nil, nil, fmt.Errorf("github API %s: %w", endpoint, err)
 	}
@@ -254,9 +233,10 @@ func (c *client) repositories(ctx context.Context) ([]repository, error) {
 		if _, dup := seen[next]; dup {
 			return nil, fmt.Errorf("github repository pagination repeated page %q", next)
 		}
-		if len(seen) >= maxPaginationHops {
-			logger.Warnf(ctx, "[GitHub] repository pagination exceeded %d pages; aborting", maxPaginationHops)
-			return nil, fmt.Errorf("github repository pagination exceeded %d pages", maxPaginationHops)
+		if len(seen) >= datasource.MaxPaginationHops {
+			logger.Warnf(ctx, "[GitHub] repository pagination exceeded %d pages; aborting",
+				datasource.MaxPaginationHops)
+			return nil, fmt.Errorf("github repository pagination exceeded %d pages", datasource.MaxPaginationHops)
 		}
 		seen[next] = struct{}{}
 		body, header, err := c.fetch(ctx, next, jsonMediaType, c.jsonLimit)

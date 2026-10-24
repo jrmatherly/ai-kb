@@ -27,9 +27,7 @@ const (
 	apiTimeout      = 30 * time.Second
 	downloadTimeout = 120 * time.Second
 
-	maxJSONResponseBytes int64 = 16 << 20
-	maxPaginationHops          = 10000
-	childrenPageSize           = 200
+	childrenPageSize = 200
 	// A Graph error body is small JSON; the cap guards against a hostile host.
 	graphErrorBodyLimit    int64 = 4 << 10
 	graphErrorMessageLimit       = 200
@@ -48,7 +46,6 @@ const (
 
 var (
 	errRateLimited      = errors.New("microsoft graph rate limit exhausted")
-	errTooLarge         = errors.New("response exceeds maximum size")
 	errEmptyFile        = errors.New("file is empty")
 	errSourceChanged    = errors.New("file size changed between listing and download")
 	errInsecureDownload = errors.New("download location is not an https URL")
@@ -191,21 +188,8 @@ func newClient(graphBase, loginBase string, cfg *config) *client {
 		http:         datasource.NewConnectorHTTPClient(apiTimeout),
 		redirectHTTP: redirect,
 		files:        datasource.NewConnectorHTTPClient(downloadTimeout),
-		jsonLimit:    maxJSONResponseBytes,
+		jsonLimit:    datasource.MaxJSONResponseBytes,
 	}
-}
-
-// readCapped reads a body, refusing anything larger than limit instead of
-// buffering it; a truncated body would be indexed as if it were the whole document.
-func readCapped(body io.Reader, limit int64) ([]byte, error) {
-	data, err := io.ReadAll(io.LimitReader(body, limit+1))
-	if err != nil {
-		return nil, err
-	}
-	if int64(len(data)) > limit {
-		return nil, fmt.Errorf("%w (%d bytes)", errTooLarge, limit)
-	}
-	return data, nil
 }
 
 // accessToken returns the cached app-only token or mints one with the client
@@ -234,7 +218,7 @@ func (c *client) accessToken(ctx context.Context) (string, error) {
 		return "", fmt.Errorf("microsoft identity token request: %w", err)
 	}
 	defer func() { _ = resp.Body.Close() }()
-	body, err := readCapped(resp.Body, c.jsonLimit)
+	body, err := datasource.ReadCapped(resp.Body, c.jsonLimit)
 	if err != nil {
 		return "", err
 	}
@@ -327,7 +311,7 @@ func (c *client) do(ctx context.Context, hc *http.Client, rawURL string) (*http.
 				return nil, limited
 			}
 			logger.Warnf(ctx, "[MSGraph] throttled; waiting %s before retrying", wait)
-			if err := sleepCtx(ctx, wait); err != nil {
+			if err := datasource.SleepContext(ctx, wait); err != nil {
 				return nil, err
 			}
 			continue
@@ -382,7 +366,7 @@ func (c *client) getJSON(ctx context.Context, rawURL string, out any) error {
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		return graphError(endpoint, resp)
 	}
-	body, err := readCapped(resp.Body, c.jsonLimit)
+	body, err := datasource.ReadCapped(resp.Body, c.jsonLimit)
 	if err != nil {
 		return fmt.Errorf("microsoft graph %s: %w", endpoint, err)
 	}
@@ -402,8 +386,8 @@ func (c *client) pages(ctx context.Context, first string, each func(values json.
 		if _, dup := seen[next]; dup {
 			return fmt.Errorf("microsoft graph pagination repeated a page link")
 		}
-		if len(seen) >= maxPaginationHops {
-			return fmt.Errorf("microsoft graph pagination exceeded %d pages", maxPaginationHops)
+		if len(seen) >= datasource.MaxPaginationHops {
+			return fmt.Errorf("microsoft graph pagination exceeded %d pages", datasource.MaxPaginationHops)
 		}
 		seen[next] = struct{}{}
 		var page struct {
@@ -585,7 +569,7 @@ func (c *client) download(ctx context.Context, driveID, itemID string, expectedS
 	if file.StatusCode < 200 || file.StatusCode >= 300 {
 		return nil, &apiError{endpoint: downloadEndpoint, status: file.StatusCode}
 	}
-	body, err := readCapped(file.Body, limit)
+	body, err := datasource.ReadCapped(file.Body, limit)
 	if err != nil {
 		return nil, err
 	}
@@ -596,15 +580,4 @@ func (c *client) download(ctx context.Context, driveID, itemID string, expectedS
 		return nil, errSourceChanged
 	}
 	return body, nil
-}
-
-func sleepCtx(ctx context.Context, d time.Duration) error {
-	timer := time.NewTimer(d)
-	defer timer.Stop()
-	select {
-	case <-ctx.Done():
-		return ctx.Err()
-	case <-timer.C:
-		return nil
-	}
 }

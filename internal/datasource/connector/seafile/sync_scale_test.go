@@ -8,6 +8,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/jrmatherly/ai-kb/internal/datasource"
 	"github.com/jrmatherly/ai-kb/internal/types"
 )
 
@@ -67,7 +68,7 @@ func TestSyncScale(t *testing.T) {
 	savedFiles := filesOf(saved)
 	// Checkpoints land every 50 mutations, and the full-sync switch is one of
 	// them, so the saved batch ends within one batch of the midpoint.
-	if len(savedFiles) < fileCount/2 || len(savedFiles) >= fileCount/2+checkpointEvery ||
+	if len(savedFiles) < fileCount/2 || len(savedFiles) >= fileCount/2+datasource.CheckpointEvery ||
 		!mustCursor(t, saved).FullSync {
 		t.Fatalf("midpoint saved %d/%d files", len(savedFiles), fileCount)
 	}

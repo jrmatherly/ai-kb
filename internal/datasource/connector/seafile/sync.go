@@ -17,9 +17,6 @@ import (
 	"github.com/jrmatherly/ai-kb/internal/utils"
 )
 
-// checkpointEvery bounds how many cursor mutations may be lost on a crash.
-const checkpointEvery = 50
-
 // syncRun holds the state of one FetchStream / FetchFullStream execution.
 type syncRun struct {
 	ctx    context.Context
@@ -145,7 +142,7 @@ func (r *syncRun) checkpoint() error {
 
 func (r *syncRun) mutated() error {
 	r.unsaved++
-	if r.unsaved >= checkpointEvery {
+	if r.unsaved >= datasource.CheckpointEvery {
 		return r.checkpoint()
 	}
 	return nil

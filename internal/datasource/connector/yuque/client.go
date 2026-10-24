@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"net/http"
 	"net/url"
 	"sync"
@@ -19,10 +18,6 @@ const (
 	defaultTimeout  = 30 * time.Second
 	defaultPageSize = 100
 	userAgent       = "AIKB-Yuque-Connector/1.0"
-
-	// maxJSONResponseBytes bounds every API response body. Listings and document
-	// payloads are small; a larger body means a broken or hostile server.
-	maxJSONResponseBytes = 16 << 20
 )
 
 // client wraps the Yuque Open API.
@@ -45,30 +40,8 @@ func newClient(cfg *Config) *client {
 		baseURL:    cfg.GetBaseURL(),
 		token:      cfg.APIToken,
 		httpClient: datasource.NewConnectorHTTPClient(defaultTimeout),
-		jsonLimit:  maxJSONResponseBytes,
+		jsonLimit:  datasource.MaxJSONResponseBytes,
 	}
-}
-
-// errResponseTooLarge marks a body over the cap. It is deterministic: the same
-// request returns the same oversized body, so callers must not retry it.
-var errResponseTooLarge = errors.New("response exceeds maximum size")
-
-// readCapped reads a response body, refusing anything larger than limit instead
-// of buffering it. Oversized payloads are reported as an error: a truncated
-// body would be indexed as if it were the whole document. A non-positive limit
-// (e.g. a zero-value client built in tests) falls back to maxJSONResponseBytes.
-func readCapped(body io.Reader, limit int64) ([]byte, error) {
-	if limit <= 0 {
-		limit = maxJSONResponseBytes
-	}
-	data, err := io.ReadAll(io.LimitReader(body, limit+1))
-	if err != nil {
-		return nil, err
-	}
-	if int64(len(data)) > limit {
-		return nil, fmt.Errorf("%w (%d bytes)", errResponseTooLarge, limit)
-	}
-	return data, nil
 }
 
 // doRequest executes an authenticated request and decodes JSON, with retry logic
@@ -108,7 +81,7 @@ func (c *client) doRequest(ctx context.Context, method, path string, result inte
 		if err != nil {
 			lastErr = fmt.Errorf("execute request: %w", err)
 			if attempt < maxRetries {
-				if sErr := sleepCtx(ctx, backoff[attempt]); sErr != nil {
+				if sErr := datasource.SleepContext(ctx, backoff[attempt]); sErr != nil {
 					return sErr
 				}
 				continue
@@ -116,12 +89,12 @@ func (c *client) doRequest(ctx context.Context, method, path string, result inte
 			return lastErr
 		}
 
-		body, readErr := readCapped(resp.Body, c.jsonLimit)
+		body, readErr := datasource.ReadCapped(resp.Body, c.jsonLimit)
 		resp.Body.Close()
 		if readErr != nil {
 			lastErr = fmt.Errorf("read response body: %w", readErr)
-			if attempt < maxRetries && !errors.Is(readErr, errResponseTooLarge) {
-				if sErr := sleepCtx(ctx, backoff[attempt]); sErr != nil {
+			if attempt < maxRetries && !errors.Is(readErr, datasource.ErrResponseTooLarge) {
+				if sErr := datasource.SleepContext(ctx, backoff[attempt]); sErr != nil {
 					return sErr
 				}
 				continue
@@ -137,7 +110,7 @@ func (c *client) doRequest(ctx context.Context, method, path string, result inte
 			wait := parseRetryAfter(resp.Header.Get("Retry-After"), backoff[min(attempt, len(backoff)-1)])
 			lastErr = fmt.Errorf("yuque rate limited: status=429 body=%s", bodyPreview)
 			if attempt < maxRetries {
-				if sErr := sleepCtx(ctx, wait); sErr != nil {
+				if sErr := datasource.SleepContext(ctx, wait); sErr != nil {
 					return sErr
 				}
 				continue
@@ -148,7 +121,7 @@ func (c *client) doRequest(ctx context.Context, method, path string, result inte
 		if resp.StatusCode >= 500 && resp.StatusCode < 600 {
 			lastErr = fmt.Errorf("yuque server error: status=%d body=%s", resp.StatusCode, bodyPreview)
 			if attempt < max5xxRetries {
-				if sErr := sleepCtx(ctx, retry5xxDelay); sErr != nil {
+				if sErr := datasource.SleepContext(ctx, retry5xxDelay); sErr != nil {
 					return sErr
 				}
 				continue
@@ -197,18 +170,6 @@ func parseRetryAfter(header string, fallback time.Duration) time.Duration {
 		return secs
 	}
 	return fallback
-}
-
-// sleepCtx pauses for d, returning early if ctx is cancelled.
-func sleepCtx(ctx context.Context, d time.Duration) error {
-	t := time.NewTimer(d)
-	defer t.Stop()
-	select {
-	case <-t.C:
-		return nil
-	case <-ctx.Done():
-		return ctx.Err()
-	}
 }
 
 // Ping verifies the credentials by calling GET /api/v2/user.

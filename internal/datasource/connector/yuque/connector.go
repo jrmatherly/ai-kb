@@ -264,7 +264,7 @@ func (c *Connector) walk(
 
 			// Rate-limit: pause between GetDocDetail calls to avoid hitting
 			// Yuque's API rate limit (typically ~100 req/5min for personal tokens).
-			if err := sleepCtx(ctx, 300*time.Millisecond); err != nil {
+			if err := datasource.SleepContext(ctx, 300*time.Millisecond); err != nil {
 				return nil, nil, err
 			}
 

@@ -144,7 +144,7 @@ func (c *Client) GetDocumentsModifiedSince(ctx context.Context, since time.Time)
 }
 ```
 
-Every connector except `rss` (which calls `utils.NewSSRFSafeHTTPClient` directly) builds its client with `datasource.NewConnectorHTTPClient`. Do not use a bare `&http.Client{}`: it bypasses the SSRF guards. Return failures wrapped in the `datasource.Err*` sentinels from `internal/datasource/errors.go` (`ErrInvalidConfig`, `ErrInvalidCredentials`, `ErrPermissionDenied`, `ErrResourceNotFound`, ...), either with `fmt.Errorf("%w: ...", sentinel)` or through a typed error's `Is` method as above.
+Every connector except `rss` (which calls `utils.NewSSRFSafeHTTPClient` directly) builds its client with `datasource.NewConnectorHTTPClient`. Do not use a bare `&http.Client{}`: it bypasses the SSRF guards. Read response bodies with `datasource.ReadCapped` (a zero limit means `datasource.MaxJSONResponseBytes`, an oversized body fails with `datasource.ErrResponseTooLarge`), wait with `datasource.SleepContext`, and bound next-link walks with `datasource.MaxPaginationHops` and streaming checkpoints with `datasource.CheckpointEvery`, rather than carrying a private copy; a connector whose cap genuinely differs (Confluence reads 20 MiB) may keep its own. Return failures wrapped in the `datasource.Err*` sentinels from `internal/datasource/errors.go` (`ErrInvalidConfig`, `ErrInvalidCredentials`, `ErrPermissionDenied`, `ErrResourceNotFound`, ...), either with `fmt.Errorf("%w: ...", sentinel)` or through a typed error's `Is` method as above.
 
 ## Step 4: Implement Connector Interface (connector.go)
 

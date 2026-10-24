@@ -37,37 +37,11 @@ type Client struct {
 	tokenExpAt time.Time
 }
 
-// maxJSONResponseBytes bounds every API response body. Document and wiki
-// payloads are small; a larger body means a broken or hostile server.
-const maxJSONResponseBytes = 16 << 20
-
-// errResponseTooLarge marks a body over the cap. It is deterministic: the same
-// request returns the same oversized body, so callers must not retry it.
-var errResponseTooLarge = errors.New("response exceeds maximum size")
-
 // errTruncatedPage marks a list response that reports has_more with no page
 // token to continue from. Stopping there would pass a truncated listing off as
 // complete, so a full sync would delete the unlisted rest, or index a document
 // or table missing its later pages.
 var errTruncatedPage = errors.New("listing reports more pages but returned no page token")
-
-// readCapped reads a response body, refusing anything larger than limit instead
-// of buffering it. Oversized payloads are reported as an error: a truncated
-// body would be indexed as if it were the whole document. A non-positive limit
-// (e.g. a zero-value client built in tests) falls back to maxJSONResponseBytes.
-func readCapped(body io.Reader, limit int64) ([]byte, error) {
-	if limit <= 0 {
-		limit = maxJSONResponseBytes
-	}
-	data, err := io.ReadAll(io.LimitReader(body, limit+1))
-	if err != nil {
-		return nil, err
-	}
-	if int64(len(data)) > limit {
-		return nil, fmt.Errorf("%w (%d bytes)", errResponseTooLarge, limit)
-	}
-	return data, nil
-}
 
 type WikiNodeListFailure struct {
 	Node WikiNode
@@ -118,7 +92,7 @@ func NewClient(config *Config) *Client {
 		appSecret:  config.AppSecret,
 		location:   resolveLocation(config.Timezone),
 		httpClient: datasource.NewConnectorHTTPClient(30 * time.Second),
-		jsonLimit:  maxJSONResponseBytes,
+		jsonLimit:  datasource.MaxJSONResponseBytes,
 	}
 }
 
@@ -242,7 +216,7 @@ func (c *Client) GetTenantAccessToken(ctx context.Context) (string, error) {
 	}
 	defer resp.Body.Close()
 
-	respBody, err := readCapped(resp.Body, c.jsonLimit)
+	respBody, err := datasource.ReadCapped(resp.Body, c.jsonLimit)
 	if err != nil {
 		return "", fmt.Errorf("read token response: %w", err)
 	}
@@ -392,7 +366,7 @@ func (c *Client) DoRequest(ctx context.Context, method, path string, body interf
 		if err != nil {
 			lastErr = fmt.Errorf("execute request: %w", err)
 			if attempt < maxRetries {
-				if sErr := sleepCtx(ctx, backoff[attempt]); sErr != nil {
+				if sErr := datasource.SleepContext(ctx, backoff[attempt]); sErr != nil {
 					return sErr
 				}
 				continue
@@ -400,12 +374,12 @@ func (c *Client) DoRequest(ctx context.Context, method, path string, body interf
 			return lastErr
 		}
 
-		respBody, readErr := readCapped(resp.Body, c.jsonLimit)
+		respBody, readErr := datasource.ReadCapped(resp.Body, c.jsonLimit)
 		resp.Body.Close()
 		if readErr != nil {
 			lastErr = fmt.Errorf("read response body: %w", readErr)
-			if attempt < maxRetries && !errors.Is(readErr, errResponseTooLarge) {
-				if sErr := sleepCtx(ctx, backoff[attempt]); sErr != nil {
+			if attempt < maxRetries && !errors.Is(readErr, datasource.ErrResponseTooLarge) {
+				if sErr := datasource.SleepContext(ctx, backoff[attempt]); sErr != nil {
 					return sErr
 				}
 				continue
@@ -431,7 +405,7 @@ func (c *Client) DoRequest(ctx context.Context, method, path string, body interf
 		if resp.StatusCode >= 500 && resp.StatusCode < 600 {
 			lastErr = newAPIError("feishu server error", resp.StatusCode, respBody)
 			if attempt < max5xxRetries {
-				if sErr := sleepCtx(ctx, retry5xxDelay); sErr != nil {
+				if sErr := datasource.SleepContext(ctx, retry5xxDelay); sErr != nil {
 					return sErr
 				}
 				continue
@@ -461,22 +435,6 @@ func (c *Client) DoRequest(ctx context.Context, method, path string, body interf
 	}
 
 	return lastErr
-}
-
-// sleepCtx waits for d or until ctx is cancelled, returning ctx.Err() if the
-// context ends first so retries abort promptly on task cancellation/timeout.
-func sleepCtx(ctx context.Context, d time.Duration) error {
-	if d <= 0 {
-		return ctx.Err()
-	}
-	timer := time.NewTimer(d)
-	defer timer.Stop()
-	select {
-	case <-ctx.Done():
-		return ctx.Err()
-	case <-timer.C:
-		return nil
-	}
 }
 
 // truncate truncates a string to maxLen and appends "..." if truncated.
@@ -842,7 +800,7 @@ func (c *Client) ExportAndDownload(ctx context.Context, objToken, objType string
 			break // export ready
 		}
 		if poll+1 < maxPolls {
-			if err := sleepCtx(ctx, pollInterval); err != nil {
+			if err := datasource.SleepContext(ctx, pollInterval); err != nil {
 				return nil, "", err
 			}
 		}
@@ -919,7 +877,7 @@ func (c *Client) downloadRawBytes(ctx context.Context, path string) ([]byte, err
 		if err != nil {
 			lastErr = fmt.Errorf("download request: %w", err)
 			if attempt < feishuMaxRetries {
-				if sErr := sleepCtx(ctx, feishuRetryBackoff[attempt]); sErr != nil {
+				if sErr := datasource.SleepContext(ctx, feishuRetryBackoff[attempt]); sErr != nil {
 					return nil, sErr
 				}
 				continue
@@ -932,7 +890,7 @@ func (c *Client) downloadRawBytes(ctx context.Context, path string) ([]byte, err
 			resp.Body.Close()
 			lastErr = newAPIError("download server error", resp.StatusCode, body)
 			if attempt < feishuMax5xxRetries {
-				if sErr := sleepCtx(ctx, feishuRetry5xxDelay); sErr != nil {
+				if sErr := datasource.SleepContext(ctx, feishuRetry5xxDelay); sErr != nil {
 					return nil, sErr
 				}
 				continue
@@ -974,7 +932,7 @@ func (c *Client) downloadRawBytes(ctx context.Context, path string) ([]byte, err
 		if readErr != nil {
 			lastErr = fmt.Errorf("read download body: %w", readErr)
 			if attempt < feishuMaxRetries {
-				if sErr := sleepCtx(ctx, feishuRetryBackoff[attempt]); sErr != nil {
+				if sErr := datasource.SleepContext(ctx, feishuRetryBackoff[attempt]); sErr != nil {
 					return nil, sErr
 				}
 				continue

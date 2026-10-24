@@ -158,7 +158,8 @@ func (c *Connector) ResolveResourceAncestors(
 		if err != nil {
 			return nil, err
 		}
-		for hops := 0; hops < maxPaginationHops && it.ParentReference != nil && it.ParentReference.ID != ""; hops++ {
+		for hops := 0; hops < datasource.MaxPaginationHops && it.ParentReference != nil &&
+			it.ParentReference.ID != ""; hops++ {
 			parent, err := cl.item(ctx, r.DriveID, it.ParentReference.ID)
 			if errors.Is(err, datasource.ErrResourceNotFound) {
 				break

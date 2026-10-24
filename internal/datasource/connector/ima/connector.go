@@ -50,24 +50,18 @@ func (c *Connector) ResolveResourceAncestors(
 	return []string{}, nil
 }
 
-// maxPaginationHops bounds every cursor-paginated loop in this file. A vendor
-// that keeps handing back a fresh cursor would otherwise keep the connector
-// (and the sync task holding it) spinning until the task deadline; the value
-// mirrors the guard Confluence and DingTalk already carry.
-const maxPaginationHops = 10000
-
 // nextPageCursor validates the progress of a cursor-paginated loop after page
 // `page` (1-based) has been fetched: a cursor handed back twice means the
-// vendor is repeating a page, and page >= maxPaginationHops means the listing
+// vendor is repeating a page, and page >= datasource.MaxPaginationHops means the listing
 // is unbounded. Both are reported instead of being retried forever, and the
 // hop cap is also logged because it is the one failure that looks like a
 // healthy, still-running sync from the outside.
 func nextPageCursor(
 	ctx context.Context, seen map[string]struct{}, cursor string, page int,
 ) (string, error) {
-	if page >= maxPaginationHops {
-		logger.Warnf(ctx, "[IMA] pagination exceeded %d pages; aborting", maxPaginationHops)
-		return "", fmt.Errorf("pagination exceeded %d pages", maxPaginationHops)
+	if page >= datasource.MaxPaginationHops {
+		logger.Warnf(ctx, "[IMA] pagination exceeded %d pages; aborting", datasource.MaxPaginationHops)
+		return "", fmt.Errorf("pagination exceeded %d pages", datasource.MaxPaginationHops)
 	}
 	if _, exists := seen[cursor]; exists {
 		return "", fmt.Errorf("pagination repeated next_cursor %q", cursor)

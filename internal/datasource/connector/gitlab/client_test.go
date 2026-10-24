@@ -416,7 +416,7 @@ func TestGetRawRejectsBlobLargerThanCap(t *testing.T) {
 	}))
 	defer server.Close()
 
-	c := newCappedTestClient(t, server.URL, maxJSONResponseBytes, rawLimit)
+	c := newCappedTestClient(t, server.URL, datasource.MaxJSONResponseBytes, rawLimit)
 	content, err := c.getRaw(context.Background(), "/projects/1/repository/files/big.bin/raw")
 	if err == nil {
 		t.Fatalf("getRaw() accepted a %d-byte blob under a %d-byte cap", len(content), rawLimit)
@@ -441,7 +441,7 @@ func TestGetRawAcceptsBlobAtCap(t *testing.T) {
 	}))
 	defer server.Close()
 
-	c := newCappedTestClient(t, server.URL, maxJSONResponseBytes, rawLimit)
+	c := newCappedTestClient(t, server.URL, datasource.MaxJSONResponseBytes, rawLimit)
 	content, err := c.getRaw(context.Background(), "/projects/1/repository/files/fit.bin/raw")
 	if err != nil {
 		t.Fatalf("getRaw() rejected a blob exactly at the cap: %v", err)
@@ -470,7 +470,7 @@ func TestRawSurfacesOversizedBlobInsteadOfFallingBack(t *testing.T) {
 	}))
 	defer server.Close()
 
-	c := newCappedTestClient(t, server.URL, maxJSONResponseBytes, rawLimit)
+	c := newCappedTestClient(t, server.URL, datasource.MaxJSONResponseBytes, rawLimit)
 	const file = "docs/guide.mp3"
 	content, err := c.raw(context.Background(), "1", "main", file)
 	if err == nil {
@@ -502,7 +502,7 @@ func TestBase64FallbackRejectsOversizedDetail(t *testing.T) {
 	}))
 	defer server.Close()
 
-	c := newCappedTestClient(t, server.URL, maxJSONResponseBytes, rawLimit)
+	c := newCappedTestClient(t, server.URL, datasource.MaxJSONResponseBytes, rawLimit)
 	const file = "docs/guide.mp3"
 	if _, err := c.raw(context.Background(), "1", "main", file); err == nil {
 		t.Fatal("raw() accepted an oversized base64 detail response")
@@ -596,7 +596,7 @@ func TestNewClientSetsResponseCaps(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if c.jsonLimit != maxJSONResponseBytes ||
+	if c.jsonLimit != datasource.MaxJSONResponseBytes ||
 		c.compareLimit != maxCompareResponseBytes ||
 		c.rawLimit != maxRawFileBytes {
 		t.Fatalf("caps = json %d compare %d raw %d", c.jsonLimit, c.compareLimit, c.rawLimit)
@@ -664,7 +664,7 @@ func TestCompareRejectsPayloadAboveCompareCap(t *testing.T) {
 	}))
 	defer server.Close()
 
-	c := newCappedTestClient(t, server.URL, maxJSONResponseBytes, maxRawFileBytes)
+	c := newCappedTestClient(t, server.URL, datasource.MaxJSONResponseBytes, maxRawFileBytes)
 	c.compareLimit = compareLimit
 	_, err := c.compare(context.Background(), "1", "abc", "def")
 	if err == nil {

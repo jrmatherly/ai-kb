@@ -214,7 +214,7 @@ func newClient(cfg *config) *client {
 		appSecret: cfg.ClientSecret,
 		http:      datasource.NewConnectorHTTPClient(apiTimeout),
 		fileHTTP:  datasource.NewConnectorHTTPClient(downloadTimeout),
-		sleep:     sleepContext,
+		sleep:     datasource.SleepContext,
 	}
 }
 
@@ -322,7 +322,7 @@ func (c *client) doJSON(
 			return fmt.Errorf("execute DingTalk request: %w", requestErr)
 		}
 
-		responseBody, readErr := readBody(resp.Body)
+		responseBody, readErr := datasource.ReadCapped(resp.Body, maxResponseBytes)
 		_ = resp.Body.Close()
 		if readErr != nil {
 			return fmt.Errorf("read DingTalk response: %w", readErr)
@@ -734,17 +734,6 @@ func rawValue(value json.RawMessage) string {
 	return strings.TrimSpace(string(value))
 }
 
-func readBody(body io.Reader) ([]byte, error) {
-	data, err := io.ReadAll(io.LimitReader(body, maxResponseBytes+1))
-	if err != nil {
-		return nil, err
-	}
-	if len(data) > maxResponseBytes {
-		return nil, fmt.Errorf("response exceeds %d bytes", maxResponseBytes)
-	}
-	return data, nil
-}
-
 func isTransient(status int) bool {
 	return status == http.StatusTooManyRequests || status >= http.StatusInternalServerError
 }
@@ -782,20 +771,9 @@ func parseRetryAfter(value string, fallback time.Duration) time.Duration {
 
 func (c *client) wait(ctx context.Context, delay time.Duration) error {
 	if c.sleep == nil {
-		return sleepContext(ctx, delay)
+		return datasource.SleepContext(ctx, delay)
 	}
 	return c.sleep(ctx, delay)
-}
-
-func sleepContext(ctx context.Context, delay time.Duration) error {
-	timer := time.NewTimer(delay)
-	defer timer.Stop()
-	select {
-	case <-ctx.Done():
-		return ctx.Err()
-	case <-timer.C:
-		return nil
-	}
 }
 
 func isContextError(err error) bool {

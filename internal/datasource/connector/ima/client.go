@@ -32,10 +32,6 @@ const (
 
 	// Max body we accept from get_media_info-URLs. 200MB matches IMA's largest
 	maxDownloadBytes = 200 * 1024 * 1024
-
-	// maxJSONResponseBytes bounds every API response body. Listings and document
-	// payloads are small; a larger body means a broken or hostile server.
-	maxJSONResponseBytes = 16 << 20
 )
 
 // client wraps the IMA OpenAPI. It is safe for concurrent use.
@@ -61,30 +57,8 @@ func newClient(cfg *Config) *client {
 		apiKey:         cfg.APIKey,
 		httpClient:     datasource.NewConnectorHTTPClient(defaultTimeout),
 		downloadClient: datasource.NewConnectorHTTPClient(downloadTimeout),
-		jsonLimit:      maxJSONResponseBytes,
+		jsonLimit:      datasource.MaxJSONResponseBytes,
 	}
-}
-
-// errResponseTooLarge marks a body over the cap. It is deterministic: the same
-// request returns the same oversized body, so callers must not retry it.
-var errResponseTooLarge = errors.New("response exceeds maximum size")
-
-// readCapped reads a response body, refusing anything larger than limit instead
-// of buffering it. Oversized payloads are reported as an error: a truncated
-// body would be indexed as if it were the whole document. A non-positive limit
-// (e.g. a zero-value client built in tests) falls back to maxJSONResponseBytes.
-func readCapped(body io.Reader, limit int64) ([]byte, error) {
-	if limit <= 0 {
-		limit = maxJSONResponseBytes
-	}
-	data, err := io.ReadAll(io.LimitReader(body, limit+1))
-	if err != nil {
-		return nil, err
-	}
-	if int64(len(data)) > limit {
-		return nil, fmt.Errorf("%w (%d bytes)", errResponseTooLarge, limit)
-	}
-	return data, nil
 }
 
 // callAPI executes an authenticated POST to /openapi/wiki/v1/<action>.
@@ -151,7 +125,7 @@ func (c *client) callAPIAt(
 		if err != nil {
 			lastErr = fmt.Errorf("execute request: %w", err)
 			if attempt < maxRetries {
-				if sErr := sleepCtx(ctx, backoff[attempt]); sErr != nil {
+				if sErr := datasource.SleepContext(ctx, backoff[attempt]); sErr != nil {
 					return sErr
 				}
 				continue
@@ -159,12 +133,12 @@ func (c *client) callAPIAt(
 			return lastErr
 		}
 
-		respBody, readErr := readCapped(resp.Body, c.jsonLimit)
+		respBody, readErr := datasource.ReadCapped(resp.Body, c.jsonLimit)
 		_ = resp.Body.Close()
 		if readErr != nil {
 			lastErr = fmt.Errorf("read response: %w", readErr)
-			if attempt < maxRetries && !errors.Is(readErr, errResponseTooLarge) {
-				if sErr := sleepCtx(ctx, backoff[attempt]); sErr != nil {
+			if attempt < maxRetries && !errors.Is(readErr, datasource.ErrResponseTooLarge) {
+				if sErr := datasource.SleepContext(ctx, backoff[attempt]); sErr != nil {
 					return sErr
 				}
 				continue
@@ -192,7 +166,7 @@ func (c *client) callAPIAt(
 			wait := backoff[minInt(attempt, len(backoff)-1)]
 			lastErr = fmt.Errorf("ima rate limited: status=429 body=%s", bodyPreview)
 			if attempt < maxRetries {
-				if sErr := sleepCtx(ctx, wait); sErr != nil {
+				if sErr := datasource.SleepContext(ctx, wait); sErr != nil {
 					return sErr
 				}
 				continue
@@ -203,7 +177,7 @@ func (c *client) callAPIAt(
 		if resp.StatusCode >= 500 && resp.StatusCode < 600 {
 			lastErr = fmt.Errorf("ima server error: status=%d body=%s", resp.StatusCode, bodyPreview)
 			if attempt < max5xxRetries {
-				if sErr := sleepCtx(ctx, retry5xxDelay); sErr != nil {
+				if sErr := datasource.SleepContext(ctx, retry5xxDelay); sErr != nil {
 					return sErr
 				}
 				continue
@@ -233,7 +207,7 @@ func (c *client) callAPIAt(
 			}
 			if code == 110021 && attempt < maxRetries {
 				lastErr = fmt.Errorf("ima rate limited: code=%d msg=%s", code, env.message())
-				if sErr := sleepCtx(ctx, backoff[minInt(attempt, len(backoff)-1)]); sErr != nil {
+				if sErr := datasource.SleepContext(ctx, backoff[minInt(attempt, len(backoff)-1)]); sErr != nil {
 					return sErr
 				}
 				continue
@@ -401,18 +375,6 @@ func (c *client) DownloadURL(ctx context.Context, u urlInfo) ([]byte, string, er
 		return nil, "", fmt.Errorf("download body exceeds %d bytes", maxDownloadBytes)
 	}
 	return body, resp.Header.Get("Content-Type"), nil
-}
-
-// sleepCtx pauses for d, returning early if ctx is cancelled.
-func sleepCtx(ctx context.Context, d time.Duration) error {
-	t := time.NewTimer(d)
-	defer t.Stop()
-	select {
-	case <-t.C:
-		return nil
-	case <-ctx.Done():
-		return ctx.Err()
-	}
 }
 
 func truncate(s string, maxLen int) string {

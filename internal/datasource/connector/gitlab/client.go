@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -18,9 +17,6 @@ import (
 )
 
 const (
-	// maxJSONResponseBytes bounds project, user, commit and paginated tree JSON.
-	// Those listings are small; a larger body means a broken or hostile server.
-	maxJSONResponseBytes int64 = 16 << 20
 	// maxCompareResponseBytes bounds GET /repository/compare. That body carries
 	// the full commit list and patch text. A straight compare across a long
 	// unsynced range or a force-push routinely exceeds the metadata cap, and
@@ -40,34 +36,15 @@ func base64FileBytes(rawLimit int64) int64 {
 	return rawLimit/3*4 + (1 << 20)
 }
 
-// maxPaginationHops bounds a single paginated walk. GitLab reports the next
-// page through the X-Next-Page header, so a broken instance or reverse proxy
-// could keep advertising pages indefinitely.
-const maxPaginationHops = 10000
-
 type client struct {
 	baseURL, token string
 	http           *http.Client
 	// jsonLimit, compareLimit and rawLimit are fields rather than direct uses of
-	// the constants above so tests can lower them without materialising hundreds
-	// of megabytes. newClient always sets the production values.
+	// the shared and package caps so tests can lower them without materialising
+	// hundreds of megabytes. newClient always sets the production values.
 	jsonLimit    int64
 	compareLimit int64
 	rawLimit     int64
-}
-
-// readCapped reads a response body, refusing anything larger than limit instead
-// of buffering it. Oversized payloads are reported as an error: a truncated
-// body would be indexed as if it were the whole document.
-func readCapped(body io.Reader, limit int64) ([]byte, error) {
-	data, err := io.ReadAll(io.LimitReader(body, limit+1))
-	if err != nil {
-		return nil, err
-	}
-	if int64(len(data)) > limit {
-		return nil, fmt.Errorf("response exceeds maximum size (%d bytes)", limit)
-	}
-	return data, nil
 }
 
 type apiError struct {
@@ -137,7 +114,7 @@ func newClient(baseURL, token string) (*client, error) {
 		baseURL:      baseURL,
 		token:        token,
 		http:         datasource.NewConnectorHTTPClient(30 * time.Second),
-		jsonLimit:    maxJSONResponseBytes,
+		jsonLimit:    datasource.MaxJSONResponseBytes,
 		compareLimit: maxCompareResponseBytes,
 		rawLimit:     maxRawFileBytes,
 	}, nil
@@ -163,7 +140,7 @@ func (c *client) getCapped(ctx context.Context, endpoint string, out interface{}
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		return &apiError{endpoint: endpoint, status: resp.StatusCode}
 	}
-	body, err := readCapped(resp.Body, limit)
+	body, err := datasource.ReadCapped(resp.Body, limit)
 	if err != nil {
 		return fmt.Errorf("gitlab API %s: %w", endpoint, err)
 	}
@@ -184,7 +161,7 @@ func (c *client) getRaw(ctx context.Context, endpoint string) ([]byte, error) {
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		return nil, &apiError{endpoint: endpoint, status: resp.StatusCode}
 	}
-	body, err := readCapped(resp.Body, c.rawLimit)
+	body, err := datasource.ReadCapped(resp.Body, c.rawLimit)
 	if err != nil {
 		return nil, fmt.Errorf("gitlab raw file %s: %w", endpoint, err)
 	}
@@ -232,9 +209,9 @@ func trackPage(ctx context.Context, scope string, seen map[string]struct{}, page
 	if _, dup := seen[page]; dup {
 		return fmt.Errorf("gitlab %s pagination repeated page %q", scope, page)
 	}
-	if len(seen) >= maxPaginationHops {
-		logger.Warnf(ctx, "[GitLab] %s pagination exceeded %d pages; aborting", scope, maxPaginationHops)
-		return fmt.Errorf("gitlab %s pagination exceeded %d pages", scope, maxPaginationHops)
+	if len(seen) >= datasource.MaxPaginationHops {
+		logger.Warnf(ctx, "[GitLab] %s pagination exceeded %d pages; aborting", scope, datasource.MaxPaginationHops)
+		return fmt.Errorf("gitlab %s pagination exceeded %d pages", scope, datasource.MaxPaginationHops)
 	}
 	seen[page] = struct{}{}
 	return nil
@@ -321,7 +298,7 @@ func (c *client) getPage(ctx context.Context, endpoint string, query url.Values,
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		return "", &apiError{endpoint: endpoint, status: resp.StatusCode}
 	}
-	body, err := readCapped(resp.Body, c.jsonLimit)
+	body, err := datasource.ReadCapped(resp.Body, c.jsonLimit)
 	if err != nil {
 		return "", fmt.Errorf("gitlab API %s: %w", endpoint, err)
 	}

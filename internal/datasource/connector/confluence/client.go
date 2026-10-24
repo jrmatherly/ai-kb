@@ -23,7 +23,6 @@ const (
 	requestAttempts                    = 4
 	maxErrorResponseRunes              = 1000
 	maxRetryDelay                      = 60 * time.Second
-	maxPaginationHops                  = 10000
 	maxTraversalNodes                  = 100000
 	maxTransparentTraversalNodes       = 10000
 	maxTransparentTraversalDepth       = 32
@@ -148,14 +147,7 @@ func waitRetry(ctx context.Context, retryAfter string, attempt int) error {
 	} else if t, err := http.ParseTime(retryAfter); err == nil {
 		delay = capRetryDelay(time.Until(t))
 	}
-	timer := time.NewTimer(delay)
-	defer timer.Stop()
-	select {
-	case <-ctx.Done():
-		return ctx.Err()
-	case <-timer.C:
-		return nil
-	}
+	return datasource.SleepContext(ctx, delay)
 }
 
 func capRetryDelay(delay time.Duration) time.Duration {
@@ -231,8 +223,8 @@ func (c *client) paginate(ctx context.Context, start string, step func(pageURL s
 		if _, dup := seen[resolved]; dup {
 			return fmt.Errorf("confluence pagination looped")
 		}
-		if len(seen) >= maxPaginationHops {
-			return fmt.Errorf("confluence pagination exceeded %d pages", maxPaginationHops)
+		if len(seen) >= datasource.MaxPaginationHops {
+			return fmt.Errorf("confluence pagination exceeded %d pages", datasource.MaxPaginationHops)
 		}
 		seen[resolved] = struct{}{}
 		next, err = step(next)

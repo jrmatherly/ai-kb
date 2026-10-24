@@ -30,32 +30,6 @@ type notionClient struct {
 	jsonLimit int64
 }
 
-// maxJSONResponseBytes bounds every API response body. Page and block payloads
-// are small; a larger body means a broken or hostile server.
-const maxJSONResponseBytes = 16 << 20
-
-// errResponseTooLarge marks a body over the cap. It is deterministic: the same
-// request returns the same oversized body, so callers must not retry it.
-var errResponseTooLarge = errors.New("response exceeds maximum size")
-
-// readCapped reads a response body, refusing anything larger than limit instead
-// of buffering it. Oversized payloads are reported as an error: a truncated
-// body would be indexed as if it were the whole document. A non-positive limit
-// (e.g. a zero-value client built in tests) falls back to maxJSONResponseBytes.
-func readCapped(body io.Reader, limit int64) ([]byte, error) {
-	if limit <= 0 {
-		limit = maxJSONResponseBytes
-	}
-	data, err := io.ReadAll(io.LimitReader(body, limit+1))
-	if err != nil {
-		return nil, err
-	}
-	if int64(len(data)) > limit {
-		return nil, fmt.Errorf("%w (%d bytes)", errResponseTooLarge, limit)
-	}
-	return data, nil
-}
-
 // newClient creates a new Notion API client.
 func newClient(token, baseURL string) (*notionClient, error) {
 	if baseURL == "" {
@@ -69,23 +43,11 @@ func newClient(token, baseURL string) (*notionClient, error) {
 		httpClient: datasource.NewConnectorHTTPClient(30 * time.Second),
 		limiter:    rate.NewLimiter(rate.Limit(3), 3),
 		baseURL:    baseURL,
-		jsonLimit:  maxJSONResponseBytes,
+		jsonLimit:  datasource.MaxJSONResponseBytes,
 	}, nil
 }
 
 const maxRetries = 3
-
-// sleepWithContext pauses for the given duration, returning early if ctx is cancelled.
-func sleepWithContext(ctx context.Context, d time.Duration) error {
-	t := time.NewTimer(d)
-	defer t.Stop()
-	select {
-	case <-t.C:
-		return nil
-	case <-ctx.Done():
-		return ctx.Err()
-	}
-}
 
 // doRequest performs an authenticated, rate-limited HTTP request to the Notion API.
 func (c *notionClient) doRequest(ctx context.Context, method, path string, body interface{}) ([]byte, error) {
@@ -123,7 +85,7 @@ func (c *notionClient) doRequest(ctx context.Context, method, path string, body 
 		if err != nil {
 			lastErr = err
 			if attempt < maxRetries {
-				if sErr := sleepWithContext(ctx, time.Duration(1<<attempt)*time.Second); sErr != nil {
+				if sErr := datasource.SleepContext(ctx, time.Duration(1<<attempt)*time.Second); sErr != nil {
 					return nil, sErr
 				}
 				continue
@@ -131,7 +93,7 @@ func (c *notionClient) doRequest(ctx context.Context, method, path string, body 
 			break
 		}
 
-		respBody, err := readCapped(resp.Body, c.jsonLimit)
+		respBody, err := datasource.ReadCapped(resp.Body, c.jsonLimit)
 		resp.Body.Close()
 		if err != nil {
 			return nil, fmt.Errorf("read response: %w", err)
@@ -156,7 +118,7 @@ func (c *notionClient) doRequest(ctx context.Context, method, path string, body 
 			logger.Warnf(ctx, "[Notion] rate limited, retry after %v (attempt %d/%d)", wait, attempt+1, maxRetries)
 			lastErr = fmt.Errorf("rate limited: %s", string(respBody))
 			if attempt < maxRetries {
-				if sErr := sleepWithContext(ctx, wait); sErr != nil {
+				if sErr := datasource.SleepContext(ctx, wait); sErr != nil {
 					return nil, sErr
 				}
 				continue
@@ -165,7 +127,7 @@ func (c *notionClient) doRequest(ctx context.Context, method, path string, body 
 		case resp.StatusCode >= 500:
 			lastErr = fmt.Errorf("server error %d: %s", resp.StatusCode, string(respBody))
 			if attempt < maxRetries {
-				if sErr := sleepWithContext(ctx, time.Duration(1<<attempt)*time.Second); sErr != nil {
+				if sErr := datasource.SleepContext(ctx, time.Duration(1<<attempt)*time.Second); sErr != nil {
 					return nil, sErr
 				}
 				continue
@@ -470,7 +432,7 @@ func (c *notionClient) DownloadFile(ctx context.Context, fileURL string) ([]byte
 		if err != nil {
 			lastErr = err
 			if attempt < maxRetries {
-				if sErr := sleepWithContext(ctx, time.Duration(1<<attempt)*time.Second); sErr != nil {
+				if sErr := datasource.SleepContext(ctx, time.Duration(1<<attempt)*time.Second); sErr != nil {
 					return nil, sErr
 				}
 				continue
@@ -482,7 +444,7 @@ func (c *notionClient) DownloadFile(ctx context.Context, fileURL string) ([]byte
 			resp.Body.Close()
 			lastErr = fmt.Errorf("download failed with status %d", resp.StatusCode)
 			if resp.StatusCode >= 500 && attempt < maxRetries {
-				if sErr := sleepWithContext(ctx, time.Duration(1<<attempt)*time.Second); sErr != nil {
+				if sErr := datasource.SleepContext(ctx, time.Duration(1<<attempt)*time.Second); sErr != nil {
 					return nil, sErr
 				}
 				continue
@@ -506,24 +468,18 @@ func (c *notionClient) DownloadFile(ctx context.Context, fileURL string) ([]byte
 
 // --- Shared pagination helper ---
 
-// maxPaginationHops bounds every cursor-paginated loop in this file. A vendor
-// (or gateway) that keeps answering has_more=true would otherwise keep the
-// client paging until the sync task hits its deadline; the value mirrors the
-// guard Confluence and DingTalk already carry.
-const maxPaginationHops = 10000
-
 // advancePaginationCursor validates the progress of a cursor-paginated loop
 // after page `page` (1-based) has been fetched: a cursor handed back twice
-// means the vendor is repeating a page, and page >= maxPaginationHops means
+// means the vendor is repeating a page, and page >= datasource.MaxPaginationHops means
 // the listing is unbounded. Both are reported instead of being followed
 // forever, and the hop cap is also logged because it is the one failure that
 // looks like a healthy, still-running sync from the outside.
 func advancePaginationCursor(
 	ctx context.Context, seen map[string]struct{}, cursor string, page int,
 ) (string, error) {
-	if page >= maxPaginationHops {
-		logger.Warnf(ctx, "[Notion] pagination exceeded %d pages; aborting", maxPaginationHops)
-		return "", fmt.Errorf("pagination exceeded %d pages", maxPaginationHops)
+	if page >= datasource.MaxPaginationHops {
+		logger.Warnf(ctx, "[Notion] pagination exceeded %d pages; aborting", datasource.MaxPaginationHops)
+		return "", fmt.Errorf("pagination exceeded %d pages", datasource.MaxPaginationHops)
 	}
 	if _, exists := seen[cursor]; exists {
 		return "", fmt.Errorf("pagination repeated next_cursor %q", cursor)

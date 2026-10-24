@@ -14,8 +14,6 @@ import (
 	"github.com/jrmatherly/ai-kb/internal/utils"
 )
 
-const checkpointEvery = 50
-
 // run is one FetchStream invocation's working state.
 type run struct {
 	c        *Connector
@@ -35,7 +33,7 @@ type run struct {
 
 // FetchStream walks every selected root's delta stream, emitting changed
 // files, tombstones and per-file failures, and checkpoints after every page
-// and every checkpointEvery emits.
+// and every datasource.CheckpointEvery emits.
 func (c *Connector) FetchStream(
 	ctx context.Context, ds *types.DataSourceConfig, old *types.SyncCursor, h datasource.StreamHandler,
 ) (*types.SyncCursor, error) {
@@ -193,7 +191,7 @@ func (r *run) emit(ctx context.Context, item types.FetchedItem) error {
 		return err
 	}
 	r.emitted++
-	if r.emitted >= checkpointEvery {
+	if r.emitted >= datasource.CheckpointEvery {
 		return r.checkpoint(ctx)
 	}
 	return nil
@@ -275,7 +273,8 @@ func (r *run) perItem(err error) bool {
 	case errors.As(err, &api):
 		return api.status != http.StatusUnauthorized
 	}
-	return errors.Is(err, errEmptyFile) || errors.Is(err, errSourceChanged) || errors.Is(err, errTooLarge) ||
+	return errors.Is(err, errEmptyFile) || errors.Is(err, errSourceChanged) ||
+		errors.Is(err, datasource.ErrResponseTooLarge) ||
 		errors.Is(
 			err,
 			errInsecureDownload,
@@ -300,8 +299,8 @@ func (r *run) walkRoot(ctx context.Context, rt root) error {
 		if _, dup := visited[link]; dup {
 			return fmt.Errorf("microsoft graph delta for %s repeated a page link", id)
 		}
-		if len(visited) >= maxPaginationHops {
-			return fmt.Errorf("microsoft graph delta for %s exceeded %d pages", id, maxPaginationHops)
+		if len(visited) >= datasource.MaxPaginationHops {
+			return fmt.Errorf("microsoft graph delta for %s exceeded %d pages", id, datasource.MaxPaginationHops)
 		}
 		visited[link] = struct{}{}
 		st.Next = link
@@ -438,7 +437,7 @@ func (r *run) ensureAncestors(ctx context.Context, rt root, st *rootState, it dr
 		return nil
 	}
 	parentItem := it.ParentReference.ID
-	for hops := 0; parentItem != "" && hops < maxPaginationHops; hops++ {
+	for hops := 0; parentItem != "" && hops < datasource.MaxPaginationHops; hops++ {
 		parentID := externalID(rt.DriveID, parentItem)
 		f, known := r.cur.Folders[parentID]
 		if !known {
@@ -529,7 +528,7 @@ func permanentDownloadErr(err error) bool {
 	if errors.As(err, &api) {
 		return api.status == http.StatusForbidden && api.endpoint != downloadEndpoint
 	}
-	return errors.Is(err, errEmptyFile) || errors.Is(err, errTooLarge)
+	return errors.Is(err, errEmptyFile) || errors.Is(err, datasource.ErrResponseTooLarge)
 }
 
 func downloadReason(err error) string {
@@ -538,7 +537,7 @@ func downloadReason(err error) string {
 		return reasonEmptyFile
 	case errors.Is(err, errSourceChanged):
 		return reasonSourceChanged
-	case errors.Is(err, errTooLarge):
+	case errors.Is(err, datasource.ErrResponseTooLarge):
 		return reasonFileTooLarge
 	case errors.Is(err, datasource.ErrPermissionDenied):
 		return reasonPermissionDenied

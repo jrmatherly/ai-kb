@@ -249,7 +249,7 @@ func TestPagesRejectRepeatedOffHostAndEndlessNext(t *testing.T) {
 		var requests int64
 		var server *httptest.Server
 		server = newTestServer(t, func(w http.ResponseWriter, r *http.Request) {
-			if atomic.AddInt64(&requests, 1) > maxPaginationHops+10 {
+			if atomic.AddInt64(&requests, 1) > datasource.MaxPaginationHops+10 {
 				http.Error(w, "hop cap missing", http.StatusTeapot)
 				return
 			}
@@ -264,8 +264,8 @@ func TestPagesRejectRepeatedOffHostAndEndlessNext(t *testing.T) {
 
 		err := c.pages(ctx, server.URL+"/items?page=1", ignore)
 
-		require.ErrorContains(t, err, "exceeded "+strconv.Itoa(maxPaginationHops)+" pages")
-		require.Equal(t, int64(maxPaginationHops), atomic.LoadInt64(&requests))
+		require.ErrorContains(t, err, "exceeded "+strconv.Itoa(datasource.MaxPaginationHops)+" pages")
+		require.Equal(t, int64(datasource.MaxPaginationHops), atomic.LoadInt64(&requests))
 	})
 }
 

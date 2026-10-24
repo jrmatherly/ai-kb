@@ -240,7 +240,7 @@ func TestRepositoriesStopAtPaginationGuard(t *testing.T) {
 	var server *httptest.Server
 	server = newTestServer(t, func(w http.ResponseWriter, _ *http.Request) {
 		n := atomic.AddInt64(&requests, 1)
-		if n > maxPaginationHops+10 {
+		if n > datasource.MaxPaginationHops+10 {
 			http.Error(w, "hop cap missing", http.StatusBadRequest)
 			return
 		}
@@ -255,7 +255,7 @@ func TestRepositoriesStopAtPaginationGuard(t *testing.T) {
 
 	_, err := newTestClient(t, server).repositories(ctx)
 	require.EqualError(t, err, "github repository pagination exceeded 10000 pages")
-	require.Equal(t, int64(maxPaginationHops), atomic.LoadInt64(&requests))
+	require.Equal(t, int64(datasource.MaxPaginationHops), atomic.LoadInt64(&requests))
 	require.Contains(t, logs.String(), "pagination exceeded 10000 pages")
 }
 
