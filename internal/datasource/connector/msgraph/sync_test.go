@@ -966,10 +966,10 @@ func TestFetchFullStreamResyncInsideFromScratchAttemptIsStillComplete(t *testing
 func TestFetchStreamMidPageCheckpointResumesByFingerprint(t *testing.T) {
 	f := newFakeGraph(t)
 	serveSite(f)
-	// Page 1 holds checkpointEvery+2 files; the handler refuses the last one.
+	// Page 1 holds datasource.CheckpointEvery+2 files; the handler refuses the last one.
 	var page []map[string]any
 	var names []string
-	for i := 0; i < checkpointEvery+2; i++ {
+	for i := 0; i < datasource.CheckpointEvery+2; i++ {
 		id := "01F" + string(rune('A'+i/26)) + string(rune('A'+i%26))
 		name := "f" + id + ".pdf"
 		page = append(page, file(id, name, "01ROOT", "XX", "q"+id))
@@ -982,16 +982,16 @@ func TestFetchStreamMidPageCheckpointResumesByFingerprint(t *testing.T) {
 	first := &failingRecorder{failOn: page[len(page)-1]["name"].(string)}
 	_, err := c.FetchStream(context.Background(), importsAll(), nil, first)
 	require.ErrorContains(t, err, "handler refused")
-	require.Equal(t, names[:checkpointEvery+1], first.names())
-	require.Len(t, first.checkpoints, 2, "one after page 0, one after checkpointEvery emits inside page 1")
+	require.Equal(t, names[:datasource.CheckpointEvery+1], first.names())
+	require.Len(t, first.checkpoints, 2, "one after page 0, one after datasource.CheckpointEvery emits inside page 1")
 	mid, err := decodeCursor(first.checkpoints[1])
 	require.NoError(t, err)
 	require.Contains(t, mid.Roots["b!docs"].Next, "page=1")
-	require.Len(t, mid.Items, checkpointEvery)
+	require.Len(t, mid.Items, datasource.CheckpointEvery)
 	second := &recorder{}
 	next, err := c.FetchStream(context.Background(), importsAll(), first.checkpoints[1], second)
 	require.NoError(t, err)
-	require.Equal(t, names[checkpointEvery:], second.names(), "the files before the checkpoint are skipped")
+	require.Equal(t, names[datasource.CheckpointEvery:], second.names(), "the files before the checkpoint are skipped")
 	require.False(t, next.CompleteListing)
 }
 

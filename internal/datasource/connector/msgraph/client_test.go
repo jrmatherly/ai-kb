@@ -183,7 +183,7 @@ func TestDownloadSizeMismatchAndEmptyAndTooLarge(t *testing.T) {
 	_, err := c.download(context.Background(), "b!abc", "01B", 5, 1<<20)
 	require.ErrorIs(t, err, errSourceChanged)
 	_, err = c.download(context.Background(), "b!abc", "01B", 3, 2)
-	require.ErrorIs(t, err, errTooLarge)
+	require.ErrorIs(t, err, datasource.ErrResponseTooLarge)
 	f.handle("GET /download/01B", func(w http.ResponseWriter, _ *http.Request) { w.WriteHeader(http.StatusOK) })
 	_, err = c.download(context.Background(), "b!abc", "01B", 0, 1<<20)
 	require.ErrorIs(t, err, errEmptyFile)
@@ -408,5 +408,5 @@ func TestJSONBodyOverTheCapIsTooLarge(t *testing.T) {
 	c := f.client(t)
 	c.jsonLimit = 10
 	_, err := c.drive(context.Background(), "b!abc")
-	require.ErrorIs(t, err, errTooLarge)
+	require.ErrorIs(t, err, datasource.ErrResponseTooLarge)
 }
