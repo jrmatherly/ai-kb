@@ -71,7 +71,7 @@ internal/datasource/
 ├── connector.go          # Connector interface, registry & metadata
 ├── errors.go            # Error definitions
 ├── scheduler.go         # Cron scheduler for periodic syncs
-├── httpclient.go        # SSRF-guarded HTTP client for connectors
+├── httpclient.go        # SSRF-guarded HTTP client, capped reader, context sleep and sync caps for connectors
 ├── filename.go          # File name sanitizing for synced items
 ├── connector/           # Connector implementations (one package per platform)
 ├── syncreason/          # Test-only parity check of sync reason codes vs. frontend keys
