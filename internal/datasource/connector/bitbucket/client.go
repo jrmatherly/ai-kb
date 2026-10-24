@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"net/http"
 	"net/url"
 	"regexp"
@@ -22,12 +21,8 @@ import (
 const (
 	apiBaseURL = "https://api.bitbucket.org/2.0"
 
-	maxJSONResponseBytes int64 = 16 << 20
-	maxRawFileBytes      int64 = 100 << 20
+	maxRawFileBytes int64 = 100 << 20
 
-	// maxPaginationHops bounds one paginated walk; a broken server could
-	// advertise a fresh next page forever.
-	maxPaginationHops    = 10000
 	pageLen              = 100
 	listingDepth         = 50
 	fallbackListingDepth = 10
@@ -43,7 +38,6 @@ var (
 	errRateLimited = errors.New("bitbucket API rate limit exhausted")
 	errTimedOut    = errors.New("bitbucket API timed out")
 	errLFSRedirect = errors.New("bitbucket file is served by redirect")
-	errTooLarge    = errors.New("response exceeds maximum size")
 )
 
 var fullHash = regexp.MustCompile(`^[0-9a-fA-F]{40}$`)
@@ -148,23 +142,9 @@ func newClient(baseURL, username, token string) (*client, error) {
 		token:     token,
 		http:      datasource.NewConnectorHTTPClient(30 * time.Second),
 		rawHTTP:   raw,
-		jsonLimit: maxJSONResponseBytes,
+		jsonLimit: datasource.MaxJSONResponseBytes,
 		rawLimit:  maxRawFileBytes,
 	}, nil
-}
-
-// readCapped reads a response body, refusing anything larger than limit instead
-// of buffering it. A truncated body would be indexed as if it were the whole
-// document.
-func readCapped(body io.Reader, limit int64) ([]byte, error) {
-	data, err := io.ReadAll(io.LimitReader(body, limit+1))
-	if err != nil {
-		return nil, err
-	}
-	if int64(len(data)) > limit {
-		return nil, fmt.Errorf("%w (%d bytes)", errTooLarge, limit)
-	}
-	return data, nil
 }
 
 // do GETs rawURL through hc. A 429 is sat out and retried once per client when
@@ -220,7 +200,7 @@ func (c *client) fetch(ctx context.Context, rawURL string, out any) error {
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		return &apiError{endpoint: endpoint, status: resp.StatusCode}
 	}
-	body, err := readCapped(resp.Body, c.jsonLimit)
+	body, err := datasource.ReadCapped(resp.Body, c.jsonLimit)
 	if err != nil {
 		return fmt.Errorf("bitbucket API %s: %w", endpoint, err)
 	}
@@ -233,9 +213,9 @@ func (c *client) pages(ctx context.Context, first string, each func(values json.
 		if _, dup := seen[next]; dup {
 			return fmt.Errorf("bitbucket pagination repeated page %q", next)
 		}
-		if len(seen) >= maxPaginationHops {
-			logger.Warnf(ctx, "[Bitbucket] pagination exceeded %d pages; aborting", maxPaginationHops)
-			return fmt.Errorf("bitbucket pagination exceeded %d pages", maxPaginationHops)
+		if len(seen) >= datasource.MaxPaginationHops {
+			logger.Warnf(ctx, "[Bitbucket] pagination exceeded %d pages; aborting", datasource.MaxPaginationHops)
+			return fmt.Errorf("bitbucket pagination exceeded %d pages", datasource.MaxPaginationHops)
 		}
 		seen[next] = struct{}{}
 		var page struct {
@@ -386,7 +366,7 @@ func (c *client) raw(ctx context.Context, key, commit, path string) ([]byte, err
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		return nil, &apiError{endpoint: endpoint, status: resp.StatusCode}
 	}
-	body, err := readCapped(resp.Body, c.rawLimit)
+	body, err := datasource.ReadCapped(resp.Body, c.rawLimit)
 	if err != nil {
 		return nil, fmt.Errorf("bitbucket API %s: %w", endpoint, err)
 	}

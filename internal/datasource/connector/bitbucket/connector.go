@@ -19,8 +19,6 @@ import (
 
 var _ datasource.StreamingConnector = (*Connector)(nil)
 
-const checkpointEvery = 50
-
 const (
 	reasonFileTooLarge   = "bitbucket_file_too_large"
 	reasonLFSUnsupported = "bitbucket_lfs_unsupported"
@@ -404,7 +402,7 @@ func (c *Connector) emit(
 		if err := h.Emit(ctx, item); err != nil {
 			return err
 		}
-		if n := i + 1; n%checkpointEvery == 0 {
+		if n := i + 1; n%datasource.CheckpointEvery == 0 {
 			if err := checkpoint(n); err != nil {
 				return err
 			}
@@ -478,7 +476,7 @@ func (c *Connector) item(
 	switch {
 	case errors.Is(err, errLFSRedirect):
 		return c.errorItem(repo, key, ref, file, reasonLFSUnsupported), nil
-	case errors.Is(err, errTooLarge):
+	case errors.Is(err, datasource.ErrResponseTooLarge):
 		return c.errorItem(repo, key, ref, file, reasonFileTooLarge), nil
 	case err != nil:
 		return types.FetchedItem{}, err
