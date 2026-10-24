@@ -32,12 +32,16 @@ type fakeGraph struct {
 	token string
 	// tokenStatus lets a test fail the token endpoint.
 	tokenStatus int
+	// expiresIn is the token lifetime the endpoint reports; tests lower it to check caching.
+	expiresIn int64
 }
 
 func newFakeGraph(t *testing.T) *fakeGraph {
 	t.Helper()
 	allowLocalServer(t)
-	f := &fakeGraph{t: t, handlers: map[string]http.HandlerFunc{}, token: "tok-1", tokenStatus: http.StatusOK}
+	f := &fakeGraph{
+		t: t, handlers: map[string]http.HandlerFunc{}, token: "tok-1", tokenStatus: http.StatusOK, expiresIn: 3599,
+	}
 	f.server = httptest.NewServer(http.HandlerFunc(f.serve))
 	t.Cleanup(f.server.Close)
 	return f
@@ -78,7 +82,7 @@ func (f *fakeGraph) serve(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		_ = json.NewEncoder(w).
-			Encode(map[string]any{"token_type": "Bearer", "expires_in": 3599, "access_token": f.token})
+			Encode(map[string]any{"token_type": "Bearer", "expires_in": f.expiresIn, "access_token": f.token})
 		return
 	}
 	if !ok {

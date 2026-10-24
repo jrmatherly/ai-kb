@@ -1018,3 +1018,65 @@ func TestFetchStreamRetryOfAnItemThatIsNoLongerAFileTombstones(t *testing.T) {
 	after, _ := decodeCursor(next)
 	require.NotContains(t, after.Items, "b!docs:01A")
 }
+
+func TestFetchStreamDeltaPageWithNeitherLinkFailsTheRun(t *testing.T) {
+	f := newFakeGraph(t)
+	serveSite(f)
+	f.handle("GET /drives/b!docs/root/delta", func(w http.ResponseWriter, _ *http.Request) {
+		_ = jsonEncode(w, map[string]any{"value": []any{}})
+	})
+	f.json("GET /drives/b!docs", http.StatusOK, map[string]any{"id": "b!docs", "name": "Documents"})
+	_, err := testConnector(f, KindSharePoint).FetchStream(context.Background(), importsAll(), nil, &recorder{})
+	require.ErrorIs(t, err, datasource.ErrFetchFailed)
+	require.ErrorContains(t, err, "neither")
+}
+
+func TestFetchStreamForbiddenDownloadIsReportedOnce(t *testing.T) {
+	f := newFakeGraph(t)
+	serveSite(f)
+	deltaScript(
+		f,
+		"/drives/b!docs/root/delta",
+		[]map[string]any{rootItem("01ROOT"), file("01A", "a.docx", "01ROOT", "AAAA", "qa")},
+	)
+	f.json("GET /drives/b!docs", http.StatusOK, map[string]any{"id": "b!docs", "name": "Documents"})
+	f.json(
+		"GET /drives/b!docs/items/01A/content",
+		http.StatusForbidden,
+		map[string]any{"error": map[string]any{"code": "accessDenied"}},
+	)
+	c := testConnector(f, KindSharePoint)
+	rec := &recorder{}
+	cur, err := c.FetchStream(context.Background(), importsAll(), nil, rec)
+	require.NoError(t, err, "one forbidden download does not stop the delta walk")
+	require.Equal(t, []string{"!msgraph_permission_denied:a.docx"}, rec.names())
+	recorded, _ := decodeCursor(cur)
+	require.Equal(t, reasonPermissionDenied, recorded.Items["b!docs:01A"].Failed,
+		"a download 403 is as permanent as a 403 on the item lookup")
+	second := &recorder{}
+	_, err = c.FetchStream(context.Background(), importsAll(), cur, second)
+	require.NoError(t, err)
+	require.Empty(t, second.names(), "the same refusal is not reported again")
+	require.Equal(t, 1, f.seen("GET /drives/b!docs/items/01A/content"))
+}
+
+func TestFetchStreamForbiddenDownloadHostIsRetriedNextRun(t *testing.T) {
+	f := newFakeGraph(t)
+	serveSite(f)
+	deltaScript(
+		f,
+		"/drives/b!docs/root/delta",
+		[]map[string]any{rootItem("01ROOT"), file("01A", "a.docx", "01ROOT", "AAAA", "qa")},
+	)
+	f.json("GET /drives/b!docs", http.StatusOK, map[string]any{"id": "b!docs", "name": "Documents"})
+	f.handle("GET /drives/b!docs/items/01A/content", func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, f.server.URL+"/download/01A", http.StatusFound)
+	})
+	f.handle("GET /download/01A", func(w http.ResponseWriter, _ *http.Request) { w.WriteHeader(http.StatusForbidden) })
+	rec := &recorder{}
+	cur, err := testConnector(f, KindSharePoint).FetchStream(context.Background(), importsAll(), nil, rec)
+	require.NoError(t, err)
+	require.Equal(t, []string{"!msgraph_permission_denied:a.docx"}, rec.names())
+	recorded, _ := decodeCursor(cur)
+	require.Empty(t, recorded.Items["b!docs:01A"].Failed, "the pre-authenticated URL expires, so its 403 is retried")
+}

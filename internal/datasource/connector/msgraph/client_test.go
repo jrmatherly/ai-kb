@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"strings"
 	"testing"
 	"time"
 
@@ -303,4 +304,109 @@ func TestGraphErrorBodyCodeAndMessageSurvive(t *testing.T) {
 	require.ErrorContains(t, err, "status 400")
 	require.ErrorContains(t, err, "invalidRequest")
 	require.ErrorContains(t, err, "Invalid hostname for this tenancy")
+}
+
+func TestDeltaCallsAskForRemovedItemsAsDeleted(t *testing.T) {
+	f := newFakeGraph(t)
+	prefer := map[string]string{}
+	record := func(key string, body any) {
+		f.handle(key, func(w http.ResponseWriter, r *http.Request) {
+			prefer[key] = r.Header.Get("Prefer")
+			_ = jsonEncode(w, body)
+		})
+	}
+	end := map[string]any{"value": []any{}, "@odata.deltaLink": f.server.URL + "/drives/b!abc/root/delta?token=t"}
+	record("GET /drives/b!abc/root/delta", end)
+	record("GET /drives/b!abc/root/delta(token='t2')", end)
+	record("GET /drives/b!abc", map[string]any{"id": "b!abc", "name": "Documents"})
+	c := f.client(t)
+	_, err := c.deltaPage(context.Background(), c.deltaStart("b!abc", ""))
+	require.NoError(t, err)
+	_, err = c.deltaPage(context.Background(), f.server.URL+"/drives/b!abc/root/delta(token='t2')")
+	require.NoError(t, err)
+	_, err = c.drive(context.Background(), "b!abc")
+	require.NoError(t, err)
+	require.Equal(t, "deltashowremovedasdeleted", prefer["GET /drives/b!abc/root/delta"])
+	require.Equal(t, "deltashowremovedasdeleted", prefer["GET /drives/b!abc/root/delta(token='t2')"],
+		"the function-form link too")
+	require.Empty(t, prefer["GET /drives/b!abc"], "only delta calls carry the preference")
+}
+
+func TestGoneWithoutAGraphLocationIsAnAPIError(t *testing.T) {
+	f := newFakeGraph(t)
+	c := f.client(t)
+	locations := map[string]string{"missing": "", "off-host": "https://evil.example/drives/b!abc/root/delta"}
+	for name, location := range locations {
+		f.handle("GET /drives/b!abc/root/delta", func(w http.ResponseWriter, _ *http.Request) {
+			if location != "" {
+				w.Header().Set("Location", location)
+			}
+			w.WriteHeader(http.StatusGone)
+		})
+		_, err := c.deltaPage(context.Background(), c.deltaStart("b!abc", ""))
+		var api *apiError
+		require.ErrorAs(t, err, &api, name)
+		require.Equal(t, http.StatusGone, api.status, name)
+		var resync *resyncError
+		require.False(t, errors.As(err, &resync), "%s: the bearer token must not follow an unverified link", name)
+	}
+}
+
+func TestRetryAfterAboveTheCapEndsTheRunAtOnce(t *testing.T) {
+	f := newFakeGraph(t)
+	hits := 0
+	f.handle("GET /drives/b!abc", func(w http.ResponseWriter, _ *http.Request) {
+		hits++
+		w.Header().Set("Retry-After", "99999")
+		w.WriteHeader(http.StatusTooManyRequests)
+	})
+	start := time.Now()
+	_, err := f.client(t).drive(context.Background(), "b!abc")
+	require.ErrorIs(t, err, errRateLimited)
+	require.Equal(t, 1, hits)
+	require.Less(t, time.Since(start), time.Second, "a wait above the cap is not slept")
+}
+
+func TestAccessTokenExpiryHonorsSkewAndMissingLifetime(t *testing.T) {
+	f := newFakeGraph(t)
+	c := f.client(t)
+	before := time.Now()
+	_, err := c.accessToken(context.Background())
+	require.NoError(t, err)
+	want := before.Add(3599*time.Second - tokenSkew)
+	require.WithinDuration(t, want, c.tokenExpAt, 2*time.Second, "the skew is subtracted from expires_in")
+
+	c.tokenExpAt = time.Now().Add(-time.Second)
+	_, err = c.accessToken(context.Background())
+	require.NoError(t, err)
+	require.Equal(t, int32(2), f.tokens.Load(), "an expired token is re-minted")
+
+	f.expiresIn = 0
+	c.tokenExpAt = time.Now().Add(-time.Second)
+	_, err = c.accessToken(context.Background())
+	require.NoError(t, err)
+	require.WithinDuration(t, time.Now().Add(tokenSkew), c.tokenExpAt, 2*time.Second,
+		"a missing expires_in keeps the token for the skew, not for zero")
+	_, err = c.accessToken(context.Background())
+	require.NoError(t, err)
+	require.Equal(t, int32(3), f.tokens.Load(), "the fallback lifetime is honored")
+}
+
+func TestSitePathSegmentsAreEscaped(t *testing.T) {
+	f := newFakeGraph(t)
+	f.json("GET /sites/contoso.sharepoint.com:/sites/My Site#1", http.StatusOK, map[string]any{"id": "spaced"})
+	site, err := f.client(t).site(context.Background(), "contoso.sharepoint.com", "sites/My Site#1")
+	require.NoError(t, err)
+	require.Equal(t, "spaced", site.ID)
+}
+
+func TestJSONBodyOverTheCapIsTooLarge(t *testing.T) {
+	f := newFakeGraph(t)
+	f.handle("GET /drives/b!abc", func(w http.ResponseWriter, _ *http.Request) {
+		_, _ = w.Write([]byte(`{"id":"b!abc","name":"` + strings.Repeat("x", 64) + `"}`))
+	})
+	c := f.client(t)
+	c.jsonLimit = 10
+	_, err := c.drive(context.Background(), "b!abc")
+	require.ErrorIs(t, err, errTooLarge)
 }

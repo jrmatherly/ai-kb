@@ -198,3 +198,11 @@ func TestResolveResourceAncestorsSkipsAVanishedParent(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, []string{"b!pol"}, got)
 }
+
+func TestSharePointSiteNotFoundSurfacesFromValidateAndListResources(t *testing.T) {
+	f := newFakeGraph(t)
+	c := testConnector(f, KindSharePoint)
+	require.ErrorIs(t, c.Validate(context.Background(), sharePointConfig()), datasource.ErrResourceNotFound)
+	_, err := c.ListResources(context.Background(), sharePointConfig(), "")
+	require.ErrorIs(t, err, datasource.ErrResourceNotFound)
+}
