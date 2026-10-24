@@ -161,33 +161,42 @@ function needsConnectionTest(): boolean {
   return !(isEdit.value && credentialsConfigured.value && !replaceCredentialsMode.value)
 }
 
-function hydrateConfluenceCredentialsFromSettings() {
-  if (form.value.type !== 'confluence') return
-  const settings = form.value.config.settings || {}
-  const creds = form.value.config.credentials || {}
-  form.value.config.credentials = {
-    ...creds,
-    edition: creds.edition || settings.edition || 'server',
-    base_url: creds.base_url || settings.base_url || '',
-    username: creds.username || settings.username || '',
-  }
+// Non-secret fields the connector reads from settings but the editor collects
+// in the credentials step: mirrored into settings on every submit, test and
+// listing, and hydrated back when the user replaces credentials.
+const PUBLIC_SETTINGS_FIELDS: Record<string, { key: string; fallback: string }[]> = {
+  confluence: [{ key: 'edition', fallback: 'server' }, { key: 'base_url', fallback: '' }, { key: 'username', fallback: '' }],
+  onedrive: [{ key: 'user', fallback: '' }],
+  sharepoint: [{ key: 'site_url', fallback: '' }],
 }
 
-function syncConfluencePublicFieldsToSettings() {
-  if (form.value.type !== 'confluence') return
+function hydratePublicFieldsFromSettings() {
+  if (!Object.hasOwn(PUBLIC_SETTINGS_FIELDS, form.value.type)) return
+  const fields = PUBLIC_SETTINGS_FIELDS[form.value.type]
+  const settings = form.value.config.settings || {}
   const creds = form.value.config.credentials || {}
-  form.value.config.settings = {
-    ...(form.value.config.settings || {}),
-    ...(creds.edition ? { edition: creds.edition } : {}),
-    ...(creds.base_url ? { base_url: creds.base_url } : {}),
-    ...(creds.username ? { username: creds.username } : {}),
+  const hydrated: Record<string, any> = { ...creds }
+  for (const { key, fallback } of fields) {
+    hydrated[key] = creds[key] || settings[key] || fallback
   }
+  form.value.config.credentials = hydrated
+}
+
+function syncPublicFieldsToSettings() {
+  if (!Object.hasOwn(PUBLIC_SETTINGS_FIELDS, form.value.type)) return
+  const fields = PUBLIC_SETTINGS_FIELDS[form.value.type]
+  const creds = form.value.config.credentials || {}
+  const mirrored: Record<string, any> = {}
+  for (const { key } of fields) {
+    if (creds[key]) mirrored[key] = creds[key]
+  }
+  form.value.config.settings = { ...(form.value.config.settings || {}), ...mirrored }
 }
 
 function enterReplaceCredentials() {
   pendingRemoveCredentials.value = false
   replaceCredentialsMode.value = true
-  hydrateConfluenceCredentialsFromSettings()
+  hydratePublicFieldsFromSettings()
   testResult.value = ''
   testErrorMsg.value = ''
 }
@@ -765,6 +774,32 @@ const connectorDefs = computed<ConnectorDef[]>(() => [
     ],
   },
   {
+    type: 'onedrive', available: true,
+    docUrl: 'https://learn.microsoft.com/graph/auth-v2-service',
+    permissionDocUrl: 'https://learn.microsoft.com/graph/permissions-reference#filesreadall',
+    permissionPageUrl: 'https://entra.microsoft.com/#view/Microsoft_AAD_RegisteredApps/ApplicationsListBlade',
+    requiredPermissions: ['Files.Read.All'],
+    fields: [
+      { key: 'tenant_id', labelKey: 'datasource.onedrive.tenantId', placeholder: 'contoso.onmicrosoft.com', hintKey: 'datasource.onedrive.tenantIdHint' },
+      { key: 'client_id', labelKey: 'datasource.onedrive.clientId', placeholder: '00000000-0000-0000-0000-000000000000' },
+      { key: 'client_secret', labelKey: 'datasource.onedrive.clientSecret', placeholder: '', secret: true, hintKey: 'datasource.onedrive.clientSecretHint' },
+      { key: 'user', labelKey: 'datasource.onedrive.user', placeholder: 'alice@contoso.com', hintKey: 'datasource.onedrive.userHint' },
+    ],
+  },
+  {
+    type: 'sharepoint', available: true,
+    docUrl: 'https://learn.microsoft.com/graph/auth-v2-service',
+    permissionDocUrl: 'https://learn.microsoft.com/graph/permissions-selected-overview',
+    permissionPageUrl: 'https://entra.microsoft.com/#view/Microsoft_AAD_RegisteredApps/ApplicationsListBlade',
+    requiredPermissions: ['Sites.Selected', 'Sites.Read.All'],
+    fields: [
+      { key: 'tenant_id', labelKey: 'datasource.sharepoint.tenantId', placeholder: 'contoso.onmicrosoft.com', hintKey: 'datasource.sharepoint.tenantIdHint' },
+      { key: 'client_id', labelKey: 'datasource.sharepoint.clientId', placeholder: '00000000-0000-0000-0000-000000000000' },
+      { key: 'client_secret', labelKey: 'datasource.sharepoint.clientSecret', placeholder: '', secret: true, hintKey: 'datasource.sharepoint.clientSecretHint' },
+      { key: 'site_url', labelKey: 'datasource.sharepoint.siteUrl', placeholder: 'https://contoso.sharepoint.com/sites/hr', hintKey: 'datasource.sharepoint.siteUrlHint' },
+    ],
+  },
+  {
     type: 'seafile', available: true, docUrl: 'https://help.seafile.com/',
     permissionDocUrl: '', permissionPageUrl: '', requiredPermissions: [],
     fields: [
@@ -928,7 +963,7 @@ function selectType(def: ConnectorDef) {
 // --- Test connection ---
 async function testConnection() {
   syncRssAuthHeadersToCredentials()
-  syncConfluencePublicFieldsToSettings()
+  syncPublicFieldsToSettings()
   if (!validateRssFeedUrls()) return
   if (!isEdit.value || !credentialsConfigured.value || replaceCredentialsMode.value) {
     const fields = displayedCredentialFields.value
@@ -976,7 +1011,7 @@ async function testConnection() {
 async function loadResources() {
   loadingResources.value = true
   try {
-    syncConfluencePublicFieldsToSettings()
+    syncPublicFieldsToSettings()
     const res = await fetchResources()
     resources.value = res?.data || res || []
     // Any parent that already arrived with children (connectors returning the
@@ -1200,7 +1235,7 @@ function prevStep() {
 // validator happy.
 function buildConfigPayload(): Record<string, unknown> {
   syncGitProjectsToSettings()
-  syncConfluencePublicFieldsToSettings()
+  syncPublicFieldsToSettings()
   return {
     credentials: isEdit.value ? {} : { ...form.value.config.credentials },
     resource_ids: form.value.config.resource_ids,
@@ -1214,7 +1249,7 @@ function buildConfigPayload(): Record<string, unknown> {
 async function commitCredentialsIfNeeded(dsId: string): Promise<boolean> {
   if (!isEdit.value || !replaceCredentialsMode.value) return true
   syncRssAuthHeadersToCredentials()
-  syncConfluencePublicFieldsToSettings()
+  syncPublicFieldsToSettings()
   const filled = Object.entries(form.value.config.credentials).filter(
     ([, v]) => typeof v === 'string' ? v !== '' : v != null,
   )

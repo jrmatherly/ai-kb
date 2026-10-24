@@ -331,12 +331,24 @@ var ConnectorMetadataRegistry = map[string]ConnectorMetadata{
 		Capabilities: []string{"incremental"},
 	},
 	types.ConnectorTypeOneDrive: {
-		Type:         types.ConnectorTypeOneDrive,
-		Name:         "OneDrive / SharePoint",
-		Description:  "Sync documents and files from Microsoft OneDrive",
-		Priority:     6,
-		AuthType:     "oauth2",
-		Capabilities: []string{"incremental"},
+		Type:        types.ConnectorTypeOneDrive,
+		Name:        "OneDrive (work or school)",
+		Description: "Sync folders and files from a user's Microsoft OneDrive",
+		Priority:    6,
+		AuthType:    "client_credentials",
+		Capabilities: []string{
+			"incremental", "hierarchical", "deletion_sync", CapabilityFullSyncReconcile, CapabilitySourceIdentityDedup,
+		},
+	},
+	types.ConnectorTypeSharePoint: {
+		Type:        types.ConnectorTypeSharePoint,
+		Name:        "SharePoint",
+		Description: "Sync document libraries and folders from a Microsoft SharePoint site",
+		Priority:    6,
+		AuthType:    "client_credentials",
+		Capabilities: []string{
+			"incremental", "hierarchical", "deletion_sync", CapabilityFullSyncReconcile, CapabilitySourceIdentityDedup,
+		},
 	},
 	types.ConnectorTypeDingTalk: {
 		Type:        types.ConnectorTypeDingTalk,
@@ -429,6 +441,7 @@ const AllConnectorTypes = "all"
 // DefaultConnectorTypes are the types offered when ConnectorTypesEnv is unset or blank.
 var DefaultConnectorTypes = []string{
 	types.ConnectorTypeNotion, types.ConnectorTypeConfluence, types.ConnectorTypeGitHub, types.ConnectorTypeBitbucket,
+	types.ConnectorTypeOneDrive, types.ConnectorTypeSharePoint,
 }
 
 var unknownConnectorTypeWarning sync.Once

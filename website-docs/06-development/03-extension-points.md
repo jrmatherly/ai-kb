@@ -501,9 +501,11 @@ The registry is in the same file: `ConnectorRegistry` (`NewConnectorRegistry()` 
 | `gitlab` | `internal/datasource/connector/gitlab/` | GitLab repositories |
 | `github` | `internal/datasource/connector/github/` | GitHub repositories |
 | `bitbucket` | `internal/datasource/connector/bitbucket/` | Bitbucket Cloud repositories |
+| `onedrive` | `internal/datasource/connector/msgraph/` | Folders of one user's OneDrive for work or school |
+| `sharepoint` | `internal/datasource/connector/msgraph/` | Document libraries and folders of one SharePoint Online site |
 | `seafile` | `internal/datasource/connector/seafile/` | Library directories and files |
 
-`internal/types/datasource.go` also has type constants with no registered implementation yet, such as `google_drive`, `onedrive`, `web_crawler`, `slack` and `imap`.
+`internal/types/datasource.go` also has type constants with no registered implementation yet, such as `google_drive`, `web_crawler`, `slack` and `imap`.
 
 ### Steps
 

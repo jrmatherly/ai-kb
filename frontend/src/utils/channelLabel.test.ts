@@ -10,8 +10,8 @@ const KNOWLEDGE_GO = fileURLToPath(new URL('../../../internal/types/knowledge.go
 const DATASOURCE_GO = fileURLToPath(new URL('../../../internal/types/datasource.go', import.meta.url))
 
 // ConnectorType constants no document carries as its channel: the Lark wiki
-// emits "feishu", and the other four have no connector.
-const TYPES_WITHOUT_A_CHANNEL = new Set(['lark', 'google_drive', 'onedrive', 'web_crawler', 'imap'])
+// emits "feishu", and the other three have no connector.
+const TYPES_WITHOUT_A_CHANNEL = new Set(['lark', 'google_drive', 'web_crawler', 'imap'])
 
 const goConstants = (file: string, prefix: string) =>
   [...readFileSync(file, 'utf8').matchAll(new RegExp(`^\\t${prefix}\\w+\\s+=\\s+"([a-z_]+)"`, 'gm'))].map((m) => m[1])
@@ -35,7 +35,7 @@ test('the source filter offers every labelled channel except the upload ones', (
   assert.equal(offered.length, Object.keys(CHANNEL_LABEL_KEYS).length - UPLOAD_CHANNELS.size)
   assert.deepEqual(offered, [
     'feishu', 'feishu_drive', 'lark_drive', 'notion', 'yuque', 'confluence', 'gitlab', 'github', 'bitbucket',
-    'seafile', 'ima', 'rss', 'wechat', 'wecom', 'dingtalk', 'slack', 'im',
+    'seafile', 'onedrive', 'sharepoint', 'ima', 'rss', 'wechat', 'wecom', 'dingtalk', 'slack', 'im',
   ])
 })
 

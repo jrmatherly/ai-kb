@@ -11,7 +11,7 @@ A connector is an adapter that translates between AI KB's data model and an exte
 - Full sync (fetch all items from selected resources)
 - Incremental sync (fetch only changed items since last sync)
 
-Eleven connector packages plus the shared `repofile` helper package live under `internal/datasource/connector/`: `bitbucket`, `confluence`, `dingtalk`, `feishu` (`core`, `wiki`, `drive`), `github`, `gitlab`, `ima`, `notion`, `rss`, `seafile` and `yuque`. `initConnectorRegistry()` in `internal/container/container.go` registers them as fourteen types: `feishu`, `lark`, `feishu_drive`, `lark_drive`, `notion`, `confluence`, `yuque`, `dingtalk`, `ima`, `rss`, `github`, `bitbucket`, `gitlab` and `seafile`.
+Twelve connector packages plus the shared `repofile` helper package live under `internal/datasource/connector/`: `bitbucket`, `confluence`, `dingtalk`, `feishu` (`core`, `wiki`, `drive`), `github`, `gitlab`, `ima`, `msgraph`, `notion`, `rss`, `seafile` and `yuque`. `initConnectorRegistry()` in `internal/container/container.go` registers them as sixteen types: `feishu`, `lark`, `feishu_drive`, `lark_drive`, `notion`, `confluence`, `yuque`, `dingtalk`, `ima`, `rss`, `github`, `bitbucket`, `onedrive`, `sharepoint`, `gitlab` and `seafile`.
 
 ## Step 1: Create Connector Package Structure
 
@@ -413,7 +413,7 @@ var ConnectorMetadataRegistry = map[string]ConnectorMetadata{
 }
 ```
 
-Three capability values change behavior. `full_sync_reconcile` (`CapabilityFullSyncReconcile`) says the connector can set `types.SyncCursor.CompleteListing`, so a full sync with deletion sync on deletes knowledge items missing from a complete listing. `selection_tracks_source` (`CapabilitySelectionTracksSource`) says each item's `source_resource_id` is the selected resource it was listed under, so items of a deselected resource can be found. `source_identity_dedup` (`CapabilitySourceIdentityDedup`) says two items of the connector may carry the same bytes at different paths, so the create path scopes its duplicate check to `datasource_id` + `external_id`. The git connectors, Confluence and Seafile declare it. Such a connector emits its own type as `metadata["channel"]` (or none), since the create path looks the capability up by channel. `incremental`, `deletion_sync` and `hierarchical` only describe the connector to API clients.
+Three capability values change behavior. `full_sync_reconcile` (`CapabilityFullSyncReconcile`) says the connector can set `types.SyncCursor.CompleteListing`, so a full sync with deletion sync on deletes knowledge items missing from a complete listing. `selection_tracks_source` (`CapabilitySelectionTracksSource`) says each item's `source_resource_id` is the selected resource it was listed under, so items of a deselected resource can be found. `source_identity_dedup` (`CapabilitySourceIdentityDedup`) says two items of the connector may carry the same bytes at different paths, so the create path scopes its duplicate check to `datasource_id` + `external_id`. The git connectors, Confluence, Seafile, OneDrive and SharePoint declare it. Such a connector emits its own type as `metadata["channel"]` (or none), since the create path looks the capability up by channel. `incremental`, `deletion_sync` and `hierarchical` only describe the connector to API clients.
 
 ## Step 8: Sync Reason Codes
 

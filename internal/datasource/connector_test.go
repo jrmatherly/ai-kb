@@ -29,7 +29,8 @@ func TestCapabilityTableMatchesRegistry(t *testing.T) {
 		types.ConnectorTypeYuque:       {},
 		types.ConnectorTypeIMA:         {},
 		types.ConnectorTypeGoogleDrive: {},
-		types.ConnectorTypeOneDrive:    {},
+		types.ConnectorTypeOneDrive:    {reconcile: true, sourceIdentityDedup: true},
+		types.ConnectorTypeSharePoint:  {reconcile: true, sourceIdentityDedup: true},
 		types.ConnectorTypeWebCrawler:  {},
 		types.ConnectorTypeSlack:       {},
 		types.ConnectorTypeIMAP:        {},
@@ -95,8 +96,10 @@ func TestListAvailableConnectorsMarksAllowList(t *testing.T) {
 		return got
 	}
 	t.Setenv(ConnectorTypesEnv, "")
-	if got := enabled(); !slices.Equal(got, []string{"notion", "confluence", "github", "bitbucket"}) {
-		t.Fatalf("blank allow-list enabled %v, want [notion confluence github bitbucket]", got)
+	if got := enabled(); !slices.Equal(got, []string{
+		"notion", "confluence", "github", "bitbucket", "onedrive", "sharepoint",
+	}) {
+		t.Fatalf("blank allow-list enabled %v, want [notion confluence github bitbucket onedrive sharepoint]", got)
 	}
 	t.Setenv(ConnectorTypesEnv, " ALL ")
 	if got := len(enabled()); got != len(ConnectorMetadataRegistry) {
@@ -118,8 +121,11 @@ func TestConnectorTypeEnabled(t *testing.T) {
 		t.Setenv(ConnectorTypesEnv, value)
 		if !ConnectorTypeEnabled(types.ConnectorTypeNotion) || !ConnectorTypeEnabled(types.ConnectorTypeConfluence) ||
 			!ConnectorTypeEnabled(types.ConnectorTypeGitHub) || !ConnectorTypeEnabled(types.ConnectorTypeBitbucket) ||
+			!ConnectorTypeEnabled(types.ConnectorTypeOneDrive) ||
+			!ConnectorTypeEnabled(types.ConnectorTypeSharePoint) ||
 			ConnectorTypeEnabled(types.ConnectorTypeFeishu) || ConnectorTypeEnabled("fake") {
-			t.Fatalf("allow-list %q must admit only notion, confluence, github and bitbucket", value)
+			t.Fatalf("allow-list %q must admit only notion, confluence, github, bitbucket, onedrive and sharepoint",
+				value)
 		}
 	}
 	for _, value := range []string{"all", " All "} {

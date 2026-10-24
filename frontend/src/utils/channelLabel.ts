@@ -17,6 +17,8 @@ export const CHANNEL_LABEL_KEYS: Record<string, string> = {
   github: 'knowledgeBase.channelGitHub',
   bitbucket: 'knowledgeBase.channelBitbucket',
   seafile: 'knowledgeBase.channelSeafile',
+  onedrive: 'knowledgeBase.channelOneDrive',
+  sharepoint: 'knowledgeBase.channelSharePoint',
   ima: 'knowledgeBase.channelIma',
   rss: 'knowledgeBase.channelRss',
   wechat: 'knowledgeBase.channelWechat',

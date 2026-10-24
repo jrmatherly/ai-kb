@@ -13,6 +13,7 @@ import (
 	"github.com/jrmatherly/ai-kb/internal/datasource/connector/dingtalk"
 	feishu "github.com/jrmatherly/ai-kb/internal/datasource/connector/feishu/core"
 	"github.com/jrmatherly/ai-kb/internal/datasource/connector/github"
+	"github.com/jrmatherly/ai-kb/internal/datasource/connector/msgraph"
 	"github.com/jrmatherly/ai-kb/internal/datasource/connector/seafile"
 	"github.com/jrmatherly/ai-kb/internal/types"
 )
@@ -25,7 +26,7 @@ func TestSyncReasonCodesMatchFrontendKeys(t *testing.T) {
 	var backend []string
 	for _, texts := range []map[string]string{
 		feishu.SyncReasonTexts, confluence.SyncReasonTexts, dingtalk.SyncReasonTexts, seafile.SyncReasonTexts,
-		github.SyncReasonTexts, bitbucket.SyncReasonTexts,
+		github.SyncReasonTexts, bitbucket.SyncReasonTexts, msgraph.SyncReasonTexts,
 	} {
 		for code := range texts {
 			backend = append(backend, code)
