@@ -23,7 +23,6 @@ const (
 	requestAttempts                    = 4
 	maxErrorResponseRunes              = 1000
 	maxRetryDelay                      = 60 * time.Second
-	maxPaginationHops                  = 10000
 	maxTraversalNodes                  = 100000
 	maxTransparentTraversalNodes       = 10000
 	maxTransparentTraversalDepth       = 32
@@ -231,8 +230,8 @@ func (c *client) paginate(ctx context.Context, start string, step func(pageURL s
 		if _, dup := seen[resolved]; dup {
 			return fmt.Errorf("confluence pagination looped")
 		}
-		if len(seen) >= maxPaginationHops {
-			return fmt.Errorf("confluence pagination exceeded %d pages", maxPaginationHops)
+		if len(seen) >= datasource.MaxPaginationHops {
+			return fmt.Errorf("confluence pagination exceeded %d pages", datasource.MaxPaginationHops)
 		}
 		seen[resolved] = struct{}{}
 		next, err = step(next)
