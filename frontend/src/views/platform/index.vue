@@ -1,7 +1,7 @@
 <template>
     <div class="main" :class="{ 'main--overlay': uiStore.sidebarOverlay }" ref="dropzone" :style="{ '--sidebar-width': `${uiStore.sidebarDisplayWidth}px` }">
         <Menu></Menu>
-        <button v-if="uiStore.sidebarOverlay && !uiStore.sidebarOverlayOpen" class="sidebar-open-btn" type="button"
+        <button v-if="uiStore.sidebarOverlay && !uiStore.sidebarOverlayOpen" class="sidebar-open-btn" type="button" ref="sidebarOpenBtn"
             :aria-label="t('menu.openSidebar')" @click="uiStore.toggleSidebar">
             <svg viewBox="0 0 16 16" width="16" height="16" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <line x1="2" y1="4" x2="14" y2="4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
@@ -61,6 +61,11 @@ const handleSidebarOverlayEscape = (e: KeyboardEvent) => {
 }
 
 watch(() => route.fullPath, () => { uiStore.sidebarOverlayOpen = false })
+const sidebarOpenBtn = ref<HTMLElement | null>(null)
+// The drawer takes focus when it opens (menu.vue); give it back to the open button when it closes.
+watch(() => uiStore.sidebarOverlayOpen, (open) => {
+    if (!open) sidebarOpenBtn.value?.focus({ preventScroll: true })
+}, { flush: 'post' })
 
 const isRouterAlive = ref(true)
 const reloadApp = () => {

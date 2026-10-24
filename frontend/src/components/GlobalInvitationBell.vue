@@ -2,7 +2,7 @@
   <!-- Global top-right "pending invitations" bell.
        - Same logic as the bell that used to live in UserMenu: renders only when pendingInvitationCount > 0,
          so an empty inbox takes no corner pixels.
-       - Fixed position with a z-index far below t-drawer's default 2500, so right-side drawers on business pages (FAQ, KB debugging,
+       - Fixed position with a z-index far below t-drawer's default 1500, so right-side drawers on business pages (FAQ, KB debugging,
          tenant audit, SettingDrawer and so on) naturally cover the bell with no explicit hide logic.
        - Clicking the bell reuses the same MyInvitationsDialog, with unchanged behavior. -->
   <template v-if="pendingInvitationCount > 0">
@@ -37,7 +37,7 @@ const openDialog = () => {
   position: fixed;
   top: 12px;
   right: 16px;
-  /* Far below the TDesign drawer's default z-index (2500), so right-side drawers on business pages cover the bell.
+  /* Far below the TDesign drawer's default z-index (1500), so right-side drawers on business pages cover the bell.
      Above ordinary page content (usually 0 to 10), so list cards do not cover it. */
   z-index: 100;
 }
