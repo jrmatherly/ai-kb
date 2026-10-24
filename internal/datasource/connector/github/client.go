@@ -139,10 +139,8 @@ func (c *client) fetch(ctx context.Context, rawURL, accept string, limit int64) 
 	}
 	if wait, ok := shortRetryAfter(resp); ok {
 		_ = resp.Body.Close()
-		select {
-		case <-ctx.Done():
-			return nil, nil, ctx.Err()
-		case <-time.After(wait):
+		if err := datasource.SleepContext(ctx, wait); err != nil {
+			return nil, nil, err
 		}
 		if resp, err = c.send(ctx, rawURL, accept); err != nil {
 			return nil, nil, err

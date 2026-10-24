@@ -255,7 +255,7 @@ func TestClientRedactsCredentialsFromStructuredAPIErrors(t *testing.T) {
 
 func TestReadBodyRejectsOversizedResponses(t *testing.T) {
 	body := strings.NewReader(strings.Repeat("x", maxResponseBytes+1))
-	if _, err := readBody(body); err == nil ||
+	if _, err := datasource.ReadCapped(body, maxResponseBytes); err == nil ||
 		!strings.Contains(err.Error(), "response exceeds") {
 		t.Fatalf("readBody() error = %v", err)
 	}

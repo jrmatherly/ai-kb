@@ -180,12 +180,8 @@ func (c *client) do(ctx context.Context, hc *http.Client, rawURL, accept string)
 		}
 		c.waited = true
 		logger.Warnf(ctx, "[Bitbucket] rate limit exhausted; waiting %s before one retry", limited.reset)
-		timer := time.NewTimer(limited.reset)
-		select {
-		case <-ctx.Done():
-			timer.Stop()
-			return nil, ctx.Err()
-		case <-timer.C:
+		if err := datasource.SleepContext(ctx, limited.reset); err != nil {
+			return nil, err
 		}
 	}
 }

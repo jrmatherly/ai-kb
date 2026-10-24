@@ -322,7 +322,7 @@ func (c *client) doJSON(
 			return fmt.Errorf("execute DingTalk request: %w", requestErr)
 		}
 
-		responseBody, readErr := readBody(resp.Body)
+		responseBody, readErr := datasource.ReadCapped(resp.Body, maxResponseBytes)
 		_ = resp.Body.Close()
 		if readErr != nil {
 			return fmt.Errorf("read DingTalk response: %w", readErr)
@@ -732,17 +732,6 @@ func rawValue(value json.RawMessage) string {
 		return strings.TrimSpace(text)
 	}
 	return strings.TrimSpace(string(value))
-}
-
-func readBody(body io.Reader) ([]byte, error) {
-	data, err := io.ReadAll(io.LimitReader(body, maxResponseBytes+1))
-	if err != nil {
-		return nil, err
-	}
-	if len(data) > maxResponseBytes {
-		return nil, fmt.Errorf("response exceeds %d bytes", maxResponseBytes)
-	}
-	return data, nil
 }
 
 func isTransient(status int) bool {

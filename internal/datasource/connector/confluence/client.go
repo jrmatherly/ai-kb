@@ -147,14 +147,7 @@ func waitRetry(ctx context.Context, retryAfter string, attempt int) error {
 	} else if t, err := http.ParseTime(retryAfter); err == nil {
 		delay = capRetryDelay(time.Until(t))
 	}
-	timer := time.NewTimer(delay)
-	defer timer.Stop()
-	select {
-	case <-ctx.Done():
-		return ctx.Err()
-	case <-timer.C:
-		return nil
-	}
+	return datasource.SleepContext(ctx, delay)
 }
 
 func capRetryDelay(delay time.Duration) time.Duration {
