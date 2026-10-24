@@ -8,7 +8,7 @@
 
 **Tech Stack:** Go 1.26 (`GOTOOLCHAIN=go1.26.10` to match CI), `net/http/httptest` and `testify`; Vue 3 + TypeScript, vue-i18n, node test runner via tsx (`npm --prefix frontend test`), vue-tsc (`npm --prefix frontend run type-check`).
 
-**Spec:** `docs/superpowers/specs/2026-10-23-microsoft-graph-connectors-design.md`
+**Spec:** `docs/superpowers/specs/completed/2026-10-23-microsoft-graph-connectors-design.md`
 
 ## Global Constraints
 
@@ -3854,8 +3854,8 @@ git push -u origin feat/microsoft-graph-datasources
 gh pr create -R jrmatherly/ai-kb --title "feat(datasource): OneDrive and SharePoint connectors over Microsoft Graph" --body-file - <<'EOF'
 Adds `onedrive` and `sharepoint` data source connectors (one Go package `connector/msgraph`), app-only client credentials, folder tree picker, delta-based incremental sync with checkpoints, resume, tombstones, folder fan-out, failed-download retry and 410 resync. Both types join the default allow-list.
 
-Spec: docs/superpowers/specs/2026-10-23-microsoft-graph-connectors-design.md
-Plan: docs/superpowers/plans/2026-10-23-microsoft-graph-connectors.md
+Spec: docs/superpowers/specs/completed/2026-10-23-microsoft-graph-connectors-design.md
+Plan: docs/superpowers/plans/completed/2026-10-23-microsoft-graph-connectors.md
 
 Live check against a Microsoft 365 tenant is pending (see the last task of the plan).
 
