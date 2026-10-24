@@ -11,6 +11,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/jrmatherly/ai-kb/internal/datasource"
 )
 
 const (
@@ -151,7 +153,7 @@ func (g *feishuRequestGate) wait(ctx context.Context) error {
 		now := time.Now()
 		if blocked := g.blockedUntil.Sub(now); blocked > 0 {
 			g.mu.Unlock()
-			if err := sleepCtx(ctx, blocked); err != nil {
+			if err := datasource.SleepContext(ctx, blocked); err != nil {
 				return err
 			}
 			continue
@@ -162,7 +164,7 @@ func (g *feishuRequestGate) wait(ctx context.Context) error {
 		}
 		g.nextRequest = slot.Add(g.interval)
 		g.mu.Unlock()
-		if err := sleepCtx(ctx, slot.Sub(now)); err != nil {
+		if err := datasource.SleepContext(ctx, slot.Sub(now)); err != nil {
 			return err
 		}
 		g.mu.Lock()
