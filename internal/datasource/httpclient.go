@@ -38,11 +38,11 @@ const (
 	// MaxJSONResponseBytes caps a JSON API response: a truncated body would be
 	// indexed as if it were the whole document, so a larger one is refused.
 	MaxJSONResponseBytes int64 = 16 << 20
-	// MaxPaginationHops bounds any next-link walk so a looping or hostile server
-	// cannot pin a sync.
+	// MaxPaginationHops bounds any pagination or ancestor walk so a looping or
+	// hostile server cannot pin a sync.
 	MaxPaginationHops = 10000
-	// CheckpointEvery is how many emitted items a streaming sync lets pass
-	// between cursor checkpoints.
+	// CheckpointEvery bounds how much streamed progress a crash can lose between
+	// cursor checkpoints.
 	CheckpointEvery = 50
 )
 

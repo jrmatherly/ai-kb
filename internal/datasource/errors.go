@@ -52,5 +52,6 @@ func (e *PartialFetchError) Error() string {
 }
 
 // ErrResponseTooLarge marks a response body that exceeded the caller's cap and
-// was refused rather than truncated.
+// was refused rather than truncated. It is deterministic: the same request
+// returns the same body, so callers must not retry it.
 var ErrResponseTooLarge = errors.New("response exceeds maximum size")

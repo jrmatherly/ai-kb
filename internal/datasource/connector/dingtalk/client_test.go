@@ -253,11 +253,23 @@ func TestClientRedactsCredentialsFromStructuredAPIErrors(t *testing.T) {
 	}
 }
 
-func TestReadBodyRejectsOversizedResponses(t *testing.T) {
-	body := strings.NewReader(strings.Repeat("x", maxResponseBytes+1))
-	if _, err := datasource.ReadCapped(body, maxResponseBytes); err == nil ||
-		!strings.Contains(err.Error(), "response exceeds") {
-		t.Fatalf("readBody() error = %v", err)
+func TestDoJSONRejectsOversizedResponses(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"pad":"`))
+		_, _ = w.Write([]byte(strings.Repeat("x", maxResponseBytes)))
+		_, _ = w.Write([]byte(`"}`))
+	}))
+	defer server.Close()
+
+	client := testClient(server)
+	client.token = "cached-token"
+	client.tokenExpiry = time.Now().Add(time.Hour)
+
+	var out map[string]any
+	err := client.doJSON(context.Background(), http.MethodGet, "/big", nil, true, &out)
+	if err == nil || !strings.Contains(err.Error(), "response exceeds") {
+		t.Fatalf("doJSON() error = %v, want the response cap to refuse the body", err)
 	}
 }
 

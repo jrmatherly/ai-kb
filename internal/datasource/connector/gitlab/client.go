@@ -40,8 +40,8 @@ type client struct {
 	baseURL, token string
 	http           *http.Client
 	// jsonLimit, compareLimit and rawLimit are fields rather than direct uses of
-	// the constants above so tests can lower them without materialising hundreds
-	// of megabytes. newClient always sets the production values.
+	// the shared and package caps so tests can lower them without materialising
+	// hundreds of megabytes. newClient always sets the production values.
 	jsonLimit    int64
 	compareLimit int64
 	rawLimit     int64
