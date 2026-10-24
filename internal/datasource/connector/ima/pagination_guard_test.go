@@ -13,7 +13,7 @@ import (
 	"github.com/jrmatherly/ai-kb/internal/logger"
 )
 
-// paginationHopCap mirrors maxPaginationHops in connector.go. It is spelled as
+// paginationHopCap mirrors datasource.MaxPaginationHops in connector.go. It is spelled as
 // a literal so this file also compiles - and then fails on behaviour - against
 // a tree that has no guard at all.
 const paginationHopCap = 10000
