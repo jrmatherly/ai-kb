@@ -50,3 +50,7 @@ func (e *PartialFetchError) Error() string {
 	}
 	return fmt.Sprintf("partial fetch: %s", strings.Join(e.Details, "; "))
 }
+
+// ErrResponseTooLarge marks a response body that exceeded the caller's cap and
+// was refused rather than truncated.
+var ErrResponseTooLarge = errors.New("response exceeds maximum size")
