@@ -214,7 +214,7 @@ func newClient(cfg *config) *client {
 		appSecret: cfg.ClientSecret,
 		http:      datasource.NewConnectorHTTPClient(apiTimeout),
 		fileHTTP:  datasource.NewConnectorHTTPClient(downloadTimeout),
-		sleep:     sleepContext,
+		sleep:     datasource.SleepContext,
 	}
 }
 
@@ -782,20 +782,9 @@ func parseRetryAfter(value string, fallback time.Duration) time.Duration {
 
 func (c *client) wait(ctx context.Context, delay time.Duration) error {
 	if c.sleep == nil {
-		return sleepContext(ctx, delay)
+		return datasource.SleepContext(ctx, delay)
 	}
 	return c.sleep(ctx, delay)
-}
-
-func sleepContext(ctx context.Context, delay time.Duration) error {
-	timer := time.NewTimer(delay)
-	defer timer.Stop()
-	select {
-	case <-ctx.Done():
-		return ctx.Err()
-	case <-timer.C:
-		return nil
-	}
 }
 
 func isContextError(err error) bool {
