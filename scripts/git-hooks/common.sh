@@ -171,7 +171,7 @@ run_go_test_packages() {
   (
     cd "$ROOT"
     # Match app.yml: a developer's custom log template must not alter assertions.
-    LOG_FORMAT="" go test -count=1 "${pkgs[@]}"
+    LOG_FORMAT="" go test -race -count=1 "${pkgs[@]}"
   )
   log_ok "go test"
 }
