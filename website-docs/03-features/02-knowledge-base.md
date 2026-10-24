@@ -301,7 +301,7 @@ Whether or not automatic refresh is on, the knowledge base settings page can run
 
 In the implementation, `Knowledge.CustomMetadataText()` renders `key: value` text sorted by key for summary generation and document-level model context. The field was introduced by migration `000078`.
 
-Ingest channel constants: `web`, `api`, `browser_extension`, `wechat`, `wecom`, `feishu`, `feishu_drive`, `lark_drive`, `dingtalk`, `slack`, `im`, `notion`, `confluence`, `yuque`, `rss`, `ima`, `seafile`. The git data sources store their connector type as the channel: `github`, `gitlab`, `bitbucket`.
+Ingest channel constants: `web`, `api`, `browser_extension`, `wechat`, `wecom`, `feishu`, `feishu_drive`, `lark_drive`, `dingtalk`, `slack`, `im`, `notion`, `confluence`, `yuque`, `rss`, `ima`, `seafile`. The git and Microsoft Graph data sources store their connector type as the channel: `github`, `gitlab`, `bitbucket`, `onedrive`, `sharepoint`.
 
 Parse state machine:
 

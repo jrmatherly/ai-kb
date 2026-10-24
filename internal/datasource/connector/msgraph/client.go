@@ -29,7 +29,10 @@ const (
 	maxJSONResponseBytes int64 = 16 << 20
 	maxPaginationHops          = 10000
 	childrenPageSize           = 200
-	tokenSkew                  = 5 * time.Minute
+	// A Graph error body is small JSON; the cap guards against a hostile host.
+	graphErrorBodyLimit    int64 = 4 << 10
+	graphErrorMessageLimit       = 200
+	tokenSkew                    = 5 * time.Minute
 	// rateLimitWaitMax is the longest Retry-After a client sits out, once, before
 	// retrying; a longer one, or a second one, ends the run.
 	rateLimitWaitMax = 30 * time.Minute
@@ -68,10 +71,37 @@ type client struct {
 type apiError struct {
 	endpoint string
 	status   int
+	// code and message come from the Graph error body, which names the cause
+	// the status alone hides (a bad tenancy hostname, a missing mysite).
+	code, message string
 }
 
 func (e *apiError) Error() string {
-	return fmt.Sprintf("microsoft graph %s: status %d", e.endpoint, e.status)
+	if e.code == "" {
+		return fmt.Sprintf("microsoft graph %s: status %d", e.endpoint, e.status)
+	}
+	return fmt.Sprintf("microsoft graph %s: status %d (%s: %s)", e.endpoint, e.status, e.code, e.message)
+}
+
+// graphError builds an apiError from a non-2xx Graph response, reading the
+// capped error body for its code and message.
+func graphError(endpoint string, resp *http.Response) *apiError {
+	e := &apiError{endpoint: endpoint, status: resp.StatusCode}
+	body, _ := io.ReadAll(io.LimitReader(resp.Body, graphErrorBodyLimit))
+	var parsed struct {
+		Error struct {
+			Code    string `json:"code"`
+			Message string `json:"message"`
+		} `json:"error"`
+	}
+	if json.Unmarshal(body, &parsed) == nil {
+		e.code = parsed.Error.Code
+		e.message = parsed.Error.Message
+		if len(e.message) > graphErrorMessageLimit {
+			e.message = strings.ToValidUTF8(e.message[:graphErrorMessageLimit], "")
+		}
+	}
+	return e
 }
 
 func (e *apiError) Is(target error) bool {
@@ -262,12 +292,7 @@ func (c *client) do(ctx context.Context, hc *http.Client, rawURL string) (*http.
 		req.Header.Set("Accept", "application/json")
 		resp, err := hc.Do(req)
 		if err != nil {
-			// *url.Error prints the full URL, and its query carries delta and paging tokens.
-			cause := errors.Unwrap(err)
-			if cause == nil {
-				cause = err
-			}
-			return nil, fmt.Errorf("microsoft graph %s: %w", endpointLabel(rawURL), cause)
+			return nil, fmt.Errorf("microsoft graph %s: %w", endpointLabel(rawURL), transportCause(err))
 		}
 		switch resp.StatusCode {
 		case http.StatusUnauthorized:
@@ -305,6 +330,15 @@ func (c *client) do(ctx context.Context, hc *http.Client, rawURL string) (*http.
 	}
 }
 
+// transportCause strips the *url.Error wrapper, which prints the full URL: a
+// Graph query carries delta and paging tokens, a download URL its tempauth.
+func transportCause(err error) error {
+	if cause := errors.Unwrap(err); cause != nil {
+		return cause
+	}
+	return err
+}
+
 // endpointLabel names a Graph call for an error without its query string,
 // which carries delta and paging tokens.
 func endpointLabel(rawURL string) string {
@@ -325,12 +359,12 @@ func (c *client) getJSON(ctx context.Context, rawURL string, out any) error {
 	if resp.StatusCode == http.StatusGone {
 		loc := resp.Header.Get("Location")
 		if loc == "" || !c.onGraphHost(loc) {
-			return &apiError{endpoint: endpoint, status: resp.StatusCode}
+			return graphError(endpoint, resp)
 		}
 		return &resyncError{Location: loc}
 	}
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return &apiError{endpoint: endpoint, status: resp.StatusCode}
+		return graphError(endpoint, resp)
 	}
 	body, err := readCapped(resp.Body, c.jsonLimit)
 	if err != nil {
@@ -499,12 +533,12 @@ func (c *client) download(ctx context.Context, driveID, itemID string, expectedS
 	if err != nil {
 		return nil, err
 	}
-	_ = resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode < 300 || resp.StatusCode >= 400 {
 		if resp.StatusCode >= 200 && resp.StatusCode < 300 {
 			return nil, errNoRedirect
 		}
-		return nil, &apiError{endpoint: endpointLabel(endpoint), status: resp.StatusCode}
+		return nil, graphError(endpointLabel(endpoint), resp)
 	}
 	location := resp.Header.Get("Location")
 	u, err := url.Parse(location)
@@ -524,7 +558,12 @@ func (c *client) download(ctx context.Context, driveID, itemID string, expectedS
 	}
 	file, err := c.files.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("%w: download failed", datasource.ErrFetchFailed)
+		if ctx.Err() != nil {
+			return nil, ctx.Err()
+		}
+		// %v, not %w: a per-file download timeout must stay per-file, and the
+		// files client's timeout error matches context.DeadlineExceeded.
+		return nil, fmt.Errorf("%w: download: %v", datasource.ErrFetchFailed, transportCause(err))
 	}
 	defer func() { _ = file.Body.Close() }()
 	if file.StatusCode < 200 || file.StatusCode >= 300 {
