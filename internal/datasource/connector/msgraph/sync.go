@@ -507,7 +507,7 @@ func (r *run) fetchFile(ctx context.Context, it driveItem, rootID string) error 
 		if !r.perItem(err) {
 			return err
 		}
-		return fail(downloadReason(err), errors.Is(err, errEmptyFile) || errors.Is(err, errTooLarge))
+		return fail(downloadReason(err), permanentDownloadErr(err))
 	}
 	m := r.c.metadata(id, p)
 	m["msgraph_web_url"] = it.WebURL
@@ -518,6 +518,18 @@ func (r *run) fetchFile(ctx context.Context, it driveItem, rootID string) error 
 		URL: it.WebURL, UpdatedAt: it.LastModified, SourceResourceID: rootID, Metadata: m,
 	}
 	return r.emit(ctx, item)
+}
+
+// permanentDownloadErr says whether a failed download is recorded as Failed,
+// reported once and re-checked only when the file's fingerprint changes. A
+// Graph 403 is as permanent as the same 403 on the item lookup; a 403 from the
+// expiring download URL is not.
+func permanentDownloadErr(err error) bool {
+	var api *apiError
+	if errors.As(err, &api) {
+		return api.status == http.StatusForbidden && api.endpoint != downloadEndpoint
+	}
+	return errors.Is(err, errEmptyFile) || errors.Is(err, errTooLarge)
 }
 
 func downloadReason(err error) string {

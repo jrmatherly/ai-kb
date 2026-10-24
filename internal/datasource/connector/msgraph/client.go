@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"path"
 	"strconv"
 	"strings"
 	"sync"
@@ -290,6 +291,11 @@ func (c *client) do(ctx context.Context, hc *http.Client, rawURL string) (*http.
 		}
 		req.Header.Set("Authorization", "Bearer "+token)
 		req.Header.Set("Accept", "application/json")
+		if isDeltaCall(req.URL.Path) {
+			// Graph's documented way to have an item that left the delta scope
+			// (moved out of a selected folder) reported with the deleted facet.
+			req.Header.Set("Prefer", "deltashowremovedasdeleted")
+		}
 		resp, err := hc.Do(req)
 		if err != nil {
 			return nil, fmt.Errorf("microsoft graph %s: %w", endpointLabel(rawURL), transportCause(err))
@@ -329,6 +335,16 @@ func (c *client) do(ctx context.Context, hc *http.Client, rawURL string) (*http.
 		return resp, nil
 	}
 }
+
+// isDeltaCall matches both link shapes Graph hands back for a delta walk:
+// .../root/delta?token=... and the function form .../root/delta(token='...').
+func isDeltaCall(p string) bool {
+	return strings.Contains(path.Base(p), "delta")
+}
+
+// downloadEndpoint labels an error from the pre-authenticated download host,
+// whose URL expires: its 403 says nothing lasting about the file.
+const downloadEndpoint = "download"
 
 // transportCause strips the *url.Error wrapper, which prints the full URL: a
 // Graph query carries delta and paging tokens, a download URL its tempauth.
@@ -567,7 +583,7 @@ func (c *client) download(ctx context.Context, driveID, itemID string, expectedS
 	}
 	defer func() { _ = file.Body.Close() }()
 	if file.StatusCode < 200 || file.StatusCode >= 300 {
-		return nil, &apiError{endpoint: "download", status: file.StatusCode}
+		return nil, &apiError{endpoint: downloadEndpoint, status: file.StatusCode}
 	}
 	body, err := readCapped(file.Body, limit)
 	if err != nil {
