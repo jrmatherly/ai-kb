@@ -81,11 +81,11 @@ services:
       # ========== Logging ==========
       # Log level, default debug
       - LOG_LEVEL=${LOG_LEVEL:-debug}
-      # Log file path (empty: stdout only). With LLM_DEBUG_LOG on, llm_debug.log is written to the same directory
+      # Log file path (empty: stdout only). With LLM_DEBUG_LOG on, its llm_debug/ directory goes next to this file
       - LOG_PATH=${LOG_PATH:-}
       # Custom log format template (empty: built-in default format)
       - LOG_FORMAT=${LOG_FORMAT:-}
-      # LLM debug log: true writes llm_debug.log next to LOG_PATH, or give a path. Empty disables it
+      # LLM debug log: true writes an llm_debug/ directory next to LOG_PATH, or give a directory. Empty disables it
       - LLM_DEBUG_LOG=${LLM_DEBUG_LOG:-false}
       # ========== Runtime basics ==========
       # gin mod

@@ -122,7 +122,7 @@ The following sections exist in the `Config` struct and can be added to `config.
 | `auth` | `AuthConfig` | `registration_mode`: `self_serve` (default) / `invite_register` (new users need a valid invitation link) / `invite_only` (forced when `DISABLE_REGISTRATION=true`); `default_tenant_mode`: `create_personal` (default) / `tenantless`; `complex_password_enabled` |
 | `audit` | `AuditConfig` | `retention_days`: audit log retention in days, 90 when the section is omitted; 0 disables the purge; < 0 fails validation (env `AIKB_AUDIT_RETENTION_DAYS`) |
 | `oidc_auth` | `OIDCAuthConfig` | `enable`, `issuer_url`, `jwks_uri`, `discovery_url` (derived from the issuer plus `/.well-known/openid-configuration` when missing), `provider_display_name`, `client_id`, `client_secret`, `authorization_endpoint`, `token_endpoint`, `user_info_endpoint`, `scopes` (default `openid profile email`), `extension_return_urls` (exact `return_to` values the browser extension may use; empty disables it), `user_info_mapping.username` (default `name`) / `email` (default `email`); all can be overridden with `OIDC_AUTH_*` environment variables |
-| `agent` | `AgentConfig` | `llm_call_timeout`: timeout of one LLM call in seconds (default 120, env `AIKB_AGENT_LLM_TIMEOUT`); `tool_approval_timeout_seconds`: how long to wait for human approval of an MCP tool (default 600, env `AIKB_AGENT_TOOL_APPROVAL_TIMEOUT`) |
+| `agent` | `AgentConfig` | `llm_call_timeout`: how long one LLM stream may stall without output, in seconds (default 120, env `AIKB_AGENT_LLM_TIMEOUT`); `tool_approval_timeout_seconds`: how long to wait for human approval of an MCP tool (default 600, env `AIKB_AGENT_TOOL_APPROVAL_TIMEOUT`) |
 | `im` | `IMConfig` | IM channel QA concurrency: `workers` (5), `global_max_workers` (0 = unlimited, needs Redis), `max_queue_size` (50), `max_per_user` (3), `rate_limit_window` (60s), `rate_limit_max` (10) |
 | `docreader` | `DocReaderConfig` | `addr` (a gRPC address such as `docreader:50051` or an HTTP base URL), `transport`: `grpc` (default) / `http`; usually set with env `DOCREADER_ADDR` / `DOCREADER_TRANSPORT` |
 | `vector_database` | `VectorDatabaseConfig` | `driver` (usually set with env `RETRIEVE_DRIVER`) |
@@ -147,14 +147,14 @@ The variables below come from the app and docreader `environment` blocks of `doc
 | `AIKB_OLLAMA_ENABLED` | false | When true, Settings shows the Ollama section (`settings.ollama` in `GET /system/capabilities`). Off, the section is hidden; the Ollama API routes and local models in the model editor are unaffected. Read once at startup into the capabilities snapshot; restart to change it. The desktop app defaults it to true |
 | `AIKB_CONFIG_FILE` | empty | Explicit path of the server config file. Empty keeps the search order (`./config.yaml`, `./config/config.yaml`, `$HOME/.appname`, `/etc/appname`). The Lite Homebrew wrapper sets it to `~/.config/aikb/config/config.yaml`, because the `aikb` CLI stores its own `config.yaml` in `~/.config/aikb`, which the search order would otherwise load as the server config |
 | `LOG_LEVEL` / `LOG_PATH` / `LOG_FORMAT` | debug / empty / empty | Log level, log file path (stdout only when empty), custom format |
-| `LLM_DEBUG_LOG` | false | When true, writes `llm_debug.log` next to `LOG_PATH` |
+| `LLM_DEBUG_LOG` | false | `true` or `1` writes LLM request and reply records into an `llm_debug/` directory next to `LOG_PATH` (`./llm_debug` when it is unset); any other value except `false` or `0` is used as the directory |
 | `TZ` | UTC | Time zone |
 | `DEFAULT_LOCALE` | empty | Default UI language of the frontend container. The UI ships in English only, so `en-US` is the only accepted value; anything else is ignored. It only affects users who have never switched language; precedence: the user's saved choice > this variable > `en-US`. Restart the frontend container after changing it; no image rebuild is needed |
 | `AIKB_LANGUAGE` | empty | Document processing language (question and summary generation). Precedence: this variable > the request's `Accept-Language` > the built-in default. The built-in default is `en-US` in the code (`internal/types/context_helpers.go`). The document processing language is independent of the UI language, for example an English UI processing Korean documents. IM channels with no reply language configured also use this variable (the built-in default when unset) as their default reply language |
 | `AUTO_MIGRATE` | true | Run database migrations at startup |
 | `AIKB_MIGRATE_FAIL_FAST` | false | `true` or `1` stops startup with an error when a migration fails. Otherwise the failure is logged as a warning and the app keeps serving |
 | `AUTO_RECOVER_DIRTY` | true | On unless set to `false`. Automatically repair golang-migrate's dirty state (left by an interrupted migration). Set it to false temporarily while investigating a migration problem by hand, otherwise startup rewrites the migration version record; see [Database and migrations](../06-development/02-database-schema.md) |
-| `AIKB_TRUSTED_PROXIES` | empty | Proxy CIDRs trusted by gin (comma-separated) |
+| `AIKB_TRUSTED_PROXIES` | unset (loopback and private ranges) | CIDRs or IPs whose `X-Forwarded-For` gin trusts (comma-separated). Unset trusts `127.0.0.0/8`, `::1/128`, `10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16` and `fc00::/7`; set but empty trusts no proxy |
 | `MAX_SKILL_BUNDLE_SIZE_MB` | 256 MiB (never below MAX_FILE_SIZE_MB, capped at 512 MiB) | Limit for skill ZIP uploads and source downloads; the reverse proxy request body limit must be large enough too |
 | `MAX_FILE_SIZE_MB` | 50 | Upload size limit (shared by app, frontend and docreader); Helm deployments use `global.maxFileSizeMB` |
 | `CONCURRENCY_POOL_SIZE` | 5 | General concurrency pool |
@@ -177,8 +177,8 @@ The four URL forms and how each channel obtains them are described in [External 
 | `DB_DRIVER` | postgres | `postgres` / `sqlite` (Lite) |
 | `DB_HOST` / `DB_PORT` / `DB_USER` / `DB_PASSWORD` / `DB_NAME` | postgres / 5432 / empty / empty / empty | PostgreSQL connection (required) |
 | `DB_SSLMODE` | disable | sslmode for every PostgreSQL connection: `disable`, `require`, `verify-ca` or `verify-full` (`allow` and `prefer` are not shared by both drivers). Any other value fails startup |
-| `DB_PATH` | - | Database file path when `DB_DRIVER=sqlite` |
-| `STREAM_MANAGER_TYPE` | empty (compose effectively uses redis) | `redis` / `memory` |
+| `DB_PATH` | `./data/aikb.db` | Database file path when `DB_DRIVER=sqlite` |
+| `STREAM_MANAGER_TYPE` | empty (memory) | `redis` keeps answer streams in Redis, shared by every replica; any other value, empty included, uses memory, which is single-process and unfit for more than one replica. Compose passes it through empty; the Helm chart sets `redis` |
 | `REDIS_ADDR` / `REDIS_USERNAME` / `REDIS_PASSWORD` / `REDIS_DB` / `REDIS_PREFIX` | redis:6379 / ... | Redis connection |
 | `REDIS_USE_TLS` | false | **Master switch for TLS**; managed Redis (AWS ElastiCache, for example) needs it on. `REDIS_TLS_SERVER_NAME` sets the server name used for verification and SNI (useful when the address is an IP); `REDIS_TLS_INSECURE_SKIP_VERIFY` skips certificate verification (insecure, only for development with self-signed certificates) |
 | `AIKB_REDIS_NAMESPACE` | empty | Channel namespace suffix when several deployments share one Redis |
@@ -196,8 +196,8 @@ The four URL forms and how each channel obtains them are described in [External 
 | `WEAVIATE_HOST/GRPC_ADDRESS/SCHEME/AUTH_ENABLED/API_KEY` | empty | Weaviate |
 | `DORIS_ADDR/HTTP_PORT/DATABASE/USERNAME/PASSWORD/TABLE_PREFIX/COMPAT_MODE` | empty | Apache Doris 4.1+ |
 | `TENCENT_VECTORDB_ADDR/USERNAME/API_KEY/DATABASE/COLLECTION/REPLICA_NUMBER` | empty | Tencent Cloud VectorDB |
-| `MULTI_STORE_RETRIEVE_TIMEOUT_SEC` | empty | Timeout for parallel multi-engine retrieval |
-| `NEO4J_ENABLE` / `NEO4J_URI` / `NEO4J_USERNAME` / `NEO4J_PASSWORD` | empty / bolt://neo4j:7687 / neo4j / password | The only knowledge graph switch (`ENABLE_GRAPH_RAG` is deprecated) |
+| `MULTI_STORE_RETRIEVE_TIMEOUT_SEC` | 30 | Timeout in seconds for parallel multi-engine retrieval; unset, invalid or non-positive values use 30 |
+| `NEO4J_ENABLE` / `NEO4J_URI` / `NEO4J_USERNAME` / `NEO4J_PASSWORD` | empty / bolt://neo4j:7687 / neo4j / password | The only knowledge graph switch (`ENABLE_GRAPH_RAG` was replaced by `NEO4J_ENABLE` and is no longer read) |
 
 ### File storage
 
@@ -218,11 +218,11 @@ For AWS S3, `S3_ACCESS_KEY` / `S3_SECRET_KEY` can **both be left empty**. The AW
 | --- | --- | --- |
 | `OLLAMA_BASE_URL` | `http://host.docker.internal:11434` | The single local Ollama address. Embedding and chat models with `source=local` share it; when unset the process uses `http://localhost:11434` |
 | `OLLAMA_OPTIONAL` | true | When Ollama is unavailable, only warn instead of blocking startup |
-| `BATCH_EMBED_SIZE` | empty | Batch embedding size |
+| `BATCH_EMBED_SIZE` | 5 | Texts per embedding request in a batch; a non-integer value fails the embedding call |
 | `VLM_HTTP_TIMEOUT_SECONDS` | 180 | Timeout of one VLM request |
 | `BUILTIN_MODELS_CONFIG` | config/builtin_models.yaml | Path of the built-in model declaration file (see below) |
 | `MODELS_CONFIG` | config/models.json | Path of the deployment overlay for the model vendor catalog (add vendors, override addresses or model parameters); format in [Model management](../03-features/06-models.md) |
-| `AIKB_LLM_STREAM_RAW_DUMP` / `_DIR` | empty | Raw dump of LLM streams (for troubleshooting) |
+| `AIKB_LLM_STREAM_RAW_DUMP` / `_DIR` | empty | Raw dump of LLM stream packets for troubleshooting. Setting `_DIR` enables it into that directory; `AIKB_LLM_STREAM_RAW_DUMP` set to `1`, `true` or `yes` enables it into `~/.aikb/investigate/llm-stream` |
 
 The embedding model name is not set by an environment variable. In the model record, set the `name` of the `type=Embedding`, `source=local` model to the Ollama model name (the CLI example is `nomic-embed-text`, dimension 768; the quickstart uses `bge-m3`, dimension 1024). When the name is empty the local embedder falls back to `nomic-embed-text`. `EMBEDDING_MODEL_NAME` only takes effect when `builtin_models.yaml` references `${EMBEDDING_MODEL_NAME}` (see "config/builtin_models.yaml.example: declarative built-in models" below and `config/builtin_models.yaml.example` in the repository). The 8 GB starting point in the installation guide excludes Ollama weights; Neo4j is off by default (the `neo4j` profile).
 
@@ -238,7 +238,7 @@ The embedding model name is not set by an environment variable. In the model rec
 | `AIKB_TENANT_ENABLE_RBAC` | (default true) | Workspace role enforcement switch |
 | `AIKB_TENANT_ENABLE_CROSS_TENANT_ACCESS` | false | Cross-workspace access |
 | `AIKB_TENANT_SELF_SERVICE_CREATION_ENABLED` | true | Ordinary users may create workspaces |
-| `AIKB_TENANT_MAX_OWNED_PER_USER` | empty | Cap on self-created workspaces |
+| `AIKB_TENANT_MAX_OWNED_PER_USER` | empty (10) | Cap on workspaces one non-superuser may create. Unset or 0 means 10, a negative value removes the cap, and the system setting overrides it |
 | `AIKB_TENANT_AUTO_CREATE_API_KEY` | false | Issue a full_access API key automatically when a workspace is created (legacy behavior) |
 | `AIKB_TENANT_DEFAULT_STORAGE_QUOTA_GB` | 10 | Default storage quota of a new workspace |
 | `AIKB_AUTH_COMPLEX_PASSWORD_ENABLED` | false | Complex password policy: upper and lower case letters, digits and special characters; the system setting auth.complex_password_enabled takes precedence |
@@ -301,7 +301,7 @@ These variables are only used when building the frontend image with `docker comp
 | --- | --- | --- |
 | Sandbox configuration | maintained per workspace on the settings page | Backend, credentials, template, timeout and private network policy are stored per workspace |
 | `AIKB_SANDBOX_DOCKER_ENABLED` | false | Fallback switch for the Docker sandbox backend. A system administrator can also turn it on under Settings → System Settings → Network security (the database value wins and takes effect immediately). Off by default because the local `docker.sock` is equivalent to root on the host |
-| `AIKB_AGENT_LLM_TIMEOUT` | 120s | Timeout of one agent LLM call (a Go duration or a bare number of seconds) |
+| `AIKB_AGENT_LLM_TIMEOUT` | 120s | How long one agent LLM stream may produce no output before it is cancelled (a Go duration or a bare number of seconds). A stall limit, not a total one: the overall ceiling is `AIKB_LLM_STREAM_TIMEOUT_SECONDS` |
 | `AIKB_AGENT_TOOL_APPROVAL_TIMEOUT` / `_FAIL_OPEN` | 600s / fail-close | Wait time for human approval of an MCP tool, and the policy on failure |
 | `AIKB_CHAT_ATTACHMENT_TTL_HOURS` / `_WAIT_TIMEOUT_SEC` / `_OCR_CONCURRENCY` / `_OCR_MAX_PAGES` | 24 / 60 / 8 / 8 | Retention of parsed chat attachments, wait timeout, and OCR concurrency and page caps |
 | `AIKB_HOUSEKEEPING_ENABLED` | enabled | Reclaims dirty data stuck in processing |
