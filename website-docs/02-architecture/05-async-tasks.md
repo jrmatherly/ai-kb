@@ -374,6 +374,8 @@ A small package of runtime infrastructure, not worker logic:
 - `container.go`: `init()` creates the global `*dig.Container` (uber dig); `GetContainer()` lets packages register and resolve dependencies. Every asynq server, handler and repository is assembled through it (the bulk of the wiring is in `internal/container/container.go`).
 - `server.go`: `MarkServerStarted()` / `ServerStartedAt()` / `ServerUptime()` record the process start time, which the runtime dashboard shows as uptime.
 - `startup.go`: `SilenceGinRouteSpam()` suppresses the roughly 150 Gin route registration lines and summarizes them in one line (`LogGinRouteCount`). `LogStartupEnv()` prints a banner of selected environment variables (sensitive values show only `set (N chars)`) and warns explicitly about typical footguns (a `SYSTEM_AES_KEY` whose length is not 32 silently disables encryption, `REDIS_TLS_INSECURE_SKIP_VERIFY=true`).
+- `shutdown.go`: `DefaultShutdownTimeout` (30s, used when `server.shutdown_timeout` is unset) and the budget split that reserves part of it for process cleanup after connection drain.
+- `secrets.go`: `ValidateSecrets()` refuses to start without a usable `SYSTEM_AES_KEY` and `JWT_SECRET`.
 
 ## How to monitor tasks
 
@@ -395,5 +397,5 @@ A small package of runtime infrastructure, not worker logic:
 | Durable task queue / dead-letter repository | `internal/application/repository/task_queue.go` |
 | Dead-letter / pending-op models | `internal/types/task_dead_letter.go`, `internal/types/task_pending_op.go` |
 | Event bus | `internal/event/` (`event.go`, `event_data.go`, `global.go`, `middleware.go`, `adapter.go`) |
-| Runtime helpers (DI container, startup banner, uptime) | `internal/runtime/` (`container.go`, `server.go`, `startup.go`) |
+| Runtime helpers (DI container, startup banner, uptime, shutdown budgets, secret checks) | `internal/runtime/` (`container.go`, `server.go`, `startup.go`, `shutdown.go`, `secrets.go`) |
 | Housekeeping sweep for stuck tasks | `internal/application/service/knowledge_housekeeping.go` |

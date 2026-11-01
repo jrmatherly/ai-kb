@@ -1,6 +1,6 @@
 # Document Ingestion Pipeline
 
-Documents enter the system by file upload, URL import or manual creation. The server stores the content and submits a processing task that parses, chunks and indexes the document, then generates summaries, questions, a knowledge graph and Wiki pages according to the knowledge base configuration. Status and progress follow each stage. Failed tasks are recovered by retries and a housekeeping sweep.
+Documents enter the system by file upload, URL import, manual creation or a data source sync (`datasource:sync`, see [Async task system](05-async-tasks.md)), which hands each fetched file to the same `CreateKnowledgeFromFile` path as an upload. The server stores the content and submits a processing task that parses, chunks and indexes the document, then generates summaries, questions, a knowledge graph and Wiki pages according to the knowledge base configuration. Status and progress follow each stage. Failed tasks are recovered by retries and a housekeeping sweep.
 
 ## Overall architecture
 
@@ -75,7 +75,7 @@ Management endpoints: `POST /knowledge/:id/reparse` (reparse), `POST /knowledge/
 
 ### One extension gate for every import path
 
-`supportedImportFileExtensions` in `internal/utils/import_filetypes.go` is **the single source of truth for every import path**. Direct uploads, file URL downloads and the worker's re-check after a download all consult the same set:
+`supportedImportFileExtensions` in `internal/utils/import_filetypes.go` is **the single source of truth for every import path**. Direct uploads, file URL downloads, the worker's re-check after a download and data source connectors all consult the same set:
 
 ```text
 pdf txt docx doc epub html htm mhtml md markdown mdx xmind

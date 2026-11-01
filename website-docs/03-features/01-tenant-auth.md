@@ -187,7 +187,7 @@ A link stays valid until it expires or is revoked. Together with `register-by-in
 - Creating an organization generates a unique `InviteCode` with validity `invite_code_validity_days ∈ {0 (never), 1, 7, 30}`, default 7 days (the `ValidInviteCodeValidityDays` allow-list; an invalid value returns `ErrInvalidValidityDays`);
 - `GetOrganizationByInviteCode` joins by code (the repository distinguishes `ErrInviteCodeNotFound` and `ErrInviteCodeExpired`, surfaced as `ErrOrgNotFound` / `ErrInviteCodeExpired`); with `RequireApproval=true` a join request awaiting approval is created instead;
 - Organizations with `Searchable=true` can be found through `SearchSearchableOrganizations`;
-- `MemberLimit` defaults to 50 (0 = unlimited) and is enforced atomically with the membership insert;
+- `MemberLimit` defaults to 200 (0 = unlimited) and is enforced atomically with the membership insert;
 - The invite code and the pending-approval count are visible only to "the organization admin or the owner tenant" (the `isAdmin || isOwner` check in `internal/handler/organization.go`).
 
 #### Invitation candidates: exact workspace ID resolution
@@ -719,7 +719,7 @@ type Organization struct {
     InviteCodeValidityDays int     // allowed 0 (never) / 1 / 7 / 30, default 7
     RequireApproval        bool    // joining needs approval
     Searchable             bool    // discoverable by search
-    MemberLimit            int     // default 50, 0 = unlimited
+    MemberLimit            int     // default 200, 0 = unlimited
 }
 
 type OrganizationTenantMember struct { // the member unit is a tenant

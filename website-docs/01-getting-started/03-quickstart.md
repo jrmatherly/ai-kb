@@ -85,7 +85,7 @@ When the answer renders and its citations open, the import and question-answerin
 
 - [Configure agents](../03-features/07-agent.md): use Smart Reasoning for multi-step questions and enable web search and MCP tools as needed.
 - [Tune chunking](../03-features/04-chunking.md) and [retrieval parameters](../03-features/05-retrieval-engines.md) to match your document structure and retrieval results.
-- [Connect data sources](../03-features/10-datasource.md) to keep syncing Feishu, Notion, Yuque or RSS content.
+- [Connect data sources](../03-features/10-datasource.md) to keep syncing Notion, Confluence, GitHub, Bitbucket, OneDrive or SharePoint content (other connectors, such as Feishu, Yuque or RSS, are enabled with `AIKB_DATASOURCE_TYPES`).
 - [IM integration](../03-features/12-im-integration.md) or [web embedding](../03-features/13-embed-channel.md): let users ask through channels they already use.
 
 ## The first question through the API

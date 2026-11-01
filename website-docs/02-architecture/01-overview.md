@@ -15,7 +15,6 @@ AI KB runs as three core processes, the main service, the frontend and the docum
 | `docreader` | `ghcr.io/jrmatherly/ai-kb-docreader` (`docker/Dockerfile.docreader`, Python) | `50051` (exposed inside the Compose network only, not mapped to the host) | Document parsing microservice: a gRPC server that parses and renders more than 20 file types (PDF, DOCX, Excel, EPUB, web pages and others). Health check `grpc_health_probe` |
 | `postgres` | `paradedb/paradedb:v0.26.1-pg18` | `5432` (network only) | Primary database. The ParadeDB distribution ships BM25 full-text search and pgvector, so **the default deployment needs no separate vector database** (`RETRIEVE_DRIVER=postgres`) |
 | `redis` | `redis:8.10.2-alpine` (`appendonly` + `requirepass`) | `6379` (network only) | Asynq task queue, SSE stream management across instances, `system_settings` publish/subscribe, rate limiting and the distributed per-model concurrency gate |
-| `sandbox` | `ghcr.io/jrmatherly/ai-kb-sandbox` (`docker/Dockerfile.sandbox`) | - | The standard runtime image. It is used directly by the workspace Docker backend; with CubeSandbox or E2B it is registered through their template API and used for Agent Skills |
 
 `app` and `docreader` also share the `docreader-tmp` volume (mounted at `/tmp/docreader`) to hand over parsed images; `app` keeps local file storage in the `data-files` volume (`/data/files`).
 
@@ -30,7 +29,8 @@ AI KB runs as three core processes, the main service, the frontend and the docum
 | `doris-fe` + `doris-be` | `doris` | Apache Doris 4.1 retrieval engine (FE MySQL 9030 / FE HTTP 8030, Stream Load in `legacy` mode only / BE 8040) |
 | `odl-hybrid` | `odl-hybrid` | OpenDataLoader PDF hybrid parsing backend (docreader calls it over HTTP on `:5002`) |
 | `dex` | `dex` / `full` | OIDC test IdP (used with `OIDC_AUTH_ENABLE`) |
-| `langfuse-*` (web/worker/clickhouse/minio/db-init) | `langfuse` | Self-hosted LLM observability stack; reuses the AI KB `postgres` (a new `langfuse` database) and `redis` (DB 1) |
+| `langfuse-*` (web/worker/clickhouse/minio/db-init) | `langfuse`, `full` | Self-hosted LLM observability stack; reuses the AI KB `postgres` (a new `langfuse` database) and `redis` (DB 1) |
+| `sandbox` | `full` | Builds or pulls `ghcr.io/jrmatherly/ai-kb-sandbox` (`docker/Dockerfile.sandbox`) and exits (`command: ["true"]`). The image is the standard runtime: the workspace Docker backend runs it per session only with `AIKB_SANDBOX_DOCKER_ENABLED=true` and `docker.sock` mounted; CubeSandbox and E2B register it through their template API for Agent Skills |
 | `mcp` | `full` | The legacy standalone Python MCP server (`mcp-server/`) on host port `8082`; new deployments use the MCP endpoints built into `app` |
 
 The Go backend can also connect directly to engines that are not in Compose: Elasticsearch v7/v8, OpenSearch, Tencent Cloud VectorDB, and eight object storage backends (local, MinIO, COS, TOS, S3, OSS, KS3, OBS).
@@ -203,7 +203,7 @@ The chat path (`POST /api/v1/knowledge-chat/:session_id` or `agent-chat`) is a s
 | `tests/`, `testdata/` | Integration tests and test data |
 | `misc/` | Miscellany (for example `dex-config.yaml`, the OIDC test configuration) |
 | `packages/` | Independently published integration packages, such as the DeepSeek Harness plugin `packages/dsh-ai-kb`, see [DeepSeek Harness](../05-clients/08-deepseek-harness.md) |
-| `docs/` | Old, no longer maintained docs; holds the generated Swagger package, release assets and historical images |
+| `docs/` | Engineering resources, not product docs: the generated Swagger package, `LITE.md` (the Lite package README), README and brand images, design specs and plans (`superpowers/`) and a proof of concept (`poc/`) |
 
 > Note: the Go module path is `github.com/jrmatherly/ai-kb`. The root directory also holds `docker-compose.yml` (production orchestration), `docker-compose.dev.yml` (development orchestration), the `Makefile`, `VERSION` and similar files.
 

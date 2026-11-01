@@ -420,6 +420,7 @@ A provider declares extra fields in its definition, the editor renders them dyna
 | `GET` / `POST /models/catalog/resolve` | Resolves how one row is called (protocol, effort levels, context), the editor's "How this model is called" |
 | `POST /models` / `GET /models` / `GET /models/:id` / `PUT /models/:id` / `DELETE /models/:id` | Model CRUD |
 | `PUT /models/:id/credentials`, `DELETE /models/:id/credentials/:field` | Credential sub-resource; an `api_key` in the `PUT /models/:id` body is ignored with a warning |
+| `POST /models/:id/copy` | Copy a model under a new `display_name`; credentials are copied from the stored record, never taken from the request (Admin) |
 | `POST /models/:id/debug` | Model debugging (below) |
 | `GET /models/weknoracloud/status` | WeKnoraCloud credential status (400 unless `AIKB_WEKNORACLOUD_ENABLED=true`) |
 
