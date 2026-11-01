@@ -236,6 +236,28 @@ curl "$BASE/api/v1/knowledge-bases/kb-1/files?file_path=local://1/exports/chart.
   -H "Authorization: Bearer $TOKEN" -o chart.png
 ```
 
+### GET /api/v1/knowledge-bases/:id/images
+
+Purpose: browse the image assets of a knowledge base (the gallery), with keyword search over captions and OCR text, attribute filters, sorting and paging. Permission: Viewer+, KB read. Handler: `ListImages` (`internal/handler/knowledge.go`).
+
+| Query parameter | Type | Required | Description |
+| --- | --- | --- | --- |
+| `page` / `page_size` | int | no | Defaults 1 and 20; `page_size` at most 1000 |
+| `keyword` | string | no | Case-insensitive substring match on the `search_in` fields |
+| `search_in` | string | no | Comma-separated attribute IDs; each must have `in_searchfield=true` |
+| `sort_by` / `sort_order` | string | no | Attribute ID with `in_sortfield=true` (default `created_at`); `asc` or `desc` (default `desc`) |
+| `is_enabled` | bool | no | Only enabled images |
+| `knowledge_ids` | string | no | Comma-separated source document IDs, at most 50 |
+| `attr_filters` / `attr_rules` | JSON string | no | Attribute filter (values ORed, attributes ANDed) and per-value rules (`off` hides, `on` forces display, `on` wins) |
+
+### POST /api/v1/knowledge-bases/:id/images
+
+The same listing with the filter as a JSON body, so `knowledge_ids` is not limited by URL length (the gallery's select-all source picker uses it). Permission: Viewer+, KB read.
+
+### GET /api/v1/knowledge-bases/:id/gallery-config
+
+Purpose: the gallery's self-describing contract: which attribute sources are live, every resolved attribute (definition plus merged usage) and the caller's search activation state. The frontend builds its filter panel, search fields and sort menu from it. Permission: Viewer+, KB read.
+
 ## Knowledge (KB content, /api/v1/knowledge-bases/:id/knowledge and /api/v1/knowledge)
 
 ### POST /api/v1/knowledge-bases/:id/knowledge/file

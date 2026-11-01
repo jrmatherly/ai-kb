@@ -77,7 +77,7 @@ Export comes in two formats: CSV (header row `tag_name(required)`, `standard_que
 type FAQSearchRequest struct {
     QueryText            string  `binding:"required"`
     VectorThreshold      float64 // vector similarity threshold (default 0.7)
-    MatchCount           int     // number of results (default 10, capped at 50)
+    MatchCount           int     // number of results (default 10, capped at 200)
     FirstPriorityTagIDs  []int64 // first-priority tags (ranked first)
     SecondPriorityTagIDs []int64 // second-priority tags
     OnlyRecommended      bool    // return only recommendable entries

@@ -262,6 +262,13 @@ Only one relay per session is allowed at a time. A sandbox that is not bound, pa
 
 The session owner reports keyboard and mouse activity; response 200 `{"success":true}`. It extends the lifetime only when the server-side RFB parser has degraded; while the parser is healthy it is ignored, and polling must not be used to keep a sandbox alive.
 
+### GET /api/v1/sessions/:id/local-browser and POST /api/v1/sessions/:session_id/local-browser
+
+[Local Browser](../05-clients/09-local-browser.md) task status and controls for a session the caller owns (404 otherwise). Handler: `internal/handler/session/browserskill.go`.
+
+- `GET` returns the task status: `{"success":true,"data":{...}}`.
+- `POST` takes `{"action":"<action>"}` (body at most 4 KB). `preview` returns the current frame, `focus` brings the task's tab forward, and `select`, `start`, `resume`, `pause` and `stop` control the task and return the new status. Any other action is a 400; 503 when the Local Browser is unavailable.
+
 ## Session attachments (temporary documents)
 
 Handler: `internal/handler/session/temporary_document.go`

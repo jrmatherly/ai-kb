@@ -632,7 +632,7 @@ The SSE and HTTP transports are authenticated by `MCPAuthMiddleware` (an ASGI mi
 
 | Tool | Parameters | Description |
 | --- | --- | --- |
-| `create_session` | `kb_id`\*, `max_rounds` (5), `enable_rewrite` (true), `fallback_response`, `summary_model_id`, `title`, `description` | Create a chat session bound to a knowledge base (built-in strategy: `embedding_top_k` 10, `keyword_threshold` 0.5, `vector_threshold` 0.7 and others) |
+| `create_session` | `title`, `description` | Create a chat session. Sessions are not bound to a knowledge base; pass `knowledge_base_ids` to `chat` or `agent_chat` on each turn |
 | `get_session` | `session_id`\* | Session details |
 | `list_sessions` | `page` (1), `page_size` (20) | List sessions |
 | `delete_session` | `session_id`\* | Delete a session |
@@ -661,7 +661,7 @@ The SSE and HTTP transports are authenticated by `MCPAuthMiddleware` (an ASGI mi
 | `wiki_read_page` | `kb_id`\*, `slug`\* | Read a whole page by slug: Markdown, metadata and inbound and outbound links |
 | `wiki_index_view` | `kb_id`\*, `limit` (50) | A structured Wiki index grouped by type (entity, concept, summary and others) |
 
-Conveniences: `resolve_kb_id` and `resolve_agent_id` resolve human-readable names (case-insensitive) to UUIDs, so `hybrid_search`, `chat`, `agent_chat`, `create_session` and `get_agent` accept either a name or a UUID. Name resolution searches both own and shared knowledge bases, so shared bases can be referenced by name too; `resolve_agent_id` accepts non-UUID agent identifiers. Every tool result is returned as formatted JSON in a `TextContent`; exceptions are caught and returned as the text `Error executing <name>: ...`.
+Conveniences: `resolve_kb_id` and `resolve_agent_id` resolve human-readable names (case-insensitive) to UUIDs, so `hybrid_search`, `chat`, `agent_chat`, `create_knowledge_from_text` and `get_agent` accept either a name or a UUID. Name resolution searches both own and shared knowledge bases, so shared bases can be referenced by name too; `resolve_agent_id` accepts non-UUID agent identifiers. Every tool result is returned as formatted JSON in a `TextContent`; exceptions are caught and returned as the text `Error executing <name>: ...`.
 
 #### Configuring Claude Desktop and other clients
 

@@ -15,7 +15,7 @@ Purpose: create an organization. Permission: Admin+.
 | `name` | string | yes (`binding:"required"`, 1 to 255 characters) | Organization name |
 | `description` | string | no | Description (at most 1000 characters) |
 | `avatar` | string | no | Avatar URL (at most 512 characters) |
-| `member_limit` | int | no | Maximum number of member workspaces; `0` means unlimited; default 50 |
+| `member_limit` | int | no | Maximum number of member workspaces; `0` means unlimited; default 200 |
 | `invite_code_validity_days` | int | no | Invite code validity in days: `0` (never expires), `1`, `7` or `30`; default 7. Any other value returns 400 |
 
 `searchable` and `require_approval` are not accepted on create (both start as `false`); set them with `PUT /api/v1/organizations/:id`.

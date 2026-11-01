@@ -88,6 +88,7 @@ TOUCHPOINTS = [
     ),
     Touchpoint("helm-chart", "helm/Chart.yaml", r"^version: (?P<v>\S+)$"),
     Touchpoint("helm-chart", "helm/README.md", r"charts/ai-kb --version (?P<v>\S+)"),
+    Touchpoint("helm-chart", "website-docs/01-getting-started/02-installation.md", r"charts/ai-kb --version (?P<v>\S+)"),
     Touchpoint("go", "go.mod", r"^toolchain go(?P<v>\S+)$"),
     Touchpoint("go", "cli/go.mod", r"^toolchain go(?P<v>\S+)$"),
     Touchpoint("go", "docker/Dockerfile.app", r"^FROM golang:(?P<v>[^-@\s]+)-bookworm@sha256:[0-9a-f]{64} AS builder$"),

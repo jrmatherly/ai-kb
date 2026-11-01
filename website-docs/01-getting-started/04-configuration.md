@@ -410,11 +410,12 @@ Old tool names found in saved configurations (`knowledge_search`, `grep_chunks` 
 
 ## config/builtin_agents.yaml: built-in agents
 
-Defines the agents shipped with the system and visible to every workspace (`BuiltinAgentEntry`, `internal/types/builtin_agent_config.go`). Each entry has an `id`, `avatar`, `is_builtin: true`, `i18n` (name and description under `default`, with optional per-locale overrides) and a complete `config` (`CustomAgentConfig`). The file ships five agents:
+Defines the agents shipped with the system and visible to every workspace (`BuiltinAgentEntry`, `internal/types/builtin_agent_config.go`). Each entry has an `id`, `avatar`, `is_builtin: true`, `i18n` (name and description under `default`, with optional per-locale overrides) and a complete `config` (`CustomAgentConfig`). The file ships six agents:
 
 - `builtin-quick-answer`: `agent_mode: quick-answer`, references `system_prompt_id: default_kb` and `context_template_id: default_context`, with full retrieval parameters (`embedding_top_k: 10`, `vector_threshold: 0.5`, `rerank_threshold: 0.3`, FAQ direct-answer threshold 0.9 and so on);
 - `builtin-smart-reasoning`: `agent_mode: smart-reasoning`, `agent_type: rag-qa`, `max_iterations: 50`;
-- `builtin-data-analyst`, `builtin-wiki-researcher`, `builtin-wiki-fixer`: for table analysis and Wiki scenarios respectively.
+- `builtin-data-analyst`, `builtin-wiki-researcher`, `builtin-wiki-fixer`: for table analysis and Wiki scenarios respectively;
+- `builtin-skill-installer`: `system_prompt_id: skill_installer`, run by the skill upload flow of a sandbox configuration. It and `builtin-wiki-fixer` are hidden from the user-facing agent list.
 
 The `system_prompt_id` in `config` is resolved at startup by `resolveBuiltinAgentPromptIDs` into the actual content from `agent_system_prompt.yaml`. Edit this file and restart to change the behavior of the built-in agents.
 

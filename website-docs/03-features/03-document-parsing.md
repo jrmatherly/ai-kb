@@ -438,7 +438,7 @@ The base image is `python:3.14-bookworm`, built in two stages (the builder insta
 
 `scripts/` holds two tools: `generate_proto.sh` (runs grpc_tools.protoc to generate the Python and Go code and fixes import paths) and `parse_local.py` (calls the Parser directly for local debugging without gRPC, with `--engine`, `--scanned` and `--out` to export the markdown and images).
 
-Python dependencies (`pyproject.toml`, locked by `uv.lock`): `grpcio`, `pypdfium2`, `markitdown[docx,pdf,xls,xlsx,pptx]`, `opendataloader-pdf`, `python-docx`, `pandas`/`openpyxl`/`xlrd`, `playwright`, `trafilatura`, `beautifulsoup4`/`markdownify`/`lxml`, `ebooklib`, `pillow`, `pydantic` and others.
+Python dependencies (`pyproject.toml`, locked by `uv.lock`): `grpcio`, `pypdfium2`, `markitdown[docx,pdf,xls,xlsx,pptx]`, `opendataloader-pdf`, `python-docx`, `pandas`/`openpyxl`/`xlrd`, `playwright`, `trafilatura`, `beautifulsoup4`/`markdownify`/`lxml`, `python-calamine`, `pillow`, `pydantic` and others.
 
 #### Scaling and tuning
 
