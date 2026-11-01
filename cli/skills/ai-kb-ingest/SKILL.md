@@ -66,8 +66,11 @@ aikb search chunks "why X"
   send before sending it; it runs offline and prints the plan.
 - **Do not paste secrets into notes.** `doc create` stores the text verbatim and
   it becomes retrievable by every reader of the knowledge base.
-- **Uploads are not idempotent.** Running the same `doc upload` twice creates
-  two documents; check `doc list --kb <kb>` first when a run may be repeated.
+- **Duplicates are rejected, notes are not.** Uploading identical file content
+  twice, or fetching a URL already imported, exits 1 with
+  `resource.already_exists` (a `--recursive` batch reports it on that item).
+  `doc create` does not deduplicate, so a repeated run creates a second note;
+  check `doc list --kb <kb>` before repeating one.
 - The CLI's API key needs the ingest capability on that knowledge base; an
   `auth.*` error with exit code 3 means the key cannot write there, ask the user
   for another key rather than retrying.

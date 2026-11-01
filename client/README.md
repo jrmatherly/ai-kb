@@ -19,6 +19,7 @@ The client has these feature areas:
 11. **Sandbox skills**: install skills into a sandbox configuration (zip upload, or from sources such as ClawHub / SkillHub / GitHub) and configure the environment variables the skills need
 12. **Long-term memory**: the current user's cross-session memory (on/off setting, add/edit/delete entries, confirm/reject, topics, document affinity, export, consolidate now)
 13. **Authentication**: log in, refresh tokens, switch the active workspace (`SwitchTenant` records the last active tenant preference)
+14. **Other areas**: FAQ entries, tags, organizations and sharing, custom agents, MCP services and published MCP endpoints, retrieval, web search, system and initialization info, and message suggestions
 
 ## Usage
 
@@ -229,7 +230,6 @@ modelRequest := &client.CreateModelRequest{
         "temperature": 0.7,
         "top_p":       0.9,
     },
-    IsDefault: true,
 }
 model, err := apiClient.CreateModel(context.Background(), modelRequest)
 if err != nil {

@@ -143,6 +143,26 @@ All options, hardware requirements and deployment topologies: [Installation guid
 
 ## What's New
 
+### Unreleased <sub>· [changelog](./CHANGELOG.md)</sub>
+
+Microsoft OneDrive (work or school) and SharePoint data sources with Graph delta sync, offered by default; below 768px the sidebar becomes an overlay drawer, so phones get a 390px layout.
+
+### 2026.10.23 <sub>· [changelog](./CHANGELOG.md)</sub>
+
+Bitbucket Cloud data source and `.mdx` import through upload, URL import and every data-source sync.
+
+### 2026.10.22 <sub>· [changelog](./CHANGELOG.md)</sub>
+
+GitHub data source for github.com, ghe.com and GitHub Enterprise Server repositories.
+
+### 2026.10.21 <sub>· [changelog](./CHANGELOG.md)</sub>
+
+**Breaking:** `AIKB_DATASOURCE_TYPES` limits which data source types can be created (set `all` for every type). Also the UI switches `AIKB_DOCS_URL` and `AIKB_GITHUB_LINK_ENABLED`, and notarized macOS DMGs (2026.10.21.3).
+
+### 2026.10.20 <sub>· [changelog](./CHANGELOG.md)</sub>
+
+OIDC groups to roles: map identity-provider groups to system admin and workspace roles.
+
 ### 2026.10.18.1 <sub>· [changelog](./CHANGELOG.md)</sub>
 
 The `aikb` CLI ships with every release for macOS, Linux and Windows: `brew install jrmatherly/ai-kb/aikb`, Scoop from the same tap, or archives with sha256 files and build provenance attestations.
