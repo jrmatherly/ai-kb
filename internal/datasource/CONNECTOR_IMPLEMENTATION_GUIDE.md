@@ -407,13 +407,15 @@ var ConnectorMetadataRegistry = map[string]ConnectorMetadata{
         Name:         "Your Platform Name",
         Description:  "Sync documents from Your Platform",
         Priority:     X,  // Lower number = higher priority in UI
-        AuthType:     "oauth2",  // or "api_key", "token", "password", "custom", "none"
+        AuthType:     "oauth2",  // or "api_key", "token", "client_credentials", "password", "custom", "none"
         Capabilities: []string{"incremental", CapabilityFullSyncReconcile},
     },
 }
 ```
 
 Three capability values change behavior. `full_sync_reconcile` (`CapabilityFullSyncReconcile`) says the connector can set `types.SyncCursor.CompleteListing`, so a full sync with deletion sync on deletes knowledge items missing from a complete listing. `selection_tracks_source` (`CapabilitySelectionTracksSource`) says each item's `source_resource_id` is the selected resource it was listed under, so items of a deselected resource can be found. `source_identity_dedup` (`CapabilitySourceIdentityDedup`) says two items of the connector may carry the same bytes at different paths, so the create path scopes its duplicate check to `datasource_id` + `external_id`. The git connectors, Confluence, Seafile, OneDrive and SharePoint declare it. Such a connector emits its own type as `metadata["channel"]` (or none), since the create path looks the capability up by channel. `incremental`, `deletion_sync` and `hierarchical` only describe the connector to API clients.
+
+A registered type is offered for creation only if it is in `DefaultConnectorTypes` or the operator's `AIKB_DATASOURCE_TYPES`. Adding it to `DefaultConnectorTypes` means updating every copy `internal/datasource/allowlist_parity_test.go` checks, or that test fails.
 
 ## Step 8: Sync Reason Codes
 

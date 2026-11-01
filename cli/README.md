@@ -187,9 +187,9 @@ aikb skills list --format json           # what would be installed
 
 Existing files are left untouched without `--force`; `--dry-run` previews the
 file list. Each skill's frontmatter records the CLI version it was
-`tested_against`; a CI parity test (`internal/skillparity`) fails if a fenced
-`aikb` example in a skill uses a command path or long flag the CLI no longer has
-(inline prose and MCP tool names are not checked).
+`tested_against`; a CI parity test (`internal/skillparity`) fails if an `aikb`
+example in a skill, fenced or an inline `` `aikb ...` `` span, uses a command
+path or long flag the CLI no longer has (MCP tool names are not checked).
 
 ---
 

@@ -244,7 +244,7 @@ postgresql:
   enabled: false
 externalDatabase:
   host: db.example.internal
-  sslMode: require          # disable, allow, prefer, require, verify-ca or verify-full
+  sslMode: require          # disable, require, verify-ca or verify-full
 
 redis:
   enabled: false

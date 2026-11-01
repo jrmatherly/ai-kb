@@ -12,7 +12,7 @@ Examples for common tools. The full tool list is in [README.md](./README.md#feat
 
 #### Create a workspace
 
-This needs an API key with the platform capability `system_tenants_manage`. A workspace key from Settings → API Keys is refused.
+This needs a platform API key (Settings → Platform API Keys, system administrators only) with the capability `system_tenants_manage`. A workspace key from Settings → Publish & Integrations → API Integration → API Keys is refused.
 
 ```json
 {

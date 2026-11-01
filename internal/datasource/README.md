@@ -6,6 +6,8 @@ The data source sync framework enables AI KB to automatically import and synchro
 
 Implemented connectors, registered in `initConnectorRegistry()` (`internal/container/container.go`): Feishu, Lark, Feishu Drive, Lark Drive, Notion, Confluence, Yuque, DingTalk, IMA, RSS, GitHub, Bitbucket, OneDrive, SharePoint, GitLab and Seafile. Google Drive, Web Crawler, Slack and IMAP have metadata entries in `connector.go` only, so `GET /api/v1/datasource/types` lists them but they cannot sync yet.
 
+Only the types in the `AIKB_DATASOURCE_TYPES` allow-list (`ConnectorTypesEnv` in `connector.go`) can be created. Unset, it is `DefaultConnectorTypes`: Notion, Confluence, GitHub, Bitbucket, OneDrive and SharePoint; `all` admits every type. `GET /api/v1/datasource/types` marks each entry `enabled`. Only creation is gated, so saved sources of an excluded type keep syncing.
+
 ## Architecture
 
 ### Core Components

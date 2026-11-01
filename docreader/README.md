@@ -52,6 +52,7 @@ Compose does not publish port 50051 to the host. Only the app reaches it over `a
 
 ### Parser resource limits
 
+- `DOCREADER_DOCX_MAX_PAGES`: pages parsed per DOCX file (default: 0, no limit)
 - `DOCREADER_MARKITDOWN_MAX_WORKERS`: concurrent MarkItDown parses (default: 1, 0 disables the limit)
 - `DOCREADER_PDF_RENDER_MAX_WORKERS`: concurrent scanned-PDF renders (default: 1, 0 disables the limit)
 - `DOCREADER_PDF_RENDER_PARALLELISM`: processes rendering the pages of one PDF (default: min(4, CPU count))
@@ -60,6 +61,17 @@ Compose does not publish port 50051 to the host. Only the app reaches it over `a
 - `DOCREADER_PDF_JPEG_QUALITY`: JPEG quality (default: 85, clamped to 1-95)
 
 If importing several large PDFs uses too many resources, lower `DOCREADER_PDF_RENDER_MAX_WORKERS` or `DOCREADER_MARKITDOWN_MAX_WORKERS` first.
+
+### OpenDataLoader
+
+`parser/opendataloader_parser.py` reads these; the workspace parser engine settings (`odl_hybrid*` in `internal/types/tenant.go`) override the hybrid ones per request.
+
+- `DOCREADER_ODL_MAX_WORKERS`: concurrent OpenDataLoader parses (default: 1)
+- `DOCREADER_ODL_HYBRID`: hybrid backend: `off`, `docling-fast` or `hancom-ai` (default: `off`)
+- `DOCREADER_ODL_HYBRID_URL`: hybrid server URL, SSRF-checked (default: `http://127.0.0.1:5002`; compose sets `http://odl-hybrid:5002`, the `odl-hybrid` profile)
+- `DOCREADER_ODL_HYBRID_MODE`: `auto` or `full` (default: `auto`)
+- `DOCREADER_ODL_HYBRID_FALLBACK`: fall back to local parsing when the hybrid server fails (default: false)
+- `DOCREADER_ODL_MARKDOWN_WITH_HTML`: keep HTML in the Markdown output (default: false)
 
 ### Storage
 

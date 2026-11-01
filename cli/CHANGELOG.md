@@ -14,6 +14,11 @@ that introduced the CLI.
 
 ## [Unreleased]
 
+### Fixed
+- Flag help no longer renders a referenced command as the flag's value name
+  (`--kb`, `--chat-model`, `session resume` and `session stop`, `api`,
+  `kb config set`, `model create`).
+
 ## [2026.10.18.1] - 2026-10-18
 
 ### Added
