@@ -838,7 +838,7 @@ const formData = ref({
   require_approval: false,
   searchable: false,
   invite_code_validity_days: 7 as number,
-  member_limit: 50 as number // 0 = unlimited
+  member_limit: 200 as number // 0 = unlimited
 })
 
 // Emoji choices for the shared space avatar (option three: an emoji as the avatar)
@@ -1260,7 +1260,7 @@ const fetchOrgDetail = async () => {
         require_approval: res.data.require_approval || false,
         searchable: res.data.searchable || false,
         invite_code_validity_days: typeof validity === 'number' ? validity : 7,
-        member_limit: typeof memberLimit === 'number' && memberLimit >= 0 ? memberLimit : 50
+        member_limit: typeof memberLimit === 'number' && memberLimit >= 0 ? memberLimit : 200
       }
       inviteCode.value = res.data.invite_code || ''
       inviteCodeExpiresAt.value = res.data.invite_code_expires_at ?? null
@@ -1799,7 +1799,7 @@ watch(() => props.visible, (newVal) => {
     joinRequests.value = []
     if (props.mode === 'create') {
       // Create mode: reset the form
-      formData.value = { name: '', description: '', avatar: '', require_approval: false, searchable: false, invite_code_validity_days: 7, member_limit: 50 }
+      formData.value = { name: '', description: '', avatar: '', require_approval: false, searchable: false, invite_code_validity_days: 7, member_limit: 200 }
       modalShell.markClean()
       orgStore.clearCurrentOrganizationContext()
       sharedKnowledgeBases.value = []

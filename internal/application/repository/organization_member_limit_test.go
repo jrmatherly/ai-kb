@@ -37,3 +37,24 @@ func TestAddTenantMemberEnforcesLimitWithTheInsert(t *testing.T) {
 	require.NoError(t, db.Model(&types.OrganizationTenantMember{}).Count(&count).Error)
 	require.Equal(t, int64(3), count)
 }
+
+// Zero is a real value for both fields (no member limit, an invite code that
+// never expires), so a create must store it rather than the column default.
+func TestCreateOrganizationKeepsZeroLimits(t *testing.T) {
+	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+	require.NoError(t, err)
+	require.NoError(t, db.Exec(`CREATE TABLE organizations (
+		id TEXT PRIMARY KEY, name TEXT, description TEXT, avatar TEXT, owner_id TEXT, owner_tenant_id INTEGER,
+		invite_code TEXT,
+		invite_code_expires_at DATETIME, invite_code_validity_days INTEGER NOT NULL DEFAULT 7,
+		require_approval BOOLEAN NOT NULL DEFAULT false, searchable BOOLEAN NOT NULL DEFAULT false,
+		member_limit INTEGER NOT NULL DEFAULT 50, created_at DATETIME, updated_at DATETIME, deleted_at DATETIME
+	)`).Error)
+	repo := &organizationRepository{db: db}
+	require.NoError(t, repo.Create(context.Background(), &types.Organization{ID: "org", Name: "o"}))
+
+	var got types.Organization
+	require.NoError(t, db.First(&got, "id = ?", "org").Error)
+	require.Equal(t, 0, got.MemberLimit, "member_limit")
+	require.Equal(t, 0, got.InviteCodeValidityDays, "invite_code_validity_days")
+}
