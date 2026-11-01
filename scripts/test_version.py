@@ -143,6 +143,7 @@ class VersionTest(unittest.TestCase):
                 "miniprogram/package-lock.json",
                 "miniprogram/package.json",
                 "misc/intro-video/index.html",
+                "website-docs/01-getting-started/02-installation.md",
                 "website-docs/05-clients/04-miniprogram.md",
                 "website-docs/VERSION",
                 "website-docs/homepage/package-lock.json",
@@ -199,7 +200,7 @@ class VersionTest(unittest.TestCase):
         before, version = self.head(), self.text("VERSION")
         r = self.run_tool("bump", self.next_version(1))
         self.assertEqual(r.returncode, 2)
-        self.assertIn("restored 18 file(s) to their original bytes", r.stderr)
+        self.assertIn("restored 19 file(s) to their original bytes", r.stderr)
         self.assertEqual(self.head(), before)
         self.assertEqual(self.text("VERSION"), version)
         self.assertEqual(sh("git", "status", "--porcelain", cwd=self.repo), "")
@@ -279,7 +280,8 @@ class VersionTest(unittest.TestCase):
         self.assertEqual(self.head_subject(), f"chore(release): helm-chart v{chart}")
         self.assertIn("no tag: helm.yml pushes the helm-chart", r.stdout)
         self.assertEqual(
-            sh("git", "diff", "--name-only", "HEAD~1", cwd=self.repo).split(), ["helm/Chart.yaml", "helm/README.md"]
+            sh("git", "diff", "--name-only", "HEAD~1", cwd=self.repo).split(),
+            ["helm/Chart.yaml", "helm/README.md", "website-docs/01-getting-started/02-installation.md"],
         )
         readme = self.repo / "helm/README.md"
         readme.write_text(readme.read_text().replace(f"--version {chart} ", "--version 9.9.9 "))
