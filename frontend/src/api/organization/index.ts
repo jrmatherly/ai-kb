@@ -148,7 +148,7 @@ export interface CreateOrganizationRequest {
   description?: string
   avatar?: string
   invite_code_validity_days?: number // 0=never, 1, 7, 30; default 7
-  member_limit?: number // 0=unlimited; default 50
+  member_limit?: number // 0=unlimited; default 200
 }
 
 export interface UpdateOrganizationRequest {

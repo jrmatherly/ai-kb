@@ -170,7 +170,7 @@ The engine type constants are in `internal/types/retriever.go`: `postgres`, `ela
 - **Keyword retrieval**: `tokenizeQuery` tokenizes locally, then builds a **should (OR) filter** of `MatchText(content, token)` per token and fetches with `Scroll` across the collections of every matching dimension; there is no BM25 score (a hit is returned as is, the score comes from the RRF rank above).
 - **Filters**: `getBaseFilter` uses `MatchKeywords` for exact filtering on KB / knowledge / tag / is_enabled.
 - **Writes and deletes**: invalid UTF-8 and NUL characters in string payloads are cleaned before writing; a delete against a dimension whose collection does not exist yet (old vectors are deleted before the first write, or Qdrant was wiped) is treated as "nothing to delete" and no longer blocks the following write; batch enabled-status and tag updates run per collection, and any failure returns an error instead of only being logged.
-- Configuration: `QDRANT_HOST` / `QDRANT_PORT` / `QDRANT_API_KEY` / `QDRANT_USE_TLS`.
+- Configuration: `QDRANT_HOST` / `QDRANT_PORT` / `QDRANT_API_KEY` / `QDRANT_USE_TLS`. The app talks gRPC on `QDRANT_PORT`; `QDRANT_REST_PORT` (default 6333) only sets the host port compose publishes for Qdrant's REST API and dashboard.
 
 #### Milvus
 

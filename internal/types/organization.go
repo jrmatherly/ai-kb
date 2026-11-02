@@ -81,13 +81,13 @@ type Organization struct {
 	// When the current invite code expires; nil means no expiry
 	InviteCodeExpiresAt *time.Time `json:"invite_code_expires_at" gorm:"type:timestamp with time zone"`
 	// Invite link validity in days: 0=never, 1/7/30
-	InviteCodeValidityDays int `json:"invite_code_validity_days" gorm:"default:7"`
+	InviteCodeValidityDays int `json:"invite_code_validity_days"`
 	// Whether joining requires admin approval
 	RequireApproval bool `json:"require_approval" gorm:"default:false"`
 	// Whether the space is open for search (discoverable; non-members can search and join by org ID)
 	Searchable bool `json:"searchable" gorm:"default:false"`
 	// Max members allowed; 0 means no limit
-	MemberLimit int `json:"member_limit" gorm:"default:50"`
+	MemberLimit int `json:"member_limit"`
 	// Creation time
 	CreatedAt time.Time `json:"created_at"`
 	// Last updated time
@@ -319,7 +319,7 @@ type CreateOrganizationRequest struct {
 	Description            string `json:"description" binding:"max=1000"`
 	Avatar                 string `json:"avatar" binding:"omitempty,max=512"` // optional avatar URL
 	InviteCodeValidityDays *int   `json:"invite_code_validity_days"`          // optional: 0=never, 1, 7, 30; default 7
-	MemberLimit            *int   `json:"member_limit"`                       // optional: max members; 0=unlimited; default 50
+	MemberLimit            *int   `json:"member_limit"`                       // optional; 0=unlimited; default 200
 }
 
 // UpdateOrganizationRequest represents a request to update an organization
