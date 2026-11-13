@@ -127,30 +127,26 @@ prepare_patched_anydoc
 # resolver drift must fail the build rather than ship an unaudited tree.
 cargo build --release --locked --manifest-path "$crate_dir/Cargo.toml" --target "$target"
 
-dest="$crate_dir/lib/$lib_dir"
-mkdir -p "$dest"
-cp "$crate_dir/target/$target/release/$lib_name" "$dest/$lib_name"
-
 # Rust ships compiler_builtins with embedded LLVM bitcode and keeps it out of
 # LTO, so those objects reach the archive as they are. Go 1.26.11 and later
-# refuse to link an archive that carries bitcode sections. Both the ELF/COFF and
-# the Mach-O section names are passed; llvm-objcopy ignores the ones a format lacks.
-find_objcopy() {
-  find "$(rustc --print sysroot)/lib/rustlib" -type f -name 'llvm-objcopy*' 2>/dev/null | head -1
-}
-objcopy=$(find_objcopy)
-if [ -z "$objcopy" ] && command -v rustup >/dev/null 2>&1; then
-  rustup component add llvm-tools
-  objcopy=$(find_objcopy)
-fi
-if [ -z "$objcopy" ]; then
-  echo "error: llvm-objcopy not found. Run: rustup component add llvm-tools" >&2
+# refuse to link an archive that carries bitcode sections, so they are stripped
+# on the way into lib/. rust-objcopy is the llvm-objcopy that ships with rustc.
+# Both the ELF/COFF and the Mach-O section names are passed; a format ignores
+# the names it lacks.
+host=$(rustc -vV | sed -n 's/^host: //p')
+objcopy="$(rustc --print sysroot)/lib/rustlib/$host/bin/rust-objcopy"
+[ -x "$objcopy" ] || objcopy="$objcopy.exe"
+if [ ! -x "$objcopy" ]; then
+  echo "error: rust-objcopy not found at ${objcopy%.exe}. It ships with rustc; check the Rust install." >&2
   exit 1
 fi
+
+dest="$crate_dir/lib/$lib_dir"
+mkdir -p "$dest"
 "$objcopy" \
   --remove-section=.llvmbc --remove-section=.llvmcmd \
   --remove-section=__LLVM,__bitcode --remove-section=__LLVM,__cmdline \
-  "$dest/$lib_name"
+  "$crate_dir/target/$target/release/$lib_name" "$dest/$lib_name"
 
 echo "Wrote $dest/$lib_name"
 echo "Build AI KB with the archive: go build -tags anydoc ./cmd/server"
