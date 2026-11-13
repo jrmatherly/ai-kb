@@ -3,6 +3,8 @@ name: 🦀 Anydoc
 # Compiles the vendored Rust archive, audits it, and exercises the `anydoc`
 # build tag. That is minutes of rustc + cargo-audit, so this workflow stays
 # off PRs that only touch migrations, frontend, CLI, or unrelated Go packages.
+# go.mod is a trigger because it pins the Go toolchain: 1.26.11 began rejecting
+# LLVM bitcode in cgo archives, which only this link exercises.
 
 on:
   push:
@@ -11,12 +13,14 @@ on:
       - "third_party/anydoc-go/**"
       - "scripts/build-anydoc-lib.sh"
       - "internal/infrastructure/docparser/**"
+      - "go.mod"
       - ".github/workflows/anydoc.yml"
   pull_request:
     paths:
       - "third_party/anydoc-go/**"
       - "scripts/build-anydoc-lib.sh"
       - "internal/infrastructure/docparser/**"
+      - "go.mod"
       - ".github/workflows/anydoc.yml"
   workflow_dispatch:
 
