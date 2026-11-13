@@ -10,4 +10,4 @@ GO-2025-3689	CVE-2024-8063, server GGUF block_count div by zero, affects <= 0.3.
 GO-2025-3695	CVE-2025-1975, server manifest array validation DoS, affects <= 0.5.11; the repo links only ollama/api
 GO-2025-3824	CVE-2025-51471, server.auth.getAuthorizationToken realm token leak, affects <= 0.9.6; the repo links only ollama/api
 GO-2025-4251	CVE-2025-63389, server API endpoints lack auth, affects <= 0.13.5; the repo links only ollama/api
-GO-2026-6911	mcp-go StreamableHTTP follows redirects with credentials when no HTTP client is supplied, no fixed version; internal/mcp/client.go supplies one with SameOriginRedirectsOnly (TestSSRFSafeClientSameOriginOnlyBlocksCrossOriginRedirect)
+GO-2026-6911	mcp-go StreamableHTTP sends credentials to a redirect target when no HTTP client is supplied, no fixed version; internal/mcp/client.go supplies the SSRF-safe client, which refuses cross-origin redirects (TestMCPClientDoesNotFollowCrossOriginRedirect)

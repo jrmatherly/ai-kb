@@ -48,7 +48,8 @@ func TestSSRFSafeClientStripsAuthTokenOnCrossHostRedirect(t *testing.T) {
 	}
 }
 
-// The MCP client relies on this for GO-2026-6911 (scripts/govulncheck-allowlist.txt).
+// A GET on purpose: the base policy already refuses to replay a request with a
+// body across origins, so only a GET shows what SameOriginRedirectsOnly adds.
 func TestSSRFSafeClientSameOriginOnlyBlocksCrossOriginRedirect(t *testing.T) {
 	t.Setenv("SSRF_WHITELIST", "127.0.0.1,::1,localhost")
 	ResetSSRFWhitelistForTest()
