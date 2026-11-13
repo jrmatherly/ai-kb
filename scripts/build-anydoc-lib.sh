@@ -130,14 +130,18 @@ cargo build --release --locked --manifest-path "$crate_dir/Cargo.toml" --target 
 # Rust ships compiler_builtins with embedded LLVM bitcode and keeps it out of
 # LTO, so those objects reach the archive as they are. Go 1.26.11 and later
 # refuse to link an archive that carries bitcode sections, so they are stripped
-# on the way into lib/. rust-objcopy is the llvm-objcopy that ships with rustc.
+# on the way into lib/. The tool comes from rustup's llvm-tools component: the
+# rust-objcopy inside rustc cannot load libLLVM on Linux without it.
 # Both the ELF/COFF and the Mach-O section names are passed; a format ignores
 # the names it lacks.
 host=$(rustc -vV | sed -n 's/^host: //p')
-objcopy="$(rustc --print sysroot)/lib/rustlib/$host/bin/rust-objcopy"
+objcopy="$(rustc --print sysroot)/lib/rustlib/$host/bin/llvm-objcopy"
+if [ ! -x "$objcopy" ] && [ ! -x "$objcopy.exe" ] && command -v rustup >/dev/null 2>&1; then
+  rustup component add llvm-tools
+fi
 [ -x "$objcopy" ] || objcopy="$objcopy.exe"
 if [ ! -x "$objcopy" ]; then
-  echo "error: rust-objcopy not found at ${objcopy%.exe}. It ships with rustc; check the Rust install." >&2
+  echo "error: llvm-objcopy not found at ${objcopy%.exe}. Install the llvm-tools component of the Rust toolchain." >&2
   exit 1
 fi
 
