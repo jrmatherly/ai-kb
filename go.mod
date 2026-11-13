@@ -2,7 +2,7 @@ module github.com/jrmatherly/ai-kb
 
 go 1.26.0
 
-toolchain go1.26.10
+toolchain go1.26.11
 
 require (
 	// govulncheck: 8 module-wide ollama entries accepted, see scripts/govulncheck-allowlist.txt
