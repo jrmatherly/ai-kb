@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -44,5 +45,36 @@ func TestSSRFSafeClientStripsAuthTokenOnCrossHostRedirect(t *testing.T) {
 
 	if gotToken != "" {
 		t.Fatalf("X-Auth-Token leaked on cross-host redirect: %q", gotToken)
+	}
+}
+
+// The MCP client relies on this for GO-2026-6911 (scripts/govulncheck-allowlist.txt).
+func TestSSRFSafeClientSameOriginOnlyBlocksCrossOriginRedirect(t *testing.T) {
+	t.Setenv("SSRF_WHITELIST", "127.0.0.1,::1,localhost")
+	ResetSSRFWhitelistForTest()
+	t.Cleanup(ResetSSRFWhitelistForTest)
+
+	reached := false
+	other := httptest.NewServer(http.HandlerFunc(func(_ http.ResponseWriter, _ *http.Request) { reached = true }))
+	defer other.Close()
+	origin := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, other.URL, http.StatusFound)
+	}))
+	defer origin.Close()
+
+	client := NewSSRFSafeHTTPClient(SSRFSafeHTTPClientConfig{
+		Timeout:                 5 * time.Second,
+		MaxRedirects:            5,
+		SameOriginRedirectsOnly: true,
+	})
+	resp, err := client.Get(origin.URL)
+	if err == nil {
+		_ = resp.Body.Close()
+	}
+	if !errors.Is(err, ErrSSRFRedirectBlocked) {
+		t.Fatalf("want ErrSSRFRedirectBlocked, got %v", err)
+	}
+	if reached {
+		t.Fatal("cross-origin redirect target was reached")
 	}
 }
