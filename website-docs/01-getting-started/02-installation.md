@@ -241,7 +241,7 @@ helm install ai-kb ./helm -n ai-kb --create-namespace \
 The chart is also published as an OCI artifact, so the same install works without a checkout. Pass the same `--set` flags:
 
 ```bash
-helm install ai-kb oci://ghcr.io/jrmatherly/ai-kb/charts/ai-kb --version 0.5.9 -n ai-kb --create-namespace
+helm install ai-kb oci://ghcr.io/jrmatherly/ai-kb/charts/ai-kb --version 0.5.10 -n ai-kb --create-namespace
 ```
 
 To use an existing PostgreSQL (with the ParadeDB extensions) or Redis, set `postgresql.enabled=false` with `externalDatabase.host` / `externalDatabase.port`, or `redis.enabled=false` with `externalRedis.addr` (`host:port`).
