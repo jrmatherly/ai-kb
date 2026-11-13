@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [2026.11.13] - 2026-11-13
+
+### Bug Fixes
+
+- **FIXED**: Creating an organization with a member limit of 0 (unlimited) or an invite validity of 0 days (never expires) stores 0. Before, the database defaults replaced both with 50 and 7. The create form now pre-fills the API's default limit of 200.
+- **FIXED**: Server dependencies close their open advisories: `golang.org/x/net` 0.62.0 (GO-2026-6860, GO-2026-6866), excelize 2.11.1 (crafted workbooks could crash or stall the server, GHSA-fq3v-74gv-27gm among them), echo 4.16.3, `klauspost/compress` 1.20.2 (GO-2026-6865) and `andybalholm/brotli` 1.2.7 (GO-2026-6888). Go toolchain 1.26.11 fixes an HTTP/1 server crash in `net/http` (GO-2026-6859); the anydoc archive is stripped of LLVM bitcode, which that toolchain refuses to link.
+- **FIXED**: docreader takes pypdf 6.21.4, which closes ten advisories on crafted PDFs, and soupsieve 4.1 (GHSA-mmhr-3c5m-f64f).
+- **FIXED**: The frontend takes follow-redirects 1.16.2 (GHSA-mrwp-f3q8-3g9p), the docs site undici 8.12.3 and vite 6.4.5, and the MCP server opentelemetry-api 1.45.2 (GHSA-mf5v-w3w3-f6cg).
+
 ### Changes
 
 - **NEW**: **Microsoft OneDrive (work or school) and Microsoft SharePoint data sources**: sync folders from a user's OneDrive for work or school, or document libraries and folders from a SharePoint Online site, with a Microsoft Entra app registration (client credentials). Incremental sync uses the Graph delta query, so only changed files are fetched; renames and moves keep their identity; folder deletions remove their files; a transient download failure is retried on the next run; an expired delta position re-enumerates and removes what vanished; a full-mode sync re-fetches every file and resumes from its checkpoint after a timeout. Offered by default next to Notion, Confluence, GitHub and Bitbucket. `onedrive` and `sharepoint` join the `AIKB_DATASOURCE_TYPES` default, so a deployment that sets the variable must list them to keep them. Personal Microsoft accounts are not supported.
