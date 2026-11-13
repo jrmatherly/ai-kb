@@ -131,5 +131,26 @@ dest="$crate_dir/lib/$lib_dir"
 mkdir -p "$dest"
 cp "$crate_dir/target/$target/release/$lib_name" "$dest/$lib_name"
 
+# Rust ships compiler_builtins with embedded LLVM bitcode and keeps it out of
+# LTO, so those objects reach the archive as they are. Go 1.26.11 and later
+# refuse to link an archive that carries bitcode sections. Both the ELF/COFF and
+# the Mach-O section names are passed; llvm-objcopy ignores the ones a format lacks.
+find_objcopy() {
+  find "$(rustc --print sysroot)/lib/rustlib" -type f -name 'llvm-objcopy*' 2>/dev/null | head -1
+}
+objcopy=$(find_objcopy)
+if [ -z "$objcopy" ] && command -v rustup >/dev/null 2>&1; then
+  rustup component add llvm-tools
+  objcopy=$(find_objcopy)
+fi
+if [ -z "$objcopy" ]; then
+  echo "error: llvm-objcopy not found. Run: rustup component add llvm-tools" >&2
+  exit 1
+fi
+"$objcopy" \
+  --remove-section=.llvmbc --remove-section=.llvmcmd \
+  --remove-section=__LLVM,__bitcode --remove-section=__LLVM,__cmdline \
+  "$dest/$lib_name"
+
 echo "Wrote $dest/$lib_name"
 echo "Build AI KB with the archive: go build -tags anydoc ./cmd/server"
